@@ -1,0 +1,8 @@
+**/target/
+**/Cargo.lock
+*.tar
+tmp.app
+email/
+sms/
+keys/
+data/

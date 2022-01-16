@@ -1,0 +1,31 @@
+[package]
+name = "gateway"
+version = "0.1.0"
+authors = ["zyddnys <zyddnys@outlook.com>"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+chrono = { version = "*", features = ["serde"] }
+actix-web = "4.0.0-beta.14"
+actix-rt = "2.5.0"
+actix-cors = "0.6.0-beta.6"
+env_logger = "0.9.0"
+bson = "2.0.1"
+serde = { version = "1.0.59", features = ["derive"] }
+serde_derive = "1.0.59"
+serde_json = { version = "1" }
+juniper = { version = "0.15.7", features = ["expose-test-schema", "serde_json"] }
+juniper_graphql_ws = { version = "0.3.0" }
+juniper_actix = { version="0.4.0", features = ["subscriptions"] }
+extend = "1.1.1"
+thiserror = "1.0.26"
+tokio = { version = "1", features = ["full"] }
+jwt-simple = {git = "https://github.com/zyddnys/rust-jwt-simple.git"}
+once_cell = "1.8"
+pvrustlib = {path = "../pvrustlib"}
+
+[profile.release]
+lto = true # Link Time Optimization (LTO)
+#panic = "abort"

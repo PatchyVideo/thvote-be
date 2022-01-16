@@ -1,0 +1,9 @@
+[workspace]
+members = [
+    "gateway",
+    "result-query",
+    "submit-handler",
+    "user-manager",
+    "vote-data",
+    "pvrustlib"
+]
