@@ -1,5 +1,5 @@
 [package]
-name = "submit-handler"
+name = "thvote-submit-handler"
 version = "0.1.0"
 authors = ["zyddnys <zyddnys@outlook.com>"]
 edition = "2018"

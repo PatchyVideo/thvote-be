@@ -1,5 +1,5 @@
 [package]
-name = "vote-data"
+name = "thvote-vote-data"
 version = "0.1.0"
 edition = "2018"
 

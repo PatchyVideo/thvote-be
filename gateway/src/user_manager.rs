@@ -61,32 +61,6 @@ pub struct PhoneLoginInputs {
 // GQL Schemas
 // ------------------------------------------------
 
-// #[derive(juniper::GraphQLInputObject, Clone, Serialize, Deserialize)]
-// #[graphql(description="Email login inputs for existing voters")]
-// pub struct EmailLoginInputsForExistingVotersGQL {
-//     pub email: String,
-//     pub password: String,
-//     pub meta: UserEventMeta
-// }
-
-// #[derive(juniper::GraphQLInputObject, Clone, Serialize, Deserialize)]
-// #[graphql(description="Email login up inputs")]
-// pub struct EmailLoginInputsGQL {
-//     pub email: String,
-//     pub nickname: Option<String>,
-//     pub verify_code: String,
-//     pub meta: UserEventMeta
-// }
-
-// #[derive(juniper::GraphQLInputObject, Clone, Serialize, Deserialize)]
-// #[graphql(description="Phone login inputs")]
-// pub struct PhoneLoginInputsGQL {
-//     pub phone: String,
-//     pub nickname: Option<String>,
-//     pub verify_code: String,
-//     pub meta: UserEventMeta
-// }
-
 #[derive(juniper::GraphQLObject, Clone, Serialize, Deserialize)]
 #[graphql(description="Voter")]
 pub struct Voter {
@@ -119,6 +93,7 @@ use crate::services::*;
 
 /// 老用户使用email帐号登录
 pub async fn login_email_password(context: &Context, email: String, password: String) -> FieldResult<LoginResults> {
+	let email = email.to_ascii_lowercase();
 	let submit_json = EmailLoginInputsForExistingVoters {
 		email: email,
 		password: password,
@@ -132,6 +107,7 @@ pub async fn login_email_password(context: &Context, email: String, password: St
 
 /// 新用户使用email帐号登录
 pub async fn login_email(context: &Context,  email: String, nickname: Option<String>, verify_code: String) -> FieldResult<LoginResults> {
+	let email = email.to_ascii_lowercase();
 	let submit_json = EmailLoginInputs {
 		email: email,
 		verify_code: verify_code,
@@ -145,6 +121,7 @@ pub async fn login_email(context: &Context,  email: String, nickname: Option<Str
 }
 /// 向邮箱发送验证码
 pub async fn request_email_code(context: &Context, email: String) -> FieldResult<bool> {
+	let email = email.to_ascii_lowercase();
 	let submit_json = SendEmailVerifyCodeRequest {
 		email: email,
 		meta: UserEventMeta {
@@ -235,6 +212,7 @@ pub struct RemoveVoterRequest {
 }
 
 pub async fn update_email(context: &Context, user_token: String, email: String, verify_code: String) -> FieldResult<bool> {
+	let email = email.to_ascii_lowercase();
 	let submit_json = UpdateEmailInputs {
 		email: email,
 		verify_code: verify_code,

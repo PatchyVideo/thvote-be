@@ -1,5 +1,5 @@
 [package]
-name = "gateway"
+name = "thvote-gateway"
 version = "0.1.0"
 authors = ["zyddnys <zyddnys@outlook.com>"]
 edition = "2018"

@@ -1,5 +1,5 @@
 #!/bin/bash
-NAME=vote-data
+NAME=thvote-vote-data
 export PKG_CONFIG_ALLOW_CROSS=1
 export OPENSSL_STATIC=true
 export OPENSSL_DIR=/musl

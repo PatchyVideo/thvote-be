@@ -106,7 +106,7 @@ impl SubmitValidatorV1 {
 			if let Some(active) = &c.active {
 				if *active != c.name_a && *active != c.name_b && {
 					if let Some(name_c) = &c.name_c {
-						*name_c == *active
+						*name_c != *active
 					} else {
 						true
 					}
