@@ -129,7 +129,7 @@ pub async fn request_email_code(context: &Context, email: String) -> FieldResult
 			additional_fingureprint: context.additional_fingureprint.clone()
 		}
 	};
-	json_request_gateway(SERVICE_NAME, &format!("http://{}/v1/send-email-code", USER_MANAGER), submit_json).await?;
+	let _tmp: EmptyJSON = json_request_gateway(SERVICE_NAME, &format!("http://{}/v1/send-email-code", USER_MANAGER), submit_json).await?;
 	Ok(true)
 }
 
@@ -155,7 +155,7 @@ pub async fn request_phone_code(context: &Context, phone: String) -> FieldResult
 			additional_fingureprint: context.additional_fingureprint.clone()
 		}
 	};
-	let t: EmptyJSON = json_request_gateway(SERVICE_NAME, &format!("http://{}/v1/send-sms-code", USER_MANAGER), submit_json).await?;
+	let _tmp: EmptyJSON = json_request_gateway(SERVICE_NAME, &format!("http://{}/v1/send-sms-code", USER_MANAGER), submit_json).await?;
 	Ok(true)
 }
 
