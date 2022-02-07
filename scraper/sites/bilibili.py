@@ -12,12 +12,12 @@ async def bilidata(aid: str) -> Tuple[str, str, Data]:
     r = await request_api(api)
     data = r.get('data')
     if data is None:
-        return 'biliapierr', r['message'], Data()
+        return 'biliapierr', f"bilimsg: {r['message']}", Data()
 
     ptime = get_post_time(data['pubdate'])
     uid = data['owner']['mid']
     author = f'bilibili-author:{uid}'
-    return 'ok', 'ok', Data(
+    return 'ok', f"bilimsg: {r['message']}", Data(
         title=data['title'],
         udid=f'av{aid}',
         desc=data['desc'],
