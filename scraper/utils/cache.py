@@ -23,7 +23,6 @@ redis_client = redis.Redis(
 )
 
 CACHE_FORMAT = 'scraper_cache_{key}'
-CONFIG_FORMAT = 'scraper_config_{key}'
 
 
 def get_cache(key: str) -> Any:
@@ -34,5 +33,6 @@ def get_cache(key: str) -> Any:
 def set_cache(key: str, cache: Any, ex: Optional[timedelta] = None) -> None:
     redis_client.set(CACHE_FORMAT.format(key=key), pickle.dumps(cache), ex)
 
-set_cache('proxies',config.get('proxies'))
-set_cache('twiapi_auth',config.get('twiapi_auth'))
+
+set_cache('proxies', config.get('proxies'))
+set_cache('twiapi_auth', config.get('twiapi_auth'))

@@ -12,3 +12,9 @@ async def match_bilibili(text: str) -> bool:
         # bv号
         return True
     return False
+
+
+async def match_twitter(text: str) -> bool:
+    if re.match(r'.*(https:\/\/)?(www\.|mobile\.)?twitter\.com\/[\w]+\/status\/[\d]+', text):
+        return True
+    return False
