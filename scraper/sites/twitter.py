@@ -5,6 +5,7 @@ from typing import Tuple
 
 from model import Data
 from pytz import timezone
+from utils import with_cache
 from utils.cache import get_cache, set_cache
 from utils.network import request_abroad_api
 
@@ -23,11 +24,8 @@ async def get_token() -> str:
     return token
 
 
-async def twidata(tid: str) -> Tuple[str, str, Data]:
-    udid = f'twi{tid}'
-    cached = get_cache(udid)
-    if cached:
-        return cached
+@with_cache(site='twitter')
+async def twidata(tid: str, udid: str) -> Tuple[str, str, Data]:
     api = f'https://api.twitter.com/1.1/statuses/show.json?id={tid}&tweet_mode=extended&include_entities=true'
     header = {
         'authorization': get_cache('twiapi_auth'),
@@ -38,15 +36,13 @@ async def twidata(tid: str) -> Tuple[str, str, Data]:
     uid = resp['user']['id_str']
     author = f'twitter-author:{uid}'
     raw_media = resp['entities']['media']
-    ret = ('ok', 'ok', Data(
+    return 'ok', 'ok', Data(
         udid=udid,
         desc=resp['full_text'],
         media=[m['media_url_https'] for m in raw_media],
         ptime=get_ptime(created_at),
         author=author
-    ))
-    set_cache(udid, ret)
-    return ret
+    )
 
 
 async def get_tid(text: str) -> str:

@@ -34,5 +34,9 @@ def set_cache(key: str, cache: Any, ex: Optional[timedelta] = None) -> None:
     redis_client.set(CACHE_FORMAT.format(key=key), pickle.dumps(cache), ex)
 
 
+def del_cache(key: str) -> None:
+    redis_client.delete(CACHE_FORMAT.format(key=key))
+
+
 set_cache('proxies', config.get('proxies'))
 set_cache('twiapi_auth', config.get('twiapi_auth'))

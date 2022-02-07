@@ -2,17 +2,13 @@ import re
 from typing import Tuple
 
 from model import Data
-from utils import get_post_time, get_redirect_url
-from utils.cache import get_cache, set_cache
+from utils import get_post_time, get_redirect_url, with_cache
 from utils.network import request_api
 
 
-async def bilidata(aid: str) -> Tuple[str, str, Data]:
+@with_cache(site='bilibili', limit=0.2)
+async def bilidata(aid: str, udid: str) -> Tuple[str, str, Data]:
     '''根据aid(BV号)获取视频相关数据'''
-    udid = f'av{aid}'
-    cached = get_cache(udid)
-    if cached:
-        return cached
     api = f'https://api.bilibili.com/x/web-interface/view?aid={aid}'
     r = await request_api(api)
     data = r.get('data')
@@ -22,15 +18,13 @@ async def bilidata(aid: str) -> Tuple[str, str, Data]:
     ptime = get_post_time(data['pubdate'])
     uid = data['owner']['mid']
     author = f'bilibili-author:{uid}'
-    ret = ('ok', f"bilimsg: {r['message']}", Data(
+    return 'ok', f"bilimsg: {r['message']}", Data(
         title=data['title'],
         udid=udid,
         desc=data['desc'],
         ptime=ptime,
         author=author
-    ))
-    set_cache(udid, ret)
-    return ret
+    )
 
 
 async def get_aid(text: str) -> str:

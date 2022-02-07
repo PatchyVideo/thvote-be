@@ -1,7 +1,9 @@
 import time
+from functools import wraps
 
 import httpx
 
+from .cache import get_cache, set_cache
 from .match import *
 
 
@@ -17,3 +19,27 @@ async def get_redirect_url(url: str) -> str:
     async with httpx.AsyncClient() as client:
         resp = await client.head(url)
     return resp.headers['Location']
+
+
+def with_cache(site: str, limit: float = None):
+    def wrapper(func):
+        @wraps(func)
+        async def inner(wid: str, udid: str = None):
+            udid = f'{site}:{wid}'
+            cached = get_cache(udid)
+            if cached:
+                return cached
+            if limit:
+                last = get_cache(f'{site}_limit')
+                if last:
+                    wait = 0
+                    while wait < limit:
+                        time.sleep(0.01)
+                        wait = time.time() - last
+
+            ret = await func(wid, udid)
+            set_cache(f'{site}_limit', time.time())
+            set_cache(udid, ret)
+            return ret
+        return inner
+    return wrapper
