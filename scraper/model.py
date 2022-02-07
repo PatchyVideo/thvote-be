@@ -14,6 +14,7 @@ class Data(BaseModel):
     desc: str = None
     ptime: str = None
     author: str = None
+    repost: bool = None
 
 
 class RetBody(BaseModel):

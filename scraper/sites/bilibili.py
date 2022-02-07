@@ -18,12 +18,17 @@ async def bilidata(aid: str, udid: str) -> Tuple[str, str, Data]:
     ptime = get_post_time(data['pubdate'])
     uid = data['owner']['mid']
     author = f'bilibili-author:{uid}'
+    if data['copyright'] == 1:
+        repost = False
+    else:
+        repost = True
     return 'ok', f"bilimsg: {r['message']}", Data(
         title=data['title'],
         udid=udid,
         desc=data['desc'],
         ptime=ptime,
-        author=author
+        author=author,
+        repost=repost
     )
 
 
