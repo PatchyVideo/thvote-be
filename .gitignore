@@ -6,3 +6,4 @@ email/
 sms/
 keys/
 data/
+__pycache__/
