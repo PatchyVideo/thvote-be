@@ -18,3 +18,9 @@ async def match_twitter(text: str) -> bool:
     if re.match(r'.*(https:\/\/)?(www\.|mobile\.)?twitter\.com\/[\w]+\/status\/[\d]+', text):
         return True
     return False
+
+
+async def match_pixiv(text: str) -> bool:
+    if re.match(r'.*(?:pixiv|pixivdl).net/(?:(?:(?:artworks|i)/)|member_illust.php?.*id=)([0-9]+)', text):
+        return True
+    return False

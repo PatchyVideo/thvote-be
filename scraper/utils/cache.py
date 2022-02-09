@@ -40,3 +40,4 @@ def del_cache(key: str) -> None:
 
 set_cache('proxies', config.get('proxies'))
 set_cache('twiapi_auth', config.get('twiapi_auth'))
+set_cache('pixiv_token', config.get('pixiv_token'))

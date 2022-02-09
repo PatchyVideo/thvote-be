@@ -2,8 +2,9 @@ from typing import Tuple
 
 from model import Data
 from sites.bilibili import bilidata, get_aid
+from sites.pixiv import get_pid, pixdata
 from sites.twitter import get_tid, twidata
-from utils.match import match_bilibili, match_twitter
+from utils.match import match_bilibili, match_pixiv, match_twitter
 
 
 async def get_data(url: str) -> Tuple[str, str, Data]:
@@ -16,6 +17,10 @@ async def get_data(url: str) -> Tuple[str, str, Data]:
             tid = await get_tid(url)
             if tid is not None:
                 return await twidata(tid)
+        if await match_pixiv(url):
+            pid = await get_pid(url)
+            if pid is not None:
+                return await pixdata(pid)
         return 'err', 'no content found', Data()
     except Exception as e:
         return 'except', repr(e), Data()
