@@ -40,9 +40,14 @@ def del_cache(key: str) -> None:
     redis_client.delete(CACHE_FORMAT.format(key=key))
 
 
-set_cache('proxies', config.get('proxies'))
-set_cache('twiapi_auth', config.get('twiapi_auth'))
-set_cache('pixiv_token', config.get('pixiv_token'))
+cache_config = [
+    'proxies',
+    'twiapi_auth',
+    'pixiv_token',
+    'pixiv_bad_tags'
+]
+for conf in cache_config:
+    set_cache(conf, config.get(conf))
 
 
 def with_cache(site: str, limit: float = None):

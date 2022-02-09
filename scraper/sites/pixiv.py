@@ -24,13 +24,28 @@ async def pixdata(pid: str, udid: str) -> Tuple[str, str, Data]:
         elif data['meta_pages']:
             media = [x['image_urls']['original'] for x in data['meta_pages']]
 
-        touhou = None
+        is_touhou = False
+        bad = ''
+        bad_tags = get_cache('pixiv_bad_tags')
         for tag in data['tags']:
-            if '東方' in tag['name']:
-                touhou = 'ok'
+            if not is_touhou:
+                if '東方' in tag['name']:
+                    is_touhou = True
+            if bad_tags and not bad:
+                if tag['name'] in bad_tags:
+                    bad = tag['name']
+            if is_touhou and bad:
                 break
+        status = ''
+        msg = ''
+        if not is_touhou:
+            status = 'warning'
+            msg += 'may not touhou. '
+        if bad:
+            status = 'warning'
+            msg += f'bad tag: {bad}'
 
-        return 'ok', touhou or 'may not touhou', Data(
+        return status or 'ok', msg or 'ok', Data(
             title=data['title'],
             udid=udid,
             media=media,
