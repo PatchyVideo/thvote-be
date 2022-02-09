@@ -4,6 +4,13 @@ import ujson
 from .cache import get_cache
 
 
+async def get_redirect_url(url: str) -> str:
+    '''获取重定向后的链接'''
+    async with httpx.AsyncClient() as client:
+        resp = await client.head(url)
+    return resp.headers['Location']
+
+
 async def request_website(url: str, **kwargs) -> httpx.Response:
     '''向网站发送请求，不走代理'''
     async with httpx.AsyncClient() as client:

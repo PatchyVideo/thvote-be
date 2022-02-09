@@ -1,26 +1,29 @@
 import re
 
+from .biliutils import bvid_converter
+from .network import get_redirect_url
 
-async def match_bilibili(text: str) -> bool:
-    if re.match(r'.*((?:http|https)://(?:(?:bili(?:22|23|33|2233).cn)|(?:b23.tv))/[A-Za-z0-9]+)', text, re.DOTALL):
+
+async def match_bilibili(text: str) -> str:
+    if match_b23url := re.match(r'.*((?:http|https)://(?:(?:bili(?:22|23|33|2233).cn)|(?:b23.tv))/[A-Za-z0-9]+)', text, re.DOTALL):
         # 短链接
-        return True
-    if re.match(r'.*(?<![A-Za-z0-9])(?:AV|av)(\d+)', text, re.DOTALL):
+        b23url = match_b23url.group(1)
+        text = await get_redirect_url(b23url)
+    if match_aid := re.match(r'.*(?<![A-Za-z0-9])(?:AV|av)(\d+)', text, re.DOTALL):
         # av号
-        return True
-    if re.match(r'.*(?<![A-Za-z0-9])(BV[A-Za-z0-9]{10})(?![A-Za-z0-9])', text, re.DOTALL):
+        return match_aid.group(1)
+    if match_bvid := re.match(r'.*(?<![A-Za-z0-9])(BV[A-Za-z0-9]{10})(?![A-Za-z0-9])', text, re.DOTALL):
         # bv号
-        return True
-    return False
+        return await bvid_converter(bvid=match_bvid.group(1))
 
 
-async def match_twitter(text: str) -> bool:
-    if re.match(r'.*(https:\/\/)?(www\.|mobile\.)?twitter\.com\/[\w]+\/status\/[\d]+', text):
-        return True
-    return False
+async def match_twitter(text: str) -> str:
+    if match_mobile := re.match(r'.*//mobile\.(.+)', text):
+        return match_mobile.group(1)
+    elif match_normal := re.match(r'.*twitter\.com/[^/]+/status/(\d+)', text):
+        return match_normal.group(1)
 
 
-async def match_pixiv(text: str) -> bool:
-    if re.match(r'.*(?:pixiv|pixivdl).net/(?:(?:(?:artworks|i)/)|member_illust.php?.*id=)([0-9]+)', text):
-        return True
-    return False
+async def match_pixiv(text: str) -> str:
+    if match_mobile := re.match(r'.*(?:pixiv|pixivdl).net/(?:(?:(?:artworks|i)/)|member_illust.php?.*id=)([0-9]+)', text):
+        return match_mobile.group(1)

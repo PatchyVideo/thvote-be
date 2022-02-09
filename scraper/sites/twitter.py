@@ -1,12 +1,10 @@
 import datetime as dt
-import re
 from datetime import timedelta
 from typing import Tuple
 
 from model import Data
 from pytz import timezone
-from utils import with_cache
-from utils.cache import get_cache, set_cache
+from utils.cache import get_cache, set_cache, with_cache
 from utils.network import request_abroad_api
 
 
@@ -43,15 +41,6 @@ async def twidata(tid: str, udid: str) -> Tuple[str, str, Data]:
         ptime=get_ptime(created_at),
         author=author
     )
-
-
-async def get_tid(text: str) -> str:
-    tid = None
-    if match_mobile := re.match(r'.*//mobile\.(.+)', text):
-        tid = match_mobile.group(1)
-    elif match_normal := re.match(r'.*twitter\.com/[^/]+/status/(\d+)', text):
-        tid = match_normal.group(1)
-    return tid
 
 
 def get_ptime(created_at: str) -> str:

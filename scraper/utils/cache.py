@@ -1,5 +1,7 @@
 import pickle
+import time
 from datetime import timedelta
+from functools import wraps
 from os import path
 from typing import Any, Optional
 
@@ -41,3 +43,30 @@ def del_cache(key: str) -> None:
 set_cache('proxies', config.get('proxies'))
 set_cache('twiapi_auth', config.get('twiapi_auth'))
 set_cache('pixiv_token', config.get('pixiv_token'))
+
+
+def with_cache(site: str, limit: float = None):
+    def wrapper(func):
+        @wraps(func)
+        async def inner(wid: str, udid: str = None):
+            udid = f'{site}:{wid}'
+            cached = get_cache(udid)
+            if cached:
+                return cached
+            if limit:
+                last = get_cache(f'{site}_limit')
+                if last:
+                    wait = 0
+                    while wait < limit:
+                        time.sleep(0.01)
+                        wait = time.time() - last
+
+            ret = await func(wid, udid)
+            set_cache(f'{site}_limit', time.time())
+            if ret == 'ok':
+                set_cache(udid, ret)
+            else:
+                set_cache(udid, ret, timedelta(minutes=5))
+            return ret
+        return inner
+    return wrapper

@@ -1,13 +1,11 @@
 import datetime as dt
-import re
 from typing import Tuple
 
 import ujson
 from model import Data
 from pixivpy_async import AppPixivAPI, PixivClient
 from pytz import timezone
-from utils import with_cache
-from utils.cache import get_cache
+from utils.cache import get_cache, with_cache
 
 
 @with_cache(site='pixiv', limit=0.2)
@@ -40,13 +38,6 @@ async def pixdata(pid: str, udid: str) -> Tuple[str, str, Data]:
             ptime=get_ptime(data['create_date']),
             author=author,
         )
-
-
-async def get_pid(text: str) -> str:
-    pid = None
-    if match_mobile := re.match(r'.*(?:pixiv|pixivdl).net/(?:(?:(?:artworks|i)/)|member_illust.php?.*id=)([0-9]+)', text):
-        pid = match_mobile.group(1)
-    return pid
 
 
 def get_ptime(create_date: str) -> str:

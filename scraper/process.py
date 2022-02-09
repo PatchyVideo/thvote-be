@@ -1,26 +1,24 @@
 from typing import Tuple
 
 from model import Data
-from sites.bilibili import bilidata, get_aid
-from sites.pixiv import get_pid, pixdata
-from sites.twitter import get_tid, twidata
+from sites.bilibili import bilidata
+from sites.pixiv import pixdata
+from sites.twitter import twidata
 from utils.match import match_bilibili, match_pixiv, match_twitter
+
+
+matcher_list = [
+    (match_bilibili, bilidata),
+    (match_pixiv, pixdata),
+    (match_twitter, twidata),
+]
 
 
 async def get_data(url: str) -> Tuple[str, str, Data]:
     try:
-        if await match_bilibili(url):
-            aid = await get_aid(url)
-            if aid is not None:
-                return await bilidata(aid)
-        if await match_twitter(url):
-            tid = await get_tid(url)
-            if tid is not None:
-                return await twidata(tid)
-        if await match_pixiv(url):
-            pid = await get_pid(url)
-            if pid is not None:
-                return await pixdata(pid)
+        for matcher, praser in matcher_list:
+            if wid := await matcher(url):
+                return await praser(wid)
         return 'err', 'no content found', Data()
     except Exception as e:
         return 'except', repr(e), Data()
