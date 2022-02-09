@@ -18,12 +18,15 @@ async def match_bilibili(text: str) -> str:
 
 
 async def match_twitter(text: str) -> str:
-    if match_mobile := re.match(r'.*//mobile\.(.+)', text):
-        return match_mobile.group(1)
-    elif match_normal := re.match(r'.*twitter\.com/[^/]+/status/(\d+)', text):
+    if match_normal := re.match(r'.*twitter\.com/[^/]+/status/(\d+)', text):
         return match_normal.group(1)
 
 
 async def match_pixiv(text: str) -> str:
     if match_mobile := re.match(r'.*(?:pixiv|pixivdl).net/(?:(?:(?:artworks|i)/)|member_illust.php?.*id=)([0-9]+)', text):
+        return match_mobile.group(1)
+
+
+async def match_youtube(text: str) -> str:
+    if match_mobile := re.match(r'.*(?:youtu.be/|youtube.com/watch\?v=)([-\w]+)', text):
         return match_mobile.group(1)

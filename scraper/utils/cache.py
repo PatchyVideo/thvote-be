@@ -44,7 +44,8 @@ cache_config = [
     'proxies',
     'twiapi_auth',
     'pixiv_token',
-    'pixiv_bad_tags'
+    'pixiv_bad_tags',
+    'ytbapi_key',
 ]
 for conf in cache_config:
     set_cache(conf, config.get(conf))
