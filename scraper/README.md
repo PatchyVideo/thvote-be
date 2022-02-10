@@ -13,10 +13,8 @@ blank: WIP
 - [x] Pixiv
 - [x] Niconico (image)
 - [x] Niconico (video)
-- [ ] Weibo
+- [ ] Weibo (mobile)
 - [ ] THBWiki
-- [ ] PatchyVideo
-- [ ] Tieba
 
 # usage
 
