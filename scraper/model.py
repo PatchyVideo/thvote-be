@@ -10,6 +10,7 @@ class ReqBody(BaseModel):
 class Data(BaseModel):
     title: str = None
     udid: str = None
+    cover: str = None
     media: List[str] = None
     desc: str = None
     ptime: str = None
