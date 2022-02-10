@@ -19,7 +19,7 @@ async def nicoseigadata(imid: str, udid: str) -> Tuple[str, str, Data]:
         title = title = page.xpath('//div[@class="lg_ttl_illust"]/h1')[0].text
         uid = page.xpath(
             '//*[@id="header"]/div[2]/ul[1]/li[2]/a')[0].attrib['href'][13:]
-        media = [page.xpath('//a[@id="link_thumbnail_main"]/img')[0].attrib['src']]
+        cover = page.xpath('//a[@id="link_thumbnail_main"]/img')[0].attrib['src']
         desc = page.xpath('//table[@id="illust_area"]/tr[2]/td/div[3]')[0].text
         post_time = page.xpath(
             '//table[@id="illust_area"]/tr[2]/td/div[4]')[0].text[:-3]
@@ -30,7 +30,8 @@ async def nicoseigadata(imid: str, udid: str) -> Tuple[str, str, Data]:
     return 'ok', 'ok', Data(
         title=title,
         udid=udid,
-        media=media,
+        cover=cover,
+        media=[cover],
         desc=desc,
         ptime=get_ptime(post_time),
         author=author,

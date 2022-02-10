@@ -37,6 +37,7 @@ async def twidata(tid: str, udid: str) -> Tuple[str, str, Data]:
     return 'ok', 'ok', Data(
         udid=udid,
         desc=resp['full_text'],
+        cover=raw_media[0]['media_url_https'],
         media=[m['media_url_https'] for m in raw_media],
         ptime=get_ptime(created_at),
         author=author
