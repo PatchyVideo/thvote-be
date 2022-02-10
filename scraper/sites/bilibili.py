@@ -24,6 +24,7 @@ async def bilidata(aid: str, udid: str) -> Tuple[str, str, Data]:
     return 'ok', f"bilimsg: {r['message']}", Data(
         title=data['title'],
         udid=udid,
+        cover=data['pic'],
         desc=data['desc'],
         ptime=get_ptime(data['pubdate']),
         author=author,

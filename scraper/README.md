@@ -42,6 +42,7 @@ blank: WIP
 |-|-|-|-|
 |`title`|`String`|`bad apple原版高清1440*1080`|
 |`udid`|`String`|`bilibili:24722`|unique identifier of artwork. format: `site:artwork_id`|
+|`cover`|`String`|`http://i2.hdslb.com/bfs/archive/2d494d24828b82410dcb8c3f320027de86e9141a.jpg`|
 |`media`|`Array`|`["https://pbs.twimg.com/media/FLNEMPTVUAEAu7K.jpg"]`|list of content url(s)
 |`desc`|`String`|`sina 测试一下黑屏压制。已修复。`|
 |`ptime`|`String`|`2010-09-07 21:30:02 +0800`|unified as `CST` (`Asia/Shanghai`)|

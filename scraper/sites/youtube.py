@@ -20,15 +20,28 @@ async def ytbdata(vid: str, udid: str) -> Tuple[str, str, Data]:
     if len(r['items']) == 0:
         return 'ytbapierr', 'no item', Data()
     snippet = r['items'][0]['snippet']
+    pic = get_pic_url(snippet['thumbnails'])
     channelId = snippet['channelId']
     author = f'youtube-author:{channelId}'
     return 'ok', 'ok', Data(
         title=snippet['title'],
         udid=udid,
+        cover=pic,
         desc=snippet['description'],
         ptime=get_ptime(snippet['publishedAt']),
         author=author
     )
+
+
+def get_pic_url(thumbnails: dict) -> str:
+    pic_url = None
+    res_list = ['maxres', 'standard', 'high', 'medium', 'default']
+    for res in res_list:
+        pic = thumbnails.get(res)
+        if pic is not None:
+            pic_url = pic['url']
+            break
+    return pic_url
 
 
 def get_ptime(publishedAt: str) -> str:
