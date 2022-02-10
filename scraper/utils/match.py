@@ -23,20 +23,25 @@ async def match_twitter(text: str) -> str:
 
 
 async def match_pixiv(text: str) -> str:
-    if match_mobile := re.match(r'.*(?:pixiv|pixivdl).net/(?:(?:(?:artworks|i)/)|member_illust.php?.*id=)([0-9]+)', text):
-        return match_mobile.group(1)
+    if match_normal := re.match(r'.*(?:pixiv|pixivdl).net/(?:(?:(?:artworks|i)/)|member_illust.php?.*id=)([0-9]+)', text):
+        return match_normal.group(1)
 
 
 async def match_youtube(text: str) -> str:
-    if match_mobile := re.match(r'.*(?:youtu.be/|youtube.com/watch\?v=)([-\w]+)', text):
-        return match_mobile.group(1)
+    if match_normal := re.match(r'.*(?:youtu.be/|youtube.com/watch\?v=)([-\w]+)', text):
+        return match_normal.group(1)
 
 
 async def match_acfun(text: str) -> str:
-    if match_mobile := re.match(r'.*acfun.cn/v/(?:ac|\?ac=)(\d+)', text):
-        return match_mobile.group(1)
+    if match_normal := re.match(r'.*acfun.cn/v/(?:ac|\?ac=)(\d+)', text):
+        return match_normal.group(1)
 
 
-async def match_seiga(text: str) -> str:
-    if match_mobile := re.match(r'.*seiga/im(\d+)', text):
-        return match_mobile.group(1)
+async def match_nicoseiga(text: str) -> str:
+    if match_normal := re.match(r'.*seiga/im(\d+)', text):
+        return match_normal.group(1)
+
+
+async def match_nicovideo(text: str) -> str:
+    if match_normal := re.match(r'.*nicovideo.jp/watch/sm(\d+)', text):
+        return match_normal.group(1)

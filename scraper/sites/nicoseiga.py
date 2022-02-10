@@ -9,7 +9,7 @@ from utils.network import request_abroad_website
 
 
 @with_cache(site='nicoseiga', limit=0.2)
-async def seigadata(imid: str, udid: str) -> Tuple[str, str, Data]:
+async def nicoseigadata(imid: str, udid: str) -> Tuple[str, str, Data]:
     '''根据im号获取视频相关数据'''
     imurl = f'https://seiga.nicovideo.jp/seiga/im{imid}'
     r = await request_abroad_website(imurl)
@@ -25,7 +25,7 @@ async def seigadata(imid: str, udid: str) -> Tuple[str, str, Data]:
             '//table[@id="illust_area"]/tr[2]/td/div[4]')[0].text[:-3]
         author = f'nicoseiga-author:{uid}'
     except Exception as e:
-        return 'seigaparsererr', repr(e), Data()
+        return 'nicoseigaparsererr', repr(e), Data()
 
     return 'ok', 'ok', Data(
         title=title,
