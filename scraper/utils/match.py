@@ -30,3 +30,8 @@ async def match_pixiv(text: str) -> str:
 async def match_youtube(text: str) -> str:
     if match_mobile := re.match(r'.*(?:youtu.be/|youtube.com/watch\?v=)([-\w]+)', text):
         return match_mobile.group(1)
+
+
+async def match_acfun(text: str) -> str:
+    if match_mobile := re.match(r'.*acfun.cn/v/(?:ac|\?ac=)(\d+)', text):
+        return match_mobile.group(1)

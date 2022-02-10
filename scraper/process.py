@@ -1,18 +1,20 @@
 from typing import Tuple
 
 from model import Data
+from sites.acfun import acdata
 from sites.bilibili import bilidata
 from sites.pixiv import pixdata
 from sites.twitter import twidata
 from sites.youtube import ytbdata
-from utils.match import (match_bilibili, match_pixiv, match_twitter,
-                         match_youtube)
+from utils.match import (match_acfun, match_bilibili, match_pixiv,
+                         match_twitter, match_youtube)
 
 matcher_list = [
     (match_bilibili, bilidata),
     (match_pixiv, pixdata),
     (match_twitter, twidata),
     (match_youtube, ytbdata),
+    (match_acfun, acdata)
 ]
 
 
