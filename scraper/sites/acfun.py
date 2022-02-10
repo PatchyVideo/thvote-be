@@ -11,7 +11,7 @@ header = {
 
 @with_cache(site='acfun', limit=0.2)
 async def acdata(acid: str, udid: str) -> Tuple[str, str, Data]:
-    '''根据aid(av号)获取视频相关数据'''
+    '''根据acid(ac号)获取视频相关数据'''
     acurl = f'https://www.acfun.cn/v/ac{acid}'
     r = await request_website(acurl, headers=header)
     html = r.content.decode('utf-8')

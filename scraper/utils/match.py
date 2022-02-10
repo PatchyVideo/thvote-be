@@ -35,3 +35,8 @@ async def match_youtube(text: str) -> str:
 async def match_acfun(text: str) -> str:
     if match_mobile := re.match(r'.*acfun.cn/v/(?:ac|\?ac=)(\d+)', text):
         return match_mobile.group(1)
+
+
+async def match_seiga(text: str) -> str:
+    if match_mobile := re.match(r'.*seiga/im(\d+)', text):
+        return match_mobile.group(1)
