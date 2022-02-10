@@ -1,6 +1,6 @@
-# scraper for touhou-vote
+# scraper for THVote-be
 
-## support websites
+# supported websites
 
 check: done
 
@@ -20,13 +20,14 @@ blank: WIP
 
 # install & run
 
-```
+```cmd
 git clone
+cd scraper
 poetry install
 poetry run uvicorn main:app
 ```
 
-## configure
+# configure
 
 edit `config.toml`
 
@@ -47,7 +48,7 @@ pixiv_bad_tags = [
 # when artwork have the tag(s) above, status will set to warning (but data will provide normally)
 
 ytbapi_key = 'ytbapi_key'
-# API key for Google's YouTube Data API v3
+# API key for google's YouTube Data API v3
 # see:
 # https://console.developers.google.com/apis/api/youtube.googleapis.com
 
@@ -59,7 +60,7 @@ ytbapi_key = 'ytbapi_key'
 
 [proxies]
     "all://" = 'http://127.0.0.1:10809'    # socks5/socks4/http (https not supported)
-    # pixiv: to use a socks proxy on windows, see:
+    # pixiv: to use a socks proxy on Windows, see:
     # https://github.com/aio-libs/aiohttp/issues/4536#issuecomment-579740877
     # or install package: aiohttp_socks
 ```
