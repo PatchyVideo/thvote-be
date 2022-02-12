@@ -136,7 +136,7 @@ pub struct QuerySubmitRequest {
 	pub vote_id: String
 }
 
-#[derive( Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct VotingStatus {
 	/// 人物是否完成
 	pub characters: bool,
@@ -146,4 +146,6 @@ pub struct VotingStatus {
 	pub cps: bool,
 	/// 问卷是否提交
 	pub papers: bool,
+	/// 同人作品是否提交
+	pub dojin: bool,
 }

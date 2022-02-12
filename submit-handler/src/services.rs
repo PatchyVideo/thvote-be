@@ -214,11 +214,16 @@ impl SubmitServiceV1 {
 			let mut cursor = self.paper_coll.aggregate(stages.clone(), None).await.map_err(|e| ServiceError::new(SERVICE_NAME, format!("{:?}", e)))?;
 			cursor.try_next().await.map_err(|e| ServiceError::new(SERVICE_NAME, format!("{:?}", e)))?.is_some()
 		};
+		let dojin = {
+			let mut cursor = self.dojin_coll.aggregate(stages.clone(), None).await.map_err(|e| ServiceError::new(SERVICE_NAME, format!("{:?}", e)))?;
+			cursor.try_next().await.map_err(|e| ServiceError::new(SERVICE_NAME, format!("{:?}", e)))?.is_some()
+		};
 		Ok(VotingStatus {
 			characters: ch,
 			musics: music,
 			cps: cp,
-			papers: paper
+			papers: paper,
+			dojin: dojin
 		})
 	}
 }

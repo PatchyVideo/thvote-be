@@ -289,6 +289,8 @@ pub struct VotingStatus {
 	pub cps: bool,
 	/// 问卷是否提交
 	pub papers: bool,
+	/// 同人作品是否提交
+	pub dojin: bool,
 }
 
 pub fn generate_submit_metadata(vote_id: &str, context: &Context) -> SubmitMetadata {
