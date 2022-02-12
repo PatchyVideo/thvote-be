@@ -4,7 +4,7 @@ use mongodb::{Collection, Database};
 use pvrustlib::ServiceError;
 use redlock::RedLock;
 
-use crate::models::{CPSubmitRest, CharacterSubmitRest, MusicSubmitRest, PaperSubmitRest, WorkSubmitRest, VotingStatus, SubmitMetadata};
+use crate::models::{CPSubmitRest, CharacterSubmitRest, MusicSubmitRest, PaperSubmitRest, WorkSubmitRest, VotingStatus, SubmitMetadata, DojinSubmitRest};
 use crate::{models, validator};
 use crate::common::{SERVICE_NAME};
 
@@ -15,6 +15,7 @@ pub struct SubmitServiceV1 {
 	pub cp_coll: Collection<CPSubmitRest>,
 	pub work_coll: Collection<WorkSubmitRest>,
 	pub paper_coll: Collection<PaperSubmitRest>,
+	pub dojin_coll: Collection<DojinSubmitRest>,
 	pub validator: validator::SubmitValidatorV1,
 	pub lock: RedLock,
 	pub redis_client: redis::Client
@@ -28,6 +29,7 @@ impl SubmitServiceV1 {
 			cp_coll: db.collection::<CPSubmitRest>("raw_cp"),
 			work_coll: db.collection::<WorkSubmitRest>("raw_work"),
 			paper_coll: db.collection::<PaperSubmitRest>("raw_paper"),
+			dojin_coll: db.collection::<DojinSubmitRest>("raw_dojin"),
 			validator: validator::SubmitValidatorV1::new().await,
 			lock: lock,
 			redis_client: redis
@@ -153,6 +155,37 @@ impl SubmitServiceV1 {
 			None => {
 				Ok(PaperSubmitRest {
 					papers_json: "{}".into(),
+					meta: SubmitMetadata::new()
+				})
+			},
+		}
+	}
+
+	pub async fn submit_dojin(&self, verified_data: models::DojinSubmitRest) -> Result<ObjectId, ServiceError> {
+		match self.dojin_coll.insert_one(verified_data.clone(), None).await {
+			Ok(insert_result) => return Ok(insert_result.inserted_id.as_object_id().unwrap().clone()),
+			Err(e) => { return Err(ServiceError::new(SERVICE_NAME, format!("{:?}", e))); },
+		}
+	}
+
+	pub async fn get_submit_dojin(&self, vote_id: String) -> Result<DojinSubmitRest, ServiceError> {
+		let stages = vec![
+			doc!{"$match": {"meta.vote_id": vote_id}},
+			doc!{"$sort": {"meta.created_at": -1}}
+		];
+		let mut cursor = self.dojin_coll.aggregate(stages, None).await.map_err(|e| ServiceError::new(SERVICE_NAME, format!("{:?}", e)))?;
+		let submit = cursor.try_next().await.map_err(|e| ServiceError::new(SERVICE_NAME, format!("{:?}", e)))?;
+		match submit {
+			Some(submit) => {
+				let mut submit: DojinSubmitRest = bson::from_document(submit).map_err(|e| ServiceError::new(SERVICE_NAME, format!("{:?}", e)))?;
+				submit.meta.additional_fingreprint = None;
+				submit.meta.user_ip = "".to_string();
+				submit.meta.vote_id = "".to_string();
+				Ok(submit)
+			},
+			None => {
+				Ok(DojinSubmitRest {
+					dojins: vec![],
 					meta: SubmitMetadata::new()
 				})
 			},

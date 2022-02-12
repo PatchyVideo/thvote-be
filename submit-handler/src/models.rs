@@ -62,6 +62,20 @@ pub struct PaperSubmitRest {
 	pub meta: SubmitMetadata
 }
 
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct DojinSubmitRest {
+	pub dojins: Vec<DojinSubmit>,
+	pub meta: SubmitMetadata
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct DojinSubmit {
+	pub dojin_type: String,
+	pub url: String,
+	pub title: String,
+	pub author: String,
+	pub reason: String,
+}
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct CharacterSubmit {
@@ -133,65 +147,3 @@ pub struct VotingStatus {
 	/// 问卷是否提交
 	pub papers: bool,
 }
-
-// 人物部分
-// {
-//   meta: {
-//	   vote_id: 2021,
-//     attempt: 1
-//   },
-//   charcaters:[{
-//     name: '',
-//     reason: '', // 理由
-//     rank: // [0, 6], 0本命
-//   }, ...]
-// }
-// CP部分
-// {
-//   meta: {
-//	   vote_id: 2021,
-//     attempt: 1
-//   },
-//   cps:[{
-//     char1: '',
-//     char2: '',
-//     active: '', // 主动方
-//     reason: '',
-//     rank: // [0, 6], 0本命
-//   }, ...]
-// }
-// 音乐部分：
-// {
-//   meta: {
-//	   vote_id: 2021,
-//     attempt: 1
-//   },
-//   musics:[{
-//     name: '',
-//     reason: '',
-//     rank: // [0, 6], 0本命
-//   }, ...]
-// }
-// 作品部分：
-// {
-//   meta: {
-//	   vote_id: 2021,
-//     attempt: 1
-//   },
-//   works:[{
-//     name: '',
-//     reason: '',
-//     rank: // [0, 6], 0本命
-//   }, ...]
-// }
-// 问卷部分
-// {
-//   meta: {
-//	   vote_id: 2021,
-//     attempt: 1
-//   },
-//   items:[{
-//     item: '' //问卷项代码
-//     answer: '' //回答内容
-//   }, ...]
-// }

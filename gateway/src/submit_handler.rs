@@ -78,6 +78,47 @@ pub struct PaperSubmitRest {
 	pub meta: SubmitMetadata
 }
 
+#[derive(juniper::GraphQLEnum, Debug, Clone, Serialize, Deserialize)]
+pub enum DojinType {
+	Music,
+	Video,
+	Drawing,
+	Software,
+	Article,
+	Craft,
+	Other
+}
+
+
+#[derive(Clone, Serialize, Deserialize)]
+pub struct DojinSubmitRest {
+	pub dojins: Vec<DojinSubmit>,
+	pub meta: SubmitMetadata
+}
+
+#[derive(juniper::GraphQLInputObject, Debug, Clone, Serialize, Deserialize)]
+pub struct DojinSubmit {
+	pub dojin_type: DojinType,
+	pub url: String,
+	pub title: String,
+	pub author: String,
+	pub reason: String,
+}
+
+#[derive(juniper::GraphQLObject, Debug, Clone, Serialize, Deserialize)]
+pub struct DojinSubmitQuery {
+	pub dojin_type: DojinType,
+	pub url: String,
+	pub title: String,
+	pub author: String,
+	pub reason: String,
+}
+
+#[derive(juniper::GraphQLObject, Clone, Serialize, Deserialize)]
+pub struct DojinSubmitRestQuery {
+	pub dojins: Vec<DojinSubmitQuery>,
+}
+
 #[derive(juniper::GraphQLObject, Clone, Serialize, Deserialize)]
 pub struct PaperSubmitRestQuery {
 	pub papers_json: String,
@@ -230,6 +271,13 @@ pub struct QuerySubmitRest {
 	pub vote_id: String,
 }
 
+#[derive(juniper::GraphQLInputObject, Clone)]
+#[graphql(description="Dojin submit")]
+pub struct DojinSubmitGQL {
+	pub vote_token: String,
+	pub dojins: Vec<DojinSubmit>
+}
+
 #[derive(juniper::GraphQLObject, Clone, Debug, Serialize, Deserialize)]
 #[graphql(description="投票进度")]
 pub struct VotingStatus {
@@ -324,6 +372,23 @@ pub async fn submitPaperVote_impl(context: &Context, content: &PaperSubmitGQL) -
 	}
 }
 
+pub async fn submitDojinVote_impl(context: &Context, content: &DojinSubmitGQL) -> FieldResult<bool> {
+	let mut options = VerificationOptions::default();
+	options.allowed_audiences = Some(HashSet::from_strings(&["vote"]));
+	let result = context.public_key.public_key().verify_token::<VoteTokenClaim>(&content.vote_token, Some(options));
+	if let Ok(claim) = result {
+		let submit_json = DojinSubmitRest {
+			meta: generate_submit_metadata(&claim.custom.vote_id.ok_or(ServiceError::new_jwt_error(SERVICE_NAME, None))?, context),
+			dojins: content.dojins.clone()
+		};
+		let post_result: EmptyJSON = json_request_gateway(SERVICE_NAME, &format!("http://{}/v1/dojin/", SUBMIT_HANDLER), submit_json).await?;
+		Ok(true)
+	} else {
+		return Err(ServiceError::new_jwt_error(SERVICE_NAME, None).into_field_error());
+	}
+}
+
+
 pub async fn getSubmitCharacterVote_impl(context: &Context, vote_token: String) -> FieldResult<CharacterSubmitRestQuery> {
 	let mut options = VerificationOptions::default();
 	options.allowed_audiences = Some(HashSet::from_strings(&["vote"]));
@@ -383,6 +448,22 @@ pub async fn getSubmitPaperVote_impl(context: &Context, vote_token: String) -> F
 		return Err(ServiceError::new_jwt_error(SERVICE_NAME, None).into_field_error());
 	}
 }
+
+pub async fn getSubmitDojinVote_impl(context: &Context, vote_token: String) -> FieldResult<DojinSubmitRestQuery> {
+	let mut options = VerificationOptions::default();
+	options.allowed_audiences = Some(HashSet::from_strings(&["vote"]));
+	let result = context.public_key.public_key().verify_token::<VoteTokenClaim>(&vote_token, Some(options));
+	if let Ok(claim) = result {
+		let query_json = QuerySubmitRest {
+			vote_id: claim.custom.vote_id.ok_or(ServiceError::new_jwt_error(SERVICE_NAME, None))?
+		};
+		let post_result: DojinSubmitRestQuery = json_request_gateway(SERVICE_NAME, &format!("http://{}/v1/get-dojin/", SUBMIT_HANDLER), query_json).await?;
+		Ok(post_result)
+	} else {
+		return Err(ServiceError::new_jwt_error(SERVICE_NAME, None).into_field_error());
+	}
+}
+
 
 pub async fn getVotingStatus_impl(context: &Context, vote_token: String) -> FieldResult<VotingStatus> {
 	let mut options = VerificationOptions::default();

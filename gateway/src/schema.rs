@@ -8,6 +8,8 @@ use crate::submit_handler::CPSubmitGQL;
 use crate::submit_handler::CPSubmitRestQuery;
 use crate::submit_handler::CharacterSubmitGQL;
 use crate::submit_handler::CharacterSubmitRestQuery;
+use crate::submit_handler::DojinSubmitGQL;
+use crate::submit_handler::DojinSubmitRestQuery;
 use crate::submit_handler::MusicSubmitGQL;
 use crate::submit_handler::MusicSubmitRestQuery;
 use crate::submit_handler::PaperSubmitGQL;
@@ -97,6 +99,11 @@ impl Query {
 	/// Get Paper
 	async fn getSubmitPaperVote(context: &Context, vote_token: String) -> FieldResult<PaperSubmitRestQuery> {
 		submit_handler::getSubmitPaperVote_impl(context, vote_token).await
+	}
+
+	/// Get Dojin
+	async fn getSubmitDojinVote(context: &Context, vote_token: String) -> FieldResult<DojinSubmitRestQuery> {
+		submit_handler::getSubmitDojinVote_impl(context, vote_token).await
 	}
 }
 
@@ -188,6 +195,11 @@ impl Mutation {
 	/// paper
 	async fn submitPaperVote(context: &Context, content: PaperSubmitGQL) -> FieldResult<bool> {
 		submit_handler::submitPaperVote_impl(context, &content).await
+	}
+
+	/// dojins
+	async fn submitDojin(context: &Context, content: DojinSubmitGQL) -> FieldResult<bool> {
+		submit_handler::submitDojinVote_impl(context, &content).await
 	}
 }
 

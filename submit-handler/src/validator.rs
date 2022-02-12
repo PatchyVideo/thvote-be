@@ -122,4 +122,21 @@ impl SubmitValidatorV1 {
 	pub async fn validate_paper(&self, data: models::PaperSubmitRest, coll: &Collection<PaperSubmitRest>) -> Result<models::PaperSubmitRest, ServiceError> {
 		Ok(data)
 	}
+	pub async fn validate_dojin(&self, mut data: models::DojinSubmitRest, coll: &Collection<DojinSubmitRest>) -> Result<models::DojinSubmitRest, ServiceError> {
+		for item in &data.dojins {
+			if item.author.len() > 128 {
+				return Err(ServiceError::new_human_readable(SERVICE_NAME, "INVALID_CONTENT", format!("作者名过长")));
+			}
+			if item.reason.len() > 1024 {
+				return Err(ServiceError::new_human_readable(SERVICE_NAME, "INVALID_CONTENT", format!("理由过长")));
+			}
+			if item.title.len() > 256 {
+				return Err(ServiceError::new_human_readable(SERVICE_NAME, "INVALID_CONTENT", format!("作品名过长")));
+			}
+			if item.url.len() > 2048 {
+				return Err(ServiceError::new_human_readable(SERVICE_NAME, "INVALID_CONTENT", format!("URL过长")));
+			}
+		}
+		Ok(data)
+	}
 }
