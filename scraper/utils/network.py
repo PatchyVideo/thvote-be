@@ -15,7 +15,11 @@ async def request_website(url: str, **kwargs) -> httpx.Response:
     '''向网站发送请求，不走代理'''
     async with httpx.AsyncClient() as client:
         if not kwargs.get('data') and not kwargs.get('json'):
-            resp = await client.get(url=url, **kwargs, timeout=30)
+            if kwargs.get('my_metod') == 'post':
+                del kwargs['my_metod']
+                resp = await client.post(url=url, **kwargs, timeout=30)
+            else:
+                resp = await client.get(url=url, **kwargs, timeout=30)
         else:
             resp = await client.post(url=url, **kwargs, timeout=30)
         return resp
@@ -45,7 +49,11 @@ async def request_api(url: str, **kwargs) -> dict:
     '''向API发送请求，不走代理'''
     async with httpx.AsyncClient() as client:
         if not kwargs.get('data') and not kwargs.get('json'):
-            resp = await client.get(url=url, **kwargs, timeout=30)
+            if kwargs.get('my_metod') == 'post':
+                del kwargs['my_metod']
+                resp = await client.post(url=url, **kwargs, timeout=30)
+            else:
+                resp = await client.get(url=url, **kwargs, timeout=30)
         else:
             resp = await client.post(url=url, **kwargs, timeout=30)
         return ujson.decode(resp.content)
