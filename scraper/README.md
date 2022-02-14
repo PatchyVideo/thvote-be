@@ -6,15 +6,16 @@ check: done
 
 blank: WIP
 
-- [x] Bilibili
-- [x] Acfun
-- [x] YouTube
+- [x] Bilibili (video)
+- [x] Acfun (video)
+- [x] YouTube (video)
 - [x] Twitter
-- [x] Pixiv
+- [x] Pixiv (image)
 - [x] Niconico (image)
 - [x] Niconico (video)
+- [x] THBWiki
 - [ ] Weibo (mobile)
-- [ ] THBWiki
+- [ ] PatchyVideo
 
 # usage
 

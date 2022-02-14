@@ -1,21 +1,22 @@
-from urllib.parse import unquote
-from typing import Tuple
-
+import re
 import time
+from typing import Tuple
+from urllib.parse import unquote
+
 import ujson
 from model import Data
 from utils.cache import with_cache
-from utils.network import request_abroad_website, get_redirect_url
-from utils.match import match_thbwiki
+from utils.network import request_abroad_api, request_abroad_website
 
 api = 'https://thwiki.cc/api.php'
 
+
 @with_cache(site='thbwiki')
 async def thbdata(entry: str, udid: str) -> Tuple[str, str, Data]:
-    if 'http' in entry:
-        entry = await match_thbwiki(await get_redirect_url(entry))
     if '%' in entry:
         entry = unquote(entry)
+    if 'http' in entry:
+        entry = await prase_short(entry)
     resp = await request_abroad_website(api, data={
         'action': 'ask',
         'format': 'json',
@@ -33,7 +34,7 @@ async def thbdata(entry: str, udid: str) -> Tuple[str, str, Data]:
     pic = d['封面图片']
     cover = None
     if pic:
-        cover =  d['封面图片'][0]['fullurl']
+        cover = d['封面图片'][0]['fullurl']
 
     ptime = None
     release_date = d['发售日期']
@@ -42,9 +43,11 @@ async def thbdata(entry: str, udid: str) -> Tuple[str, str, Data]:
         ptime = time.strftime(
             "%Y-%m-%d %H:%M:%S %z", time.localtime(int(ctime)))
     author = None
+    author_name = None
     producer = d['制作方']
     if producer:
-        author = f"thbwiki-author:{d['制作方'][0]['fulltext']}"
+        author_name = producer[0]['fulltext']
+        author = f'thbwiki-author:{author_name}'
 
     return 'ok', 'ok', Data(
         title=title,
@@ -52,5 +55,26 @@ async def thbdata(entry: str, udid: str) -> Tuple[str, str, Data]:
         cover=cover,
         ptime=ptime,
         author=author,
-        author_name=d['制作方'][0]['fulltext'],
+        author_name=author_name,
     )
+
+
+async def prase_short(link: str) -> str:
+    short = re.match(r'.*thwiki.cc/-/(\w+)', link).group(1)
+    pageid = short2pageid(short)
+    resp = await request_abroad_api(api, data={
+        'action': 'parse',
+        'format': 'json',
+        'pageid': pageid,
+        'formatversion': 2,
+        'prop': 'displaytitle',
+    })
+    return resp['parse']['title']
+
+
+def short2pageid(short: str) -> int:
+    code = '0123456789abcdefghijklmnopqrstuvwxyz'
+    result = 0
+    for b, n in enumerate(short):
+        result += code.find(n) * 32 ** (len(short)-b-1)
+    return result
