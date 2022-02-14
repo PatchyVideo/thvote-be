@@ -29,7 +29,8 @@ async def ytbdata(vid: str, udid: str) -> Tuple[str, str, Data]:
         cover=pic,
         desc=snippet['description'],
         ptime=get_ptime(snippet['publishedAt']),
-        author=author
+        author=author,
+        author_name=snippet['channelTitle'],
     )
 
 

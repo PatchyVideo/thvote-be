@@ -18,7 +18,8 @@ async def acdata(acid: str, udid: str) -> Tuple[str, str, Data]:
     try:
         page = etree.HTML(html)
         title = page.xpath('//h1[@class="title"]/span')[0].text
-        uid = page.xpath('//a[@class="up-name"]')[0].attrib['href'][3:]
+        up_name = page.xpath('//a[@class="up-name"]')[0]
+        uid = up_name.attrib['href'][3:]
         desc = page.xpath('//div[@class="description-container"]')[0].text
         publish_time = page.xpath('//div[@class="publish-time"]')[0].text[4:]
         author = f'acfun-author:{uid}'
@@ -31,4 +32,5 @@ async def acdata(acid: str, udid: str) -> Tuple[str, str, Data]:
         desc=desc,
         ptime=f'{publish_time} 00:00:00 +0800',
         author=author,
+        author_name=up_name.text,
     )

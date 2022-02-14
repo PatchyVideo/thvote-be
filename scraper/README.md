@@ -45,6 +45,7 @@ blank: WIP
 |`desc`|`String`|`sina 测试一下黑屏压制。已修复。`|
 |`ptime`|`String`|`2010-09-07 21:30:02 +0800`|unified as `CST` (`Asia/Shanghai`)|
 |`author`|`String`|`bilibili-author:45086`|unique identifier of author. format: `site-author:user_id`|
+|`author_name`|`String`|`僕の可愛い殿下`|
 |`repost`|`Boolean`|`true`|
 
 # install & run

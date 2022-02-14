@@ -28,6 +28,7 @@ async def bilidata(aid: str, udid: str) -> Tuple[str, str, Data]:
         desc=data['desc'],
         ptime=get_ptime(data['pubdate']),
         author=author,
+        author_name=data['owner']['name'],
         repost=repost
     )
 

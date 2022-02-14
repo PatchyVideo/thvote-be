@@ -15,6 +15,7 @@ class Data(BaseModel):
     desc: str = None
     ptime: str = None
     author: str = None
+    author_name: str = None
     repost: bool = None
 
 
