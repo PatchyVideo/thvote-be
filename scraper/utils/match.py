@@ -52,3 +52,8 @@ async def match_thbwiki(text: str) -> str:
         return match_short.group()
     if match_normal := re.match(r'.*thwiki.cc/(.+)', text):
         return match_normal.group(1)
+
+
+async def match_patchyvideo(text: str) -> str:
+    if match_normal := re.match(r'.*(?:thvideo.tv|patchyvideo.com)/#/video\?id=(\w+)', text):
+        return match_normal.group(1)
