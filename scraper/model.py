@@ -14,8 +14,8 @@ class Data(BaseModel):
     media: List[str] = None
     desc: str = None
     ptime: str = None
-    author: str = None
-    author_name: str = None
+    author: List[str] = None
+    author_name: List[str] = None
     repost: bool = None
 
 

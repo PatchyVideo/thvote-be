@@ -37,8 +37,8 @@ async def nicoseigadata(imid: str, udid: str) -> Tuple[str, str, Data]:
         media=[cover],
         desc=desc,
         ptime=get_ptime(post_time),
-        author=author,
-        author_name=author_name,
+        author=[author],
+        author_name=[author_name],
     )
 
 

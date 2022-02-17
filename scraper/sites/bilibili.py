@@ -15,8 +15,14 @@ async def bilidata(aid: str, udid: str) -> Tuple[str, str, Data]:
     if data is None:
         return 'biliapierr', f"bilimsg: {r['message']}", Data()
 
-    uid = data['owner']['mid']
-    author = f'bilibili-author:{uid}'
+    staffs = data.get('staff')
+    if staffs:
+        author = [f'bilibili-author:{x["mid"]}' for x in staffs]
+        author_name = [x["name"] for x in staffs]
+    else:
+        uid = data['owner']['mid']
+        author = [f'bilibili-author:{uid}']
+        author_name = [data['owner']['name']]
     if data['copyright'] == 1:
         repost = False
     else:
@@ -28,7 +34,7 @@ async def bilidata(aid: str, udid: str) -> Tuple[str, str, Data]:
         desc=data['desc'],
         ptime=get_ptime(data['pubdate']),
         author=author,
-        author_name=data['owner']['name'],
+        author_name=author_name,
         repost=repost
     )
 

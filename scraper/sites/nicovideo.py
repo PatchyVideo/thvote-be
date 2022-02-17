@@ -33,8 +33,8 @@ async def nicovideodata(smid: str, udid: str) -> Tuple[str, str, Data]:
         cover=data['thumbnailUrl'][0],
         desc=data['description'],
         ptime=get_ptime(uploadDate),
-        author=author,
-        author_name=data['author']['name'],
+        author=[author],
+        author_name=[data['author']['name']],
     )
 
 

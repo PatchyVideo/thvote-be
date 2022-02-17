@@ -52,8 +52,8 @@ async def pixdata(pid: str, udid: str) -> Tuple[str, str, Data]:
             media=media,
             desc=data['caption'],
             ptime=get_ptime(data['create_date']),
-            author=author,
-            author_name=data['user']['name'],
+            author=[author],
+            author_name=[data['user']['name']],
         )
 
 
