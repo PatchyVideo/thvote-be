@@ -14,8 +14,13 @@ blank: WIP
 - [x] Niconico (image)
 - [x] Niconico (video)
 - [x] THBWiki
+- [x] PatchyVideo
+- [ ] Acfun (article)
 - [ ] Weibo (mobile)
-- [ ] PatchyVideo
+- [ ] Pixiv (manga)
+- [ ] Pixiv (novel)
+
+not support: weibo (PC)
 
 # usage
 
