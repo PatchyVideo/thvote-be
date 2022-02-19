@@ -78,7 +78,7 @@ async def get_cover(file_entry: str) -> str:
     resp = await request_abroad_api(api, data={
         'action': 'parse',
         'format': 'json',
-        'text': '{{filepath:FILE_ENTRY | 320}}'.replace('FILE_ENTRY', file_entry),
+        'text': '{{filepath:FILE_ENTRY | 378}}'.replace('FILE_ENTRY', file_entry),
         'formatversion': 2,
         'prop': 'text',
         'disablelimitreport': '1',
