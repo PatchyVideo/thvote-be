@@ -103,6 +103,7 @@ pub struct DojinSubmit {
 	pub title: String,
 	pub author: String,
 	pub reason: String,
+	pub image_url: Option<String>
 }
 
 #[derive(juniper::GraphQLObject, Debug, Clone, Serialize, Deserialize)]
@@ -112,6 +113,7 @@ pub struct DojinSubmitQuery {
 	pub title: String,
 	pub author: String,
 	pub reason: String,
+	pub image_url: Option<String>
 }
 
 #[derive(juniper::GraphQLObject, Clone, Serialize, Deserialize)]

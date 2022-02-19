@@ -75,6 +75,7 @@ pub struct DojinSubmit {
 	pub title: String,
 	pub author: String,
 	pub reason: String,
+	pub image_url: Option<String>
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
