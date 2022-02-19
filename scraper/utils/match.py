@@ -50,10 +50,12 @@ async def match_nicovideo(text: str) -> str:
 async def match_thbwiki(text: str) -> str:
     if match_short := re.match(r'.*thwiki.cc/-/\w+', text):
         return match_short.group()
-    if match_normal := re.match(r'.*thwiki.cc/(.+)', text):
+    if match_normal := re.match(r'.*thwiki.cc/(\w+)', text):
         return match_normal.group(1)
 
 
 async def match_patchyvideo(text: str) -> str:
     if match_normal := re.match(r'.*(?:thvideo.tv|patchyvideo.com)/#/video\?id=(\w+)', text):
         return match_normal.group(1)
+    if match_dev := re.match(r'.*platinum.vercel.app/video/(\w+)', text):
+        return match_dev.group(1)

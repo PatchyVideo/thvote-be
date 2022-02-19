@@ -9,3 +9,4 @@ data/
 __pycache__/
 scraper/config.toml
 scraper/logs/
+scraper/test/
