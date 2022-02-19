@@ -6,8 +6,7 @@ from urllib.parse import unquote
 import ujson
 from model import Data
 from utils.cache import with_cache
-from utils.network import (get_redirect_url, request_abroad_api,
-                           request_abroad_website)
+from utils.network import request_abroad_api, request_abroad_website
 
 api = 'https://thwiki.cc/api.php'
 
@@ -36,9 +35,8 @@ async def thbdata(entry: str, udid: str) -> Tuple[str, str, Data]:
     cover = None
     if pic:
         if d['封面图片'][0]['exists'] == '1':
-            cover_entry = d['封面图片'][0]['fulltext']
-            cover_redirect_url = f'https://thwiki.cc/Special:filepath/{cover_entry}?width=320'
-            cover = await get_redirect_url(cover_redirect_url)
+            cover_entry = d['封面图片'][0]['fulltext'].replace('文件:', '')
+            cover = await get_cover(cover_entry)
 
     ptime = None
     release_date = d['发售日期']
@@ -74,6 +72,22 @@ async def prase_short(link: str) -> str:
         'prop': 'displaytitle',
     })
     return resp['parse']['title']
+
+
+async def get_cover(file_entry: str) -> str:
+    resp = await request_abroad_api(api, data={
+        'action': 'parse',
+        'format': 'json',
+        'text': '{{filepath:FILE_ENTRY | 320}}'.replace('FILE_ENTRY', file_entry),
+        'formatversion': 2,
+        'prop': 'text',
+        'disablelimitreport': '1',
+        'disableeditsection': '1',
+        'disablestylededuplication': '1',
+        'disabletoc': '1'
+    })
+    if match_url := re.match(r'.*"(http.+?)"', resp['parse']['text']):
+        return match_url.group(1)
 
 
 def short2pageid(short: str) -> int:
