@@ -48,7 +48,7 @@ async def pixdata(pid: str, udid: str) -> Tuple[str, str, Data]:
         return status or 'ok', msg or 'ok', Data(
             title=data['title'],
             udid=udid,
-            cover=data['image_urls']['large'],
+            cover=data['image_urls']['square_medium'].replace('pximg.net','pixiv.re'),
             media=media,
             desc=data['caption'],
             ptime=get_ptime(data['create_date']),

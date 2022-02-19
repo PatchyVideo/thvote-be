@@ -28,7 +28,7 @@ matcher_list = [
 
 
 async def get_data(url: str) -> Tuple[str, str, Data]:
-    # try:
+    try:
         for matcher, praser in matcher_list:
             if wid := await matcher(url):
                 ret = await praser(wid)
@@ -36,5 +36,5 @@ async def get_data(url: str) -> Tuple[str, str, Data]:
                     ret = await get_data(ret[1])
                 return ret
         return 'err', 'no content found', Data()
-    # except Exception as e:
-    #     return 'except', repr(e), Data()
+    except Exception as e:
+        return 'except', repr(e), Data()
