@@ -35,9 +35,10 @@ async def thbdata(entry: str, udid: str) -> Tuple[str, str, Data]:
     pic = d['封面图片']
     cover = None
     if pic:
-        cover_entry = d['封面图片'][0]['fulltext']
-        cover_redirect_url = f'https://thwiki.cc/Special:filepath/{cover_entry}?width=320'
-        cover = await get_redirect_url(cover_redirect_url)
+        if d['封面图片'][0]['exists'] == '1':
+            cover_entry = d['封面图片'][0]['fulltext']
+            cover_redirect_url = f'https://thwiki.cc/Special:filepath/{cover_entry}?width=320'
+            cover = await get_redirect_url(cover_redirect_url)
 
     ptime = None
     release_date = d['发售日期']
