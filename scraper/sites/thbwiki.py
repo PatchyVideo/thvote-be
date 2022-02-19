@@ -6,7 +6,8 @@ from urllib.parse import unquote
 import ujson
 from model import Data
 from utils.cache import with_cache
-from utils.network import request_abroad_api, request_abroad_website
+from utils.network import (get_redirect_url, request_abroad_api,
+                           request_abroad_website)
 
 api = 'https://thwiki.cc/api.php'
 
@@ -34,7 +35,9 @@ async def thbdata(entry: str, udid: str) -> Tuple[str, str, Data]:
     pic = d['封面图片']
     cover = None
     if pic:
-        cover = d['封面图片'][0]['fullurl']
+        cover_entry = d['封面图片'][0]['fulltext']
+        cover_redirect_url = f'https://thwiki.cc/Special:filepath/{cover_entry}?width=320'
+        cover = await get_redirect_url(cover_redirect_url)
 
     ptime = None
     release_date = d['发售日期']

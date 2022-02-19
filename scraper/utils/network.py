@@ -8,7 +8,7 @@ async def get_redirect_url(url: str) -> str:
     '''获取重定向后的链接'''
     async with httpx.AsyncClient() as client:
         resp = await client.head(url)
-    return resp.headers['Location']
+    return resp.headers.get('Location')
 
 
 async def request_website(url: str, **kwargs) -> httpx.Response:
