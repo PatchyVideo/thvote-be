@@ -31,6 +31,6 @@ async def acdata(acid: str, udid: str) -> Tuple[str, str, Data]:
         udid=udid,
         desc=desc,
         ptime=f'{publish_time} 00:00:00 +0800',
-        author=author,
-        author_name=up_name.text,
+        author=[author],
+        author_name=[up_name.text],
     )

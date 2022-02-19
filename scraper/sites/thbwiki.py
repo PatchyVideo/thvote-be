@@ -54,8 +54,8 @@ async def thbdata(entry: str, udid: str) -> Tuple[str, str, Data]:
         udid=udid,
         cover=cover,
         ptime=ptime,
-        author=author,
-        author_name=author_name,
+        author=[author],
+        author_name=[author_name],
     )
 
 
