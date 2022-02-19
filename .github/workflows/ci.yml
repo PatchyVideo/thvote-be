@@ -1,0 +1,51 @@
+name: Docker CI
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Cache registry
+        uses: actions/cache@v2
+        with:
+          key: v0-rust-registry-${{ runner.os }}-${{ hashFiles('**/Cargo.toml') }}
+          path: |
+            /tmp/.cargo/registry
+            /tmp/.cargo/git
+      - name: Cache target
+        uses: actions/cache@v2
+        with:
+          key: v0-rust-target-${{ runner.os }}-${{ hashFiles('**/Cargo.toml') }}
+          restore-keys: |
+            v0-rust-target-${{ runner.os }}-
+          path: |
+            **/target
+      - name: Pull muslrust
+        run: docker pull clux/muslrust
+
+      - name: Build THVote-BE
+        run: docker run
+          -v /tmp/.cargo/registry:/root/.cargo/registry
+          -v /tmp/.cargo/git:/root/.cargo/git
+          -v $GITHUB_WORKSPACE:/volume
+          --rm -t clux/muslrust
+          cargo build --target x86_64-unknown-linux-musl --release
+
+      - name: Build Docker images
+        run: |
+          chmod +x build-all.sh
+          ./build-all.sh
+      - name: Upload image to artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: images
+          path: '*.tar'
+
+      - name: Fix cache
+        run: sudo chmod -R 777 /tmp/.cargo
