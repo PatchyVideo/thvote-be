@@ -1,0 +1,17 @@
+name: CI thvote-user-manager
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/ci-user-manager.yml
+      - .github/workflows/ci-rust.yml
+      - user-manager/**
+      - pvrustlib/**
+
+jobs:
+  call-build:
+    uses: ./.github/workflows/ci-rust.yml
+    with:
+      folder: user-manager
+      name: thvote-user-manager

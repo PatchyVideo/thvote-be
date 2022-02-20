@@ -1,0 +1,17 @@
+name: CI thvote-gateway
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/ci-gateway.yml
+      - .github/workflows/ci-rust.yml
+      - gateway/**
+      - pvrustlib/**
+
+jobs:
+  call-build:
+    uses: ./.github/workflows/ci-rust.yml
+    with:
+      folder: gateway
+      name: thvote-gateway

@@ -1,0 +1,26 @@
+name: CI thvote-scraper
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/ci-scraper.yml
+      - scraper/**
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Build Docker image
+        run: |
+          docker build --no-cache -t thvote-scraper ./scraper
+          docker save -o thvote-scraper.tar thvote-scraper
+
+      - name: Upload image to artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: thvote-scraper.tar
+          path: thvote-scraper.tar
