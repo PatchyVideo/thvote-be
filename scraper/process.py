@@ -1,5 +1,7 @@
 from typing import Tuple
 
+from loguru import logger
+
 from model import Data
 from sites.acfun import acdata
 from sites.bilibili import bilidata
@@ -37,4 +39,5 @@ async def get_data(url: str) -> Tuple[str, str, Data]:
                 return ret
         return 'err', 'no content found', Data()
     except Exception as e:
+        logger.exception(e)
         return 'except', repr(e), Data()

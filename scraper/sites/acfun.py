@@ -1,9 +1,12 @@
 from typing import Tuple
 
+import ujson
 from lxml import etree
 from model import Data
 from utils.cache import with_cache
 from utils.network import request_website
+
+from .bilibili import get_ptime
 
 header = {
     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/97.0.4692.99 Safari/537.36'}
@@ -17,20 +20,26 @@ async def acdata(acid: str, udid: str) -> Tuple[str, str, Data]:
     html = r.content.decode('utf-8')
     try:
         page = etree.HTML(html)
-        title = page.xpath('//h1[@class="title"]/span')[0].text
-        up_name = page.xpath('//a[@class="up-name"]')[0]
-        uid = up_name.attrib['href'][3:]
-        desc = page.xpath('//div[@class="description-container"]')[0].text
-        publish_time = page.xpath('//div[@class="publish-time"]')[0].text[4:]
+        script = page.xpath('/html/body/script[7]')[0].text
+        json = script[script.find('{'):script.find(';')]
+        data = ujson.loads(json)
+        ctime = data['currentVideoInfo']['uploadTime']
+        uid = data['user']['id']
         author = f'acfun-author:{uid}'
+        if data.get('originalDeclare') == 1:
+            repost = False
+        else:
+            repost = True
     except Exception as e:
         return 'parsererr', f'acparsererr: {repr(e)}', Data()
 
     return 'ok', 'ok', Data(
-        title=title,
+        title=data['title'],
         udid=udid,
-        desc=desc,
-        ptime=f'{publish_time} 00:00:00 +0800',
+        cover=data['coverImgInfo']['thumbnailImageCdnUrl'],
+        desc=data['description'],
+        ptime=get_ptime(ctime//1000),
         author=[author],
-        author_name=[up_name.text],
+        author_name=[data['user']['name']],
+        repost=repost
     )
