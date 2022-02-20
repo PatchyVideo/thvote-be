@@ -24,7 +24,7 @@ async def acdata(acid: str, udid: str) -> Tuple[str, str, Data]:
         publish_time = page.xpath('//div[@class="publish-time"]')[0].text[4:]
         author = f'acfun-author:{uid}'
     except Exception as e:
-        return 'acparsererr', repr(e), Data()
+        return 'parsererr', f'acparsererr: {repr(e)}', Data()
 
     return 'ok', 'ok', Data(
         title=title,

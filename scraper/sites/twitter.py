@@ -30,6 +30,8 @@ async def twidata(tid: str, udid: str) -> Tuple[str, str, Data]:
         'x-guest-token': await get_token()
     }
     resp = await request_abroad_api(api, headers=header)
+    if errors := resp.get('errors'):
+        return 'apierr', f'twiapierr: {errors}'
     created_at = resp['created_at']
     uid = resp['user']['id_str']
     author = f'twitter-author:{uid}'

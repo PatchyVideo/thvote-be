@@ -26,7 +26,7 @@ async def thbdata(entry: str, udid: str) -> Tuple[str, str, Data]:
     r = ujson.loads(resp.content.decode('utf-8'))
     result = r['query']['results']
     if not result:
-        return 'thbapierr', f'no result for "{entry}"', Data()
+        return 'apierr', f'thbapierr: no result for {entry}', Data()
     data = list(result.values())[0]
     d = data['printouts']
     title = data['fulltext']

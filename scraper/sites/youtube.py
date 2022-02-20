@@ -10,16 +10,16 @@ from utils.network import request_abroad_api
 @with_cache(site='youtube')
 async def ytbdata(vid: str, udid: str) -> Tuple[str, str, Data]:
     api = 'https://www.googleapis.com/youtube/v3/videos'
-    r = await request_abroad_api(
+    resp = await request_abroad_api(
         api,
         params={
             'key': get_cache('ytbapi_key'),
             'id': vid,
             'part': 'snippet'}
     )
-    if len(r['items']) == 0:
-        return 'ytbapierr', 'no item', Data()
-    snippet = r['items'][0]['snippet']
+    if len(resp['items']) == 0:
+        return 'apierr', 'ytbapierr: no such content', Data()
+    snippet = resp['items'][0]['snippet']
     pic = get_pic_url(snippet['thumbnails'])
     channelId = snippet['channelId']
     author = f'youtube-author:{channelId}'

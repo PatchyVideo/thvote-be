@@ -36,15 +36,29 @@ not support: weibo (PC)
 
 |field|type|example|remark|
 |-|-|-|-|
-|`status`|`String`|`ok`|
+|`status`|`String`|`ok`|possible values: `ok`, `err`, `warning`, `apierr`, `parsererr`, `except`
 |`msg`|`String`|`ok`|
 |`data`|`Object`| none |refer below
+
+meaning of the `status`:
+
+`ok`: ok
+
+`err`: something wrong with the request given (e.g. cannot match any content from the url).
+
+`warning`: ok but something need to pay attention to (in `msg`, e.g. not touhou content).
+
+`parsererr`: match the content but something wrong while try to parse the infomation (e.g. reach rate limit, elements change cause by website upgrade).
+
+`apierr`: match the content but something wrong while try to get information from the third party api (e.g. reach rate limit, the api itself get wrong).
+
+`except`: program itself throw an exception. detail in `msg`.
 
 ### `data` object
 
 |field|type|example|remark|
 |-|-|-|-|
-|`title`|`String`|`bad apple原版高清1440*1080`|
+|`title`|`String`|`bad apple原版高清1440*1080`|title of the content. |
 |`udid`|`String`|`bilibili:24722`|unique identifier of content. format: `site:artwork_id`. |
 |`cover`|`String`|`http://i2.hdslb.com/bfs/archive/2d494d24828b82410dcb8c3f320027de86e9141a.jpg`| no cover: `acfun`. |
 |`media`|`Array[String]`|`["https://pbs.twimg.com/media/FLNEMPTVUAEAu7K.jpg"]`|list of content url(s). |
@@ -52,6 +66,7 @@ not support: weibo (PC)
 |`ptime`|`String`|`2010-09-07 21:30:02 +0800`|unified as `CST` (`Asia/Shanghai`). |
 |`author`|`Array[String]`|`bilibili-author:45086`|list of unique identifier of author. format: `site-author:user_id`. |
 |`author_name`|`Array[String]`|`僕の可愛い殿下`|list of display name of author. |
+|`tname`|`String`|`VIDEO`|type of the content. possible values: `MUSIC`, `VIDEO`, `DRAWING`, `SOFTWARE`, `ARTICLE`, `CRAFT`, `OTHER`. |
 |`repost`|`Boolean`|`true`|if the content is repost or not. |
 
 # install & run

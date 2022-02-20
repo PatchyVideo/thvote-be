@@ -25,7 +25,7 @@ async def nicovideodata(smid: str, udid: str) -> Tuple[str, str, Data]:
         uid = re.match(r'.*user/(\d+)', user_url).group(1)
         author = f'nicovideo-author:{uid}'
     except Exception as e:
-        return 'nicovideoparsererr', repr(e), Data()
+        return 'parsererr', f'nicoparsererr: {repr(e)}', Data()
 
     return 'ok', 'ok', Data(
         title=data['name'],

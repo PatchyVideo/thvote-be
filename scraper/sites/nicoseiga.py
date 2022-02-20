@@ -28,7 +28,7 @@ async def nicoseigadata(imid: str, udid: str) -> Tuple[str, str, Data]:
         author_name = page.xpath(
             '//table[@id="illust_area"]/tr[2]/td/div[2]/strong')[0].text
     except Exception as e:
-        return 'nicoseigaparsererr', repr(e), Data()
+        return 'parsererr', f'seigaparsererr: {repr(e)}', Data()
 
     return 'ok', 'ok', Data(
         title=title,

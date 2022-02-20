@@ -15,7 +15,7 @@ async def pixdata(pid: str, udid: str) -> Tuple[str, str, Data]:
         await aapi.login(refresh_token=get_cache('pixiv_token'))
         info = await aapi.illust_detail(pid)
         if info.get('error'):
-            return 'pixapierr', ujson.encode(info['error']), Data()
+            return 'apierr', f'pixapierr: {ujson.encode(info["error"])}', Data()
         data = info['illust']
         uid = data['user']['id']
         author = f'pixiv-author:{uid}'

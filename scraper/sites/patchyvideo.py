@@ -38,7 +38,7 @@ async def patchydata(vid: str, udid: str) -> Tuple[str, str, Data]:
     })
     data = resp.get('data')
     if not data:
-        return 'patchyapierr', 'patchyapierr', Data()
+        return 'apierr', f'patchyapierr: {resp.get("errors")}', Data()
 
     item = data['getVideo']['item']
     tags = data['getVideo']['tagByCategory']

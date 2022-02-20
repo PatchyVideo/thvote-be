@@ -13,7 +13,7 @@ async def bilidata(aid: str, udid: str) -> Tuple[str, str, Data]:
     r = await request_api(api)
     data = r.get('data')
     if data is None:
-        return 'biliapierr', f"bilimsg: {r['message']}", Data()
+        return 'apierr', f'biliapimsg: {r["message"]}', Data()
 
     staffs = data.get('staff')
     if staffs:
@@ -27,7 +27,7 @@ async def bilidata(aid: str, udid: str) -> Tuple[str, str, Data]:
         repost = False
     else:
         repost = True
-    return 'ok', f"bilimsg: {r['message']}", Data(
+    return 'ok', f"biliapimsg: {r['message']}", Data(
         title=data['title'],
         udid=udid,
         cover=data['pic'],
