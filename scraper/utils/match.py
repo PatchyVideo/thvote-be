@@ -69,3 +69,8 @@ async def match_patchyvideo(text: str) -> str:
         return match_normal.group(1)
     if match_dev := re.match(r'.*platinum.vercel.app/video/(\w+)', text):
         return match_dev.group(1)
+
+
+async def match_mweibo(text: str) -> str:
+    if match_mobile := re.match(r'.*m.weibo.cn/detail/(\d+)', text):
+        return match_mobile.group(1)

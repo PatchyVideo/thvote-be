@@ -17,7 +17,7 @@ blank: WIP
 - [x] Niconico (video)
 - [x] THBWiki
 - [x] PatchyVideo
-- [ ] Weibo (mobile)
+- [x] Weibo (mobile)
 
 not support: weibo (PC)
 
