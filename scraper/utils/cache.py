@@ -68,6 +68,8 @@ def with_cache(site: str, limit: float = None):
                         wait = time.time() - last
 
             ret = await func(wid, udid)
+            if ret[2].cover:
+                ret[2].cover=ret[2].cover.replace('http:','https:')
             set_cache(f'{site}_limit', time.time())
             if ret == 'ok':
                 set_cache(udid, ret)
