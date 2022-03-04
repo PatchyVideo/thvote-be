@@ -4,6 +4,7 @@ from loguru import logger
 
 from model import Data
 from sites.acfun import acdata
+from sites.acarticle import acadata
 from sites.bilibili import bilidata
 from sites.nicoseiga import nicoseigadata
 from sites.nicovideo import nicovideodata
@@ -12,7 +13,7 @@ from sites.pixiv import pixdata
 from sites.thbwiki import thbdata
 from sites.twitter import twidata
 from sites.youtube import ytbdata
-from utils.match import (match_acfun, match_bilibili, match_nicoseiga,
+from utils.match import (match_acarticle, match_acfun, match_bilibili, match_nicoseiga,
                          match_nicovideo, match_patchyvideo, match_pixiv,
                          match_thbwiki, match_twitter, match_youtube)
 
@@ -22,6 +23,7 @@ matcher_list = [
     (match_twitter, twidata),
     (match_youtube, ytbdata),
     (match_acfun, acdata),
+    (match_acarticle,acadata),
     (match_nicoseiga, nicoseigadata),
     (match_nicovideo, nicovideodata),
     (match_thbwiki, thbdata),

@@ -37,6 +37,11 @@ async def match_acfun(text: str) -> str:
         return match_normal.group(1)
 
 
+async def match_acarticle(text: str) -> str:
+    if match_normal := re.match(r'.*acfun.cn/a/(?:ac|\?ac=)(\d+)', text):
+        return match_normal.group(1)
+
+
 async def match_nicoseiga(text: str) -> str:
     if match_normal := re.match(r'.*seiga/im(\d+)', text):
         return match_normal.group(1)

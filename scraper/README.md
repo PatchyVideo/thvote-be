@@ -8,6 +8,7 @@ blank: WIP
 
 - [x] Bilibili (video)
 - [x] Acfun (video)
+- [x] Acfun (article)
 - [x] YouTube (video)
 - [x] Twitter
 - [x] Pixiv (image)
@@ -15,7 +16,6 @@ blank: WIP
 - [x] Niconico (video)
 - [x] THBWiki
 - [x] PatchyVideo
-- [ ] Acfun (article)
 - [ ] Weibo (mobile)
 - [ ] Pixiv (manga)
 - [ ] Pixiv (novel)
@@ -67,7 +67,7 @@ meaning of the `status`:
 |`author`|`Array[String]`|`bilibili-author:45086`|list of unique identifier of author. format: `site-author:user_id`. |
 |`author_name`|`Array[String]`|`僕の可愛い殿下`|list of display name of author. |
 |`tname`|`String`|`VIDEO`|type of the content. possible values: `MUSIC`, `VIDEO`, `DRAWING`, `SOFTWARE`, `ARTICLE`, `CRAFT`, `OTHER`. |
-|`repost`|`Boolean`|`true`|if the content is repost or not. |
+|`repost`|`Boolean`|`true`|if the content is repost or not. (only bilibili(video), acfun(video) and patchyvideo)|
 
 # install & run
 
