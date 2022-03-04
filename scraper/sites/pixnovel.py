@@ -9,29 +9,26 @@ from utils.cache import get_cache, with_cache
 from utils.parse import html_to_plain_text
 
 
-@with_cache(site='pixiv', limit=0.2)
-async def pixdata(pid: str, udid: str) -> Tuple[str, str, Data]:
+@with_cache(site='pixnovel', limit=0.2)
+async def pixndata(pid: str, udid: str) -> Tuple[str, str, Data]:
     async with PixivClient(proxy=get_cache('proxies')['all://']) as client:
         aapi = AppPixivAPI(client=client)
         await aapi.login(refresh_token=get_cache('pixiv_token'))
-        info = await aapi.illust_detail(pid)
+        info = await aapi.novel_detail(pid)
         if info.get('error'):
             return 'apierr', f'pixapierr: {ujson.encode(info["error"])}', Data()
-        data = info['illust']
+        data = info['novel']
         uid = data['user']['id']
         author = f'pixiv-author:{uid}'
-        if data['meta_single_page']:
-            media = [data['meta_single_page']['original_image_url']]
-        elif data['meta_pages']:
-            media = [x['image_urls']['original'] for x in data['meta_pages']]
 
         desc = html_to_plain_text(data['caption'])
+
         is_touhou = False
         bad = ''
         bad_tags = get_cache('pixiv_bad_tags')
         for tag in data['tags']:
             if not is_touhou:
-                if '東方' in tag['name']:
+                if '東方' in tag['name'] or '幻想入り' in tag['name']:
                     is_touhou = True
             if bad_tags and not bad:
                 if tag['name'] in bad_tags:
@@ -50,13 +47,13 @@ async def pixdata(pid: str, udid: str) -> Tuple[str, str, Data]:
         return status or 'ok', msg or 'ok', Data(
             title=data['title'],
             udid=udid,
-            cover=data['image_urls']['square_medium'].replace('pximg.net','pixiv.re'),
-            media=media,
+            cover=data['image_urls']['square_medium'].replace(
+                'pximg.net', 'pixiv.re'),
             desc=desc,
             ptime=get_ptime(data['create_date']),
             author=[author],
             author_name=[data['user']['name']],
-            tname='DRAWING',
+            tname='ARTICLE',
         )
 
 

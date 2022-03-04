@@ -27,6 +27,11 @@ async def match_pixiv(text: str) -> str:
         return match_normal.group(1)
 
 
+async def match_pixnovel(text: str) -> str:
+    if match_normal := re.match(r'.*pixiv.net/novel/show.php?.*id=([0-9]+)', text):
+        return match_normal.group(1)
+
+
 async def match_youtube(text: str) -> str:
     if match_normal := re.match(r'.*(?:youtu.be/|youtube.com/watch\?v=)([-\w]+)', text):
         return match_normal.group(1)

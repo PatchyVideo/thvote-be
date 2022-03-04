@@ -10,16 +10,18 @@ from sites.nicoseiga import nicoseigadata
 from sites.nicovideo import nicovideodata
 from sites.patchyvideo import patchydata
 from sites.pixiv import pixdata
+from sites.pixnovel import pixndata
 from sites.thbwiki import thbdata
 from sites.twitter import twidata
 from sites.youtube import ytbdata
 from utils.match import (match_acarticle, match_acfun, match_bilibili, match_nicoseiga,
-                         match_nicovideo, match_patchyvideo, match_pixiv,
+                         match_nicovideo, match_patchyvideo, match_pixiv, match_pixnovel,
                          match_thbwiki, match_twitter, match_youtube)
 
 matcher_list = [
     (match_bilibili, bilidata),
     (match_pixiv, pixdata),
+    (match_pixnovel, pixndata),
     (match_twitter, twidata),
     (match_youtube, ytbdata),
     (match_acfun, acdata),

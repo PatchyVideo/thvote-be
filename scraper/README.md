@@ -11,14 +11,13 @@ blank: WIP
 - [x] Acfun (article)
 - [x] YouTube (video)
 - [x] Twitter
-- [x] Pixiv (image)
+- [x] Pixiv (image & manga)
+- [x] Pixiv (novel)
 - [x] Niconico (image)
 - [x] Niconico (video)
 - [x] THBWiki
 - [x] PatchyVideo
 - [ ] Weibo (mobile)
-- [ ] Pixiv (manga)
-- [ ] Pixiv (novel)
 
 not support: weibo (PC)
 
