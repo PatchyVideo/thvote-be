@@ -87,7 +87,7 @@ impl ServiceError {
             url: None,
             error_kind: "INVALID_TOKEN".to_string(),
             error_message: errmsg.clone(),
-            human_readable_message: None,
+            human_readable_message: Some("无效凭证或不在投票日期".into()),
             upstream_response_json: None,
             upstream_response_string: None
         };
