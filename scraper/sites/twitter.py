@@ -37,6 +37,7 @@ async def twidata(tid: str, udid: str) -> Tuple[str, str, Data]:
     author = f'twitter-author:{uid}'
     raw_media = resp['entities']['media']
     return 'ok', 'ok', Data(
+        title=f'{resp["user"]["name"]}的推文',
         udid=udid,
         desc=resp['full_text'],
         cover=raw_media[0]['media_url_https'],

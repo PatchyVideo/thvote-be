@@ -32,6 +32,7 @@ async def wbdata(wid: str, udid: str) -> Tuple[str, str, Data]:
         return 'parsererr', f'acparsererr: {repr(e)}', Data()
 
     return 'ok', 'ok', Data(
+        title=f'{data["user"]["screen_name"]}的微博',
         udid=udid,
         # thumbnail_pic, bmiddle_pic, original_pic
         cover=data['bmiddle_pic'],
