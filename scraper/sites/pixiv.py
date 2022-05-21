@@ -1,8 +1,7 @@
 import datetime as dt
-from typing import Tuple
 
 import ujson
-from model import Data
+from model import RespBody
 from pixivpy_async import AppPixivAPI, PixivClient
 from pytz import timezone
 from utils.cache import get_cache, with_cache
@@ -10,13 +9,13 @@ from utils.parse import html_to_plain_text
 
 
 @with_cache(site='pixiv', limit=0.2)
-async def pixdata(pid: str, udid: str) -> Tuple[str, str, Data]:
+async def pixdata(pid: str, udid: str) -> RespBody:
     async with PixivClient(proxy=get_cache('proxies')['all://']) as client:
         aapi = AppPixivAPI(client=client)
         await aapi.login(refresh_token=get_cache('pixiv_token'))
         info = await aapi.illust_detail(pid)
         if info.get('error'):
-            return 'apierr', f'pixapierr: {ujson.encode(info["error"])}', Data()
+            return RespBody(status='apierr', msg=f'pixapierr: {ujson.encode(info["error"])}')
         data = info['illust']
         uid = data['user']['id']
         author = f'pixiv-author:{uid}'
@@ -38,7 +37,7 @@ async def pixdata(pid: str, udid: str) -> Tuple[str, str, Data]:
                     bad = tag['name']
             if is_touhou and bad:
                 break
-        status = ''
+        status = 'ok'
         msg = ''
         if not is_touhou:
             status = 'warning'
@@ -47,7 +46,7 @@ async def pixdata(pid: str, udid: str) -> Tuple[str, str, Data]:
             status = 'warning'
             msg += f'bad tag: {bad}'
 
-        return status or 'ok', msg or 'ok', Data(
+        data = RespBody.Data(
             title=data['title'],
             udid=udid,
             cover=data['image_urls']['square_medium'].replace('pximg.net','pixiv.re'),
@@ -58,6 +57,7 @@ async def pixdata(pid: str, udid: str) -> Tuple[str, str, Data]:
             author_name=[data['user']['name']],
             tname='DRAWING',
         )
+        return RespBody(status=status, msg=msg, data=data)
 
 
 def get_ptime(create_date: str) -> str:

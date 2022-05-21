@@ -6,21 +6,22 @@ from pydantic import BaseModel
 class ReqBody(BaseModel):
     url: str
 
-
-class Data(BaseModel):
-    title: str = None
-    udid: str = None
-    cover: str = None
-    media: List[str] = None
-    desc: str = None
-    ptime: str = None
-    author: List[str] = None
-    author_name: List[str] = None
-    tname: str = None
-    repost: bool = None
-
-
-class RetBody(BaseModel):
+class BaseResp(BaseModel):
     status: str = 'ok'
-    msg: str = 'ok'
-    data: Data
+    msg: str = ''
+
+class RespBody(BaseResp):
+
+    class Data(BaseModel):
+        title: str
+        udid: str
+        cover: str = None
+        media: List[str] = None
+        desc: str = None
+        ptime: str = None
+        author: List[str] = None
+        author_name: List[str] = None
+        tname: str = None
+        repost: bool = None
+    
+    data: Data = None

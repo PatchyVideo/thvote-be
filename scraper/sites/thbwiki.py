@@ -1,10 +1,9 @@
 import re
 import time
-from typing import Tuple
 from urllib.parse import unquote
 
 import ujson
-from model import Data
+from model import RespBody
 from utils.cache import with_cache
 from utils.network import request_abroad_api, request_abroad_website
 
@@ -12,7 +11,7 @@ api = 'https://thwiki.cc/api.php'
 
 
 @with_cache(site='thbwiki')
-async def thbdata(entry: str, udid: str) -> Tuple[str, str, Data]:
+async def thbdata(entry: str, udid: str) -> RespBody:
     if '%' in entry:
         entry = unquote(entry)
     if 'http' in entry:
@@ -26,7 +25,7 @@ async def thbdata(entry: str, udid: str) -> Tuple[str, str, Data]:
     r = ujson.loads(resp.content.decode('utf-8'))
     result = r['query']['results']
     if not result:
-        return 'apierr', f'thbapierr: no result for {entry}', Data()
+        return RespBody(status='apierr', msg=f'thbapierr: no result for {entry}')
     data = list(result.values())[0]
     d = data['printouts']
     title = data['fulltext']
@@ -51,7 +50,7 @@ async def thbdata(entry: str, udid: str) -> Tuple[str, str, Data]:
         author_name = producer[0]['fulltext']
         author = f'thbwiki-author:{author_name}'
 
-    return 'ok', 'ok', Data(
+    data = RespBody.Data(
         title=title,
         udid=udid,
         cover=cover,
@@ -59,6 +58,7 @@ async def thbdata(entry: str, udid: str) -> Tuple[str, str, Data]:
         author=[author],
         author_name=[author_name],
     )
+    return RespBody(data=data)
 
 
 async def prase_short(link: str) -> str:

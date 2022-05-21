@@ -1,7 +1,6 @@
 import datetime as dt
-from typing import Tuple
 
-from model import Data
+from model import RespBody
 from pytz import timezone
 from utils.cache import with_cache
 from utils.network import request_abroad_api
@@ -31,20 +30,20 @@ query ($vid: String!) {
 
 
 @with_cache(site='patchyvideo')
-async def patchydata(vid: str, udid: str) -> Tuple[str, str, Data]:
+async def patchydata(vid: str, udid: str) -> RespBody:
     resp = await request_abroad_api(api, json={
         'query': gql,
         'variables': {'vid': vid}
     })
     data = resp.get('data')
     if not data:
-        return 'apierr', f'patchyapierr: {resp.get("errors")}', Data()
+        return RespBody(status='apierr', msg=f'patchyapierr: {resp.get("errors")}')
 
     item = data['getVideo']['item']
     tags = data['getVideo']['tagByCategory']
     site = item['site']
     if site in ['bilibili', 'nicovideo', 'youtube', 'twitter', 'acfun', 'weibo']:
-        return 'rematch', item['url'], Data()
+        return RespBody(status='rematch', msg=item['url'])
 
     authors = None
     for tag in tags:
@@ -56,9 +55,7 @@ async def patchydata(vid: str, udid: str) -> Tuple[str, str, Data]:
     else:
         repost = False
 
-    # if site in []:
-
-    return 'ok', 'ok', Data(
+    data = RespBody.Data(
         title=item['title'],
         udid=udid,
         cover=item['coverImage'],
@@ -67,6 +64,7 @@ async def patchydata(vid: str, udid: str) -> Tuple[str, str, Data]:
         author_name=authors,
         repost=repost
     )
+    return RespBody(data=data)
 
 
 def get_ptime(uploadTime: str) -> str:

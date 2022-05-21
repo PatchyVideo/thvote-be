@@ -1,9 +1,8 @@
 import datetime as dt
-from typing import Tuple
 
 import ujson
 from lxml import etree
-from model import Data
+from model import RespBody
 from pytz import timezone
 from utils.cache import with_cache
 from utils.network import request_website
@@ -13,7 +12,7 @@ header = {
 
 
 @with_cache(site='weibo', limit=0.2)
-async def wbdata(wid: str, udid: str) -> Tuple[str, str, Data]:
+async def wbdata(wid: str, udid: str) -> RespBody:
     wburl = f'https://m.weibo.cn/detail/{wid}'
     r = await request_website(wburl, headers=header)
     html = r.content.decode('utf-8')
@@ -29,9 +28,9 @@ async def wbdata(wid: str, udid: str) -> Tuple[str, str, Data]:
         author = f'weibo-author:{uid}'
 
     except Exception as e:
-        return 'parsererr', f'acparsererr: {repr(e)}', Data()
+        return RespBody(status='parsererr', msg=f'acparsererr: {repr(e)}')
 
-    return 'ok', 'ok', Data(
+    data = RespBody.Data(
         title=f'{data["user"]["screen_name"]}的微博',
         udid=udid,
         # thumbnail_pic, bmiddle_pic, original_pic
@@ -41,6 +40,7 @@ async def wbdata(wid: str, udid: str) -> Tuple[str, str, Data]:
         author=[author],
         author_name=[data['user']['screen_name']],
     )
+    return RespBody(data=data)
 
 
 def get_ptime(created_at: str) -> str:

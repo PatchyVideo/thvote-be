@@ -8,6 +8,7 @@ from typing import Any, Optional
 import redis
 import toml
 from loguru import logger
+from model import RespBody
 
 cwd = path.dirname(__file__)
 prjdir = path.abspath(path.join(cwd, '..'))
@@ -67,14 +68,14 @@ def with_cache(site: str, limit: float = None):
                         time.sleep(0.01)
                         wait = time.time() - last
 
-            ret = await func(wid, udid)
-            if ret[2].cover:
-                ret[2].cover=ret[2].cover.replace('http:','https:')
+            resp: RespBody = await func(wid, udid)
+            if resp.data.cover:
+                resp.data.cover=resp.data.cover.replace('http:','https:')
             set_cache(f'{site}_limit', time.time())
-            if ret == 'ok':
-                set_cache(udid, ret)
+            if resp.status == 'ok':
+                set_cache(udid, resp)
             else:
-                set_cache(udid, ret, timedelta(minutes=5))
-            return ret
+                set_cache(udid, resp, timedelta(minutes=1))
+            return resp
         return inner
     return wrapper

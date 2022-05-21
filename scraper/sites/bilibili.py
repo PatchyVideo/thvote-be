@@ -1,19 +1,17 @@
-from typing import Tuple
-
-from model import Data
+from model import RespBody
 from utils.cache import with_cache
 from utils.network import request_api
 import time
 
 
 @with_cache(site='bilibili', limit=0.2)
-async def bilidata(aid: str, udid: str) -> Tuple[str, str, Data]:
+async def bilidata(aid: str, udid: str) -> RespBody:
     '''根据aid(av号)获取视频相关数据'''
     api = f'https://api.bilibili.com/x/web-interface/view?aid={aid}'
     r = await request_api(api)
     data = r.get('data')
     if data is None:
-        return 'apierr', f'biliapimsg: {r["message"]}', Data()
+        return RespBody(status='apierr', msg=f'biliapimsg: {r["message"]}')
 
     staffs = data.get('staff')
     if staffs:
@@ -27,7 +25,7 @@ async def bilidata(aid: str, udid: str) -> Tuple[str, str, Data]:
         repost = False
     else:
         repost = True
-    return 'ok', f"biliapimsg: {r['message']}", Data(
+    data = RespBody.Data(
         title=data['title'],
         udid=udid,
         cover=data['pic'],
@@ -37,6 +35,7 @@ async def bilidata(aid: str, udid: str) -> Tuple[str, str, Data]:
         author_name=author_name,
         repost=repost
     )
+    return RespBody(msg=f'biliapimsg: {r["message"]}', data=data)
 
 
 def get_ptime(ctime: int) -> str:

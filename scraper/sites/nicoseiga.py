@@ -1,15 +1,14 @@
 import datetime as dt
-from typing import Tuple
 
 from lxml import etree
-from model import Data
+from model import RespBody
 from pytz import timezone
 from utils.cache import with_cache
 from utils.network import request_abroad_website
 
 
 @with_cache(site='nicoseiga', limit=0.2)
-async def nicoseigadata(imid: str, udid: str) -> Tuple[str, str, Data]:
+async def nicoseigadata(imid: str, udid: str) -> RespBody:
     '''根据im号获取视频相关数据'''
     imurl = f'https://seiga.nicovideo.jp/seiga/im{imid}'
     r = await request_abroad_website(imurl)
@@ -28,9 +27,9 @@ async def nicoseigadata(imid: str, udid: str) -> Tuple[str, str, Data]:
         author_name = page.xpath(
             '//table[@id="illust_area"]/tr[2]/td/div[2]/strong')[0].text
     except Exception as e:
-        return 'parsererr', f'seigaparsererr: {repr(e)}', Data()
+        return RespBody(status='parsererr', msg=f'seigaparsererr: {repr(e)}')
 
-    return 'ok', 'ok', Data(
+    data = RespBody.Data(
         title=title,
         udid=udid,
         cover=cover,
@@ -40,6 +39,7 @@ async def nicoseigadata(imid: str, udid: str) -> Tuple[str, str, Data]:
         author=[author],
         author_name=[author_name],
     )
+    return RespBody(data=data)
 
 
 def get_ptime(post_time: str) -> str:

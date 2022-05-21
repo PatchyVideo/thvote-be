@@ -7,7 +7,6 @@ from process import *
 app = FastAPI()
 
 
-@app.post("/api", response_model=RetBody, response_model_exclude_none=True)
+@app.post("/api", response_model=RespBody, response_model_exclude_none=True)
 async def api(item: ReqBody):
-    status, msg, data = await get_data(item.url)
-    return RetBody(status=status or 'ok', msg=msg or 'ok', data=data)
+    return await get_data(item.url)

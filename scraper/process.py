@@ -1,10 +1,8 @@
-from typing import Tuple
-
 from loguru import logger
 
-from model import Data
-from sites.acfun import acdata
+from model import RespBody
 from sites.acarticle import acadata
+from sites.acfun import acdata
 from sites.bilibili import bilidata
 from sites.nicoseiga import nicoseigadata
 from sites.nicovideo import nicovideodata
@@ -15,8 +13,9 @@ from sites.thbwiki import thbdata
 from sites.twitter import twidata
 from sites.weibo import wbdata
 from sites.youtube import ytbdata
-from utils.match import (match_acarticle, match_acfun, match_bilibili, match_mweibo, match_nicoseiga,
-                         match_nicovideo, match_patchyvideo, match_pixiv, match_pixnovel,
+from utils.match import (match_acarticle, match_acfun, match_bilibili,
+                         match_mweibo, match_nicoseiga, match_nicovideo,
+                         match_patchyvideo, match_pixiv, match_pixnovel,
                          match_thbwiki, match_twitter, match_youtube)
 
 matcher_list = [
@@ -26,7 +25,7 @@ matcher_list = [
     (match_twitter, twidata),
     (match_youtube, ytbdata),
     (match_acfun, acdata),
-    (match_acarticle,acadata),
+    (match_acarticle, acadata),
     (match_nicoseiga, nicoseigadata),
     (match_nicovideo, nicovideodata),
     (match_thbwiki, thbdata),
@@ -35,15 +34,15 @@ matcher_list = [
 ]
 
 
-async def get_data(url: str) -> Tuple[str, str, Data]:
+async def get_data(url: str) -> RespBody:
     try:
         for matcher, praser in matcher_list:
             if wid := await matcher(url):
-                ret = await praser(wid)
-                if ret[0] == 'rematch':
-                    ret = await get_data(ret[1])
-                return ret
-        return 'err', 'no content found', Data()
+                resp: RespBody = await praser(wid)
+                if resp.status == 'rematch':
+                    resp = await get_data(resp.msg)
+                return resp
+        return RespBody(status='err', msg='no content found')
     except Exception as e:
         logger.exception(e)
-        return 'except', repr(e), Data()
+        return RespBody(status='except', msg=repr(e))

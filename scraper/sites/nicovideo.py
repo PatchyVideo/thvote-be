@@ -1,17 +1,16 @@
 import datetime as dt
 import re
-from typing import Tuple
 
 import ujson
 from lxml import etree
-from model import Data
+from model import RespBody
 from pytz import timezone
 from utils.cache import with_cache
 from utils.network import request_abroad_website
 
 
 @with_cache(site='nicovideo', limit=0.2)
-async def nicovideodata(smid: str, udid: str) -> Tuple[str, str, Data]:
+async def nicovideodata(smid: str, udid: str) -> RespBody:
     '''根据sm号获取视频相关数据'''
     smurl = f'https://www.nicovideo.jp/watch/sm{smid}'
     r = await request_abroad_website(smurl)
@@ -25,9 +24,9 @@ async def nicovideodata(smid: str, udid: str) -> Tuple[str, str, Data]:
         uid = re.match(r'.*user/(\d+)', user_url).group(1)
         author = f'nicovideo-author:{uid}'
     except Exception as e:
-        return 'parsererr', f'nicoparsererr: {repr(e)}', Data()
+        return RespBody(status='parsererr', msg=f'nicoparsererr: {repr(e)}')
 
-    return 'ok', 'ok', Data(
+    data = RespBody.Data(
         title=data['name'],
         udid=udid,
         cover=data['thumbnailUrl'][0],
@@ -36,6 +35,7 @@ async def nicovideodata(smid: str, udid: str) -> Tuple[str, str, Data]:
         author=[author],
         author_name=[data['author']['name']],
     )
+    return RespBody(data=data)
 
 
 def get_ptime(uploadDate: str) -> str:

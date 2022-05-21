@@ -1,8 +1,7 @@
 import datetime as dt
 from datetime import timedelta
-from typing import Tuple
 
-from model import Data
+from model import RespBody
 from pytz import timezone
 from utils.cache import get_cache, set_cache, with_cache
 from utils.network import request_abroad_api
@@ -23,7 +22,7 @@ async def get_token() -> str:
 
 
 @with_cache(site='twitter')
-async def twidata(tid: str, udid: str) -> Tuple[str, str, Data]:
+async def twidata(tid: str, udid: str) -> RespBody:
     api = f'https://api.twitter.com/1.1/statuses/show.json?id={tid}&tweet_mode=extended&include_entities=true'
     header = {
         'authorization': get_cache('twiapi_auth'),
@@ -31,12 +30,12 @@ async def twidata(tid: str, udid: str) -> Tuple[str, str, Data]:
     }
     resp = await request_abroad_api(api, headers=header)
     if errors := resp.get('errors'):
-        return 'apierr', f'twiapierr: {errors}'
+        return RespBody(status='error', msg=f'twiapierr: {errors}')
     created_at = resp['created_at']
     uid = resp['user']['id_str']
     author = f'twitter-author:{uid}'
     raw_media = resp['entities']['media']
-    return 'ok', 'ok', Data(
+    data = RespBody.Data(
         title=f'{resp["user"]["name"]}的推文',
         udid=udid,
         desc=resp['full_text'],
@@ -46,6 +45,7 @@ async def twidata(tid: str, udid: str) -> Tuple[str, str, Data]:
         author=[author],
         author_name=[resp['user']['name']],
     )
+    return RespBody(data=data)
 
 
 def get_ptime(created_at: str) -> str:

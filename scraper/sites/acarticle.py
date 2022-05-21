@@ -1,8 +1,6 @@
-from typing import Tuple
-
 import ujson
 from lxml import etree
-from model import Data
+from model import RespBody
 from utils.cache import with_cache
 from utils.network import request_website
 
@@ -13,7 +11,7 @@ header = {
 
 
 @with_cache(site='acarticle', limit=0.2)
-async def acadata(acid: str, udid: str) -> Tuple[str, str, Data]:
+async def acadata(acid: str, udid: str) -> RespBody:
     '''根据acid(ac号)获取文章相关数据'''
     acurl = f'https://www.acfun.cn/a/ac{acid}'
     r = await request_website(acurl, headers=header)
@@ -35,9 +33,9 @@ async def acadata(acid: str, udid: str) -> Tuple[str, str, Data]:
         uid = data['user']['id']
         author = f'acfun-author:{uid}'
     except Exception as e:
-        return 'parsererr', f'acaparsererr: {repr(e)}', Data()
+        return RespBody(status='parsererr', msg=f'acaparsererr: {repr(e)}')
 
-    return 'ok', 'ok', Data(
+    data = RespBody.Data(
         title=data['title'],
         udid=udid,
         cover=cover,
@@ -46,3 +44,4 @@ async def acadata(acid: str, udid: str) -> Tuple[str, str, Data]:
         author=[author],
         author_name=[data['user']['name']],
     )
+    return RespBody(data=data)
