@@ -74,3 +74,8 @@ async def match_patchyvideo(text: str) -> str:
 async def match_mweibo(text: str) -> str:
     if match_mobile := re.match(r'.*m.weibo.cn/detail/(\d+)', text):
         return match_mobile.group(1)
+
+
+async def match_dizzy(text: str) -> str:
+    if match_normal := re.match(r'.*dizzylab.net/d/(\w+)', text):
+        return match_normal.group(1)

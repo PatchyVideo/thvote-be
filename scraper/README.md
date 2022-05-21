@@ -18,6 +18,12 @@ blank: WIP
 - [x] THBWiki
 - [x] PatchyVideo
 - [x] Weibo (mobile)
+- [x] Dizzylab
+- [ ] Steam
+- [ ] Dlsite
+- [ ] Melonbooks
+- [ ] Bandcamp
+- [ ] Soundcloud
 
 not support: weibo (PC)
 
@@ -59,9 +65,9 @@ meaning of the `status`:
 |-|-|-|-|
 |`title`|`String`|`bad apple原版高清1440*1080`|title of the content. |
 |`udid`|`String`|`bilibili:24722`|unique identifier of content. format: `site:artwork_id`. |
-|`cover`|`String`|`http://i2.hdslb.com/bfs/archive/2d494d24828b82410dcb8c3f320027de86e9141a.jpg`| no cover: `acfun`. |
+|`cover`|`String`|`http://i2.hdslb.com/bfs/archive/2d494d24828b82410dcb8c3f320027de86e9141a.jpg`|cover image url of content. |
 |`media`|`Array[String]`|`["https://pbs.twimg.com/media/FLNEMPTVUAEAu7K.jpg"]`|list of content url(s). |
-|`desc`|`String`|`sina 测试一下黑屏压制。已修复。`|
+|`desc`|`String`|`sina 测试一下黑屏压制。已修复。`|description of the content. |
 |`ptime`|`String`|`2010-09-07 21:30:02 +0800`|unified as `CST` (`Asia/Shanghai`). |
 |`author`|`Array[String]`|`bilibili-author:45086`|list of unique identifier of author. format: `site-author:user_id`. |
 |`author_name`|`Array[String]`|`僕の可愛い殿下`|list of display name of author. |

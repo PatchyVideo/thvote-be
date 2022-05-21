@@ -69,10 +69,10 @@ def with_cache(site: str, limit: float = None):
                         wait = time.time() - last
 
             resp: RespBody = await func(wid, udid)
-            if resp.data.cover:
-                resp.data.cover=resp.data.cover.replace('http:','https:')
             set_cache(f'{site}_limit', time.time())
             if resp.status == 'ok':
+                if resp.data.cover:
+                    resp.data.cover=resp.data.cover.replace('http:','https:')
                 set_cache(udid, resp)
             else:
                 set_cache(udid, resp, timedelta(minutes=1))

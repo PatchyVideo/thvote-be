@@ -4,6 +4,7 @@ from model import RespBody
 from sites.acarticle import acadata
 from sites.acfun import acdata
 from sites.bilibili import bilidata
+from sites.dizzylab import dizzydata
 from sites.nicoseiga import nicoseigadata
 from sites.nicovideo import nicovideodata
 from sites.patchyvideo import patchydata
@@ -14,9 +15,10 @@ from sites.twitter import twidata
 from sites.weibo import wbdata
 from sites.youtube import ytbdata
 from utils.match import (match_acarticle, match_acfun, match_bilibili,
-                         match_mweibo, match_nicoseiga, match_nicovideo,
-                         match_patchyvideo, match_pixiv, match_pixnovel,
-                         match_thbwiki, match_twitter, match_youtube)
+                         match_dizzy, match_mweibo, match_nicoseiga,
+                         match_nicovideo, match_patchyvideo, match_pixiv,
+                         match_pixnovel, match_thbwiki, match_twitter,
+                         match_youtube)
 
 matcher_list = [
     (match_bilibili, bilidata),
@@ -31,6 +33,7 @@ matcher_list = [
     (match_thbwiki, thbdata),
     (match_patchyvideo, patchydata),
     (match_mweibo, wbdata),
+    (match_dizzy, dizzydata)
 ]
 
 
