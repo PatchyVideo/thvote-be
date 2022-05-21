@@ -39,6 +39,7 @@ async def wbdata(wid: str, udid: str) -> RespBody:
         ptime=get_ptime(created_at),
         author=[author],
         author_name=[data['user']['screen_name']],
+        tname='DRAWING',
     )
     return RespBody(data=data)
 

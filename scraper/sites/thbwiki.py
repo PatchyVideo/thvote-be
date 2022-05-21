@@ -49,6 +49,16 @@ async def thbdata(entry: str, udid: str) -> RespBody:
     if producer:
         author_name = producer[0]['fulltext']
         author = f'thbwiki-author:{author_name}'
+    
+    tname = 'OTHER'
+    if d['专辑名称']:
+        tname = 'MUSIC'
+    elif d['同人志名称']:
+        tname = 'DRAWING'
+    elif d['视频名称']:
+        tname = 'VIDEO'
+    elif d['软件名称']:
+        tname = 'SOFTWARE'
 
     data = RespBody.Data(
         title=title,
@@ -57,6 +67,7 @@ async def thbdata(entry: str, udid: str) -> RespBody:
         ptime=ptime,
         author=[author],
         author_name=[author_name],
+        tname=tname,
     )
     return RespBody(data=data)
 

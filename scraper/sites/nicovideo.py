@@ -34,6 +34,7 @@ async def nicovideodata(smid: str, udid: str) -> RespBody:
         ptime=get_ptime(uploadDate),
         author=[author],
         author_name=[data['author']['name']],
+        tname='VIDEO',
     )
     return RespBody(data=data)
 

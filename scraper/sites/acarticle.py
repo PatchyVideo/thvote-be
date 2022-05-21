@@ -32,6 +32,15 @@ async def acadata(acid: str, udid: str) -> RespBody:
         ctime = data['createTimeMillis']
         uid = data['user']['id']
         author = f'acfun-author:{uid}'
+        
+        area = data['channel']['name']
+        sub_area = data['realm']['realmName']
+        tname = 'ARTICLE'
+        if area == '二次元画师':
+            tname = 'DRAWING'
+        elif area == '漫画文学':
+            if sub_area == '漫画':
+                tname = 'DRAWING'
     except Exception as e:
         return RespBody(status='parsererr', msg=f'acaparsererr: {repr(e)}')
 
@@ -43,5 +52,6 @@ async def acadata(acid: str, udid: str) -> RespBody:
         ptime=get_ptime(ctime//1000),
         author=[author],
         author_name=[data['user']['name']],
+        tname=tname,
     )
     return RespBody(data=data)

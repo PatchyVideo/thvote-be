@@ -28,6 +28,13 @@ async def acdata(acid: str, udid: str) -> RespBody:
             repost = False
         else:
             repost = True
+        area = data['channel']['parentName']
+        sub_area = data['channel']['name']
+        tname = 'VIDEO'
+        if area == '音乐':
+            tname = 'MUSIC'
+        elif area == '科技' and sub_area in ['手办模玩', '科技制造']:
+            tname = 'CRAFT'
     except Exception as e:
         return RespBody(status='parsererr', msg=f'acparsererr: {repr(e)}')
 
@@ -39,6 +46,7 @@ async def acdata(acid: str, udid: str) -> RespBody:
         ptime=get_ptime(ctime//1000),
         author=[author],
         author_name=[data['user']['name']],
-        repost=repost
+        repost=repost,
+        tname=tname,
     )
     return RespBody(data=data)

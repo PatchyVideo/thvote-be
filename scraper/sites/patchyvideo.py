@@ -62,7 +62,8 @@ async def patchydata(vid: str, udid: str) -> RespBody:
         desc=item['desc'],
         ptime=get_ptime(item['uploadTime']),
         author_name=authors,
-        repost=repost
+        repost=repost,
+        tname='VIDEO',
     )
     return RespBody(data=data)
 

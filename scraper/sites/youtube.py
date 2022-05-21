@@ -30,6 +30,7 @@ async def ytbdata(vid: str, udid: str) -> RespBody:
         ptime=get_ptime(snippet['publishedAt']),
         author=[author],
         author_name=[snippet['channelTitle']],
+        tname='VIDEO',
     )
     return RespBody(data=data)
 

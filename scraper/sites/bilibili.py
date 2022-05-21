@@ -25,6 +25,14 @@ async def bilidata(aid: str, udid: str) -> RespBody:
         repost = False
     else:
         repost = True
+    area = data['tname']
+    tname = 'VIDEO'
+    if area in music_area:
+        tname = 'MUSIC'
+    elif area == '绘画':
+        tname = 'DRAWING'
+    elif area == '手工':
+        tname = 'CRAFT'
     data = RespBody.Data(
         title=data['title'],
         udid=udid,
@@ -33,7 +41,8 @@ async def bilidata(aid: str, udid: str) -> RespBody:
         ptime=get_ptime(data['pubdate']),
         author=author,
         author_name=author_name,
-        repost=repost
+        repost=repost,
+        tname=tname,
     )
     return RespBody(msg=f'biliapimsg: {r["message"]}', data=data)
 
@@ -43,3 +52,18 @@ def get_ptime(ctime: int) -> str:
     # 2022-02-07 13:34:53 +0800
     return time.strftime(
         "%Y-%m-%d %H:%M:%S %z", time.localtime(ctime))
+
+
+music_area = [
+    '原创音乐',
+    '翻唱',
+    '演奏',
+    'VOCALOID·UTAU',
+    '音乐现场',
+    'MV',
+    '乐评盘点',
+    '音乐教学',
+    '音乐综合',
+    '音频',
+    '说唱',
+]

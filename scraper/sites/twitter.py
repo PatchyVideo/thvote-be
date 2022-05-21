@@ -44,6 +44,7 @@ async def twidata(tid: str, udid: str) -> RespBody:
         ptime=get_ptime(created_at),
         author=[author],
         author_name=[resp['user']['name']],
+        tname='DRAWING',
     )
     return RespBody(data=data)
 

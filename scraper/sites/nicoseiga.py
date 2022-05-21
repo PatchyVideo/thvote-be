@@ -38,6 +38,7 @@ async def nicoseigadata(imid: str, udid: str) -> RespBody:
         ptime=get_ptime(post_time),
         author=[author],
         author_name=[author_name],
+        tname='DRAWING',
     )
     return RespBody(data=data)
 
