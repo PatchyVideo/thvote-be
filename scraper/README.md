@@ -19,7 +19,7 @@ blank: WIP
 - [x] PatchyVideo
 - [x] Weibo (mobile)
 - [x] Dizzylab
-- [ ] Steam
+- [x] Steam
 - [ ] Dlsite
 - [ ] Melonbooks
 - [ ] Bandcamp
