@@ -3,7 +3,7 @@ import time
 from datetime import timedelta
 from functools import wraps
 from os import path
-from typing import Any, Optional
+from typing import Any, List, Optional
 
 import redis
 import toml
@@ -29,17 +29,36 @@ CACHE_FORMAT = 'scraper_cache_{key}'
 
 
 def get_cache(key: str) -> Any:
-    cache = redis_client.get(CACHE_FORMAT.format(key=key))
+    name = CACHE_FORMAT.format(key=key)
+    logger.debug(f'REDIS GET {name}')
+    cache = redis_client.get(name)
     return pickle.loads(cache) if cache else cache
 
 
 def set_cache(key: str, cache: Any, ex: Optional[timedelta] = None) -> None:
-    redis_client.set(CACHE_FORMAT.format(key=key), pickle.dumps(cache), ex)
+    name = CACHE_FORMAT.format(key=key)
+    logger.debug(f'REDIS SET {name}')
+    redis_client.set(name, pickle.dumps(cache), ex)
 
 
-def del_cache(key: str) -> None:
-    redis_client.delete(CACHE_FORMAT.format(key=key))
+def del_cache(key: str) -> int:
+    name = CACHE_FORMAT.format(key=key)
+    logger.debug(f'REDIS DELETE {name}')
+    return redis_client.delete(name)
 
+
+def scan_cache(head: str) -> List[str]:
+    logger.debug(f'REDIS SCAN {head}*')
+    return [cache.decode() for cache in redis_client.scan_iter(f'{head}*')]
+
+
+def clean_cache():
+    for cache in scan_cache('scraper_cache'):
+        logger.debug(f'REDIS DELETE {cache}')
+        redis_client.delete(cache)
+
+
+# clean()
 
 cache_config = [
     'proxies',
