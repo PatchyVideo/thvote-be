@@ -25,7 +25,7 @@ async def dizzydata(wid: str, udid: str) -> RespBody:
             media = None
         desc = page.xpath('/html/head/meta[@name="description"]')[0].attrib['content']
         author_name = page.xpath('//div[@class="col"]/h4[1]/a')[0].text.replace('@ ','')
-        author = f'acfun-author:{author_name}'
+        author = f'dizzylab-author:{author_name}'
         time_str = page.xpath('//div[@class="col"]/p[@class="text-left"]')[1].text
         time_s = time_str.find('发布于')
         time_e = time_str.find('日')
