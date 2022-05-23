@@ -20,7 +20,7 @@ async def thbdata(entry: str, udid: str) -> RespBody:
         'action': 'ask',
         'format': 'json',
         'formatversion': 2,
-        'query': f'[[{entry}]]|?封面图片|?发售日期|?制作方'
+        'query': f'[[{entry}]]|?封面图片|?专辑名称|?同人志名称|?视频名称|?软件名称|?发售日期|?制作方'
     })
     r = ujson.loads(resp.content.decode('utf-8'))
     result = r['query']['results']
@@ -49,7 +49,7 @@ async def thbdata(entry: str, udid: str) -> RespBody:
     if producer:
         author_name = producer[0]['fulltext']
         author = f'thbwiki-author:{author_name}'
-    
+
     tname = 'OTHER'
     if d['专辑名称']:
         tname = 'MUSIC'
