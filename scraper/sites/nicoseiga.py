@@ -1,4 +1,5 @@
 import datetime as dt
+from loguru import logger
 
 from lxml import etree
 from model import RespBody
@@ -27,6 +28,7 @@ async def nicoseigadata(imid: str, udid: str) -> RespBody:
         author_name = page.xpath(
             '//table[@id="illust_area"]/tr[2]/td/div[2]/strong')[0].text
     except Exception as e:
+        logger.exception(e)
         return RespBody(status='parsererr', msg=f'seigaparsererr: {repr(e)}')
 
     data = RespBody.Data(

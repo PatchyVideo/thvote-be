@@ -1,4 +1,5 @@
 import ujson
+from loguru import logger
 from lxml import etree
 from model import RespBody
 from utils.cache import with_cache
@@ -42,6 +43,7 @@ async def acadata(acid: str, udid: str) -> RespBody:
             if sub_area == '漫画':
                 tname = 'DRAWING'
     except Exception as e:
+        logger.exception(e)
         return RespBody(status='parsererr', msg=f'acaparsererr: {repr(e)}')
 
     data = RespBody.Data(

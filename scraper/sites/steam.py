@@ -1,8 +1,10 @@
+import datetime as dt
+
+from loguru import logger
 from lxml import etree
 from model import RespBody
 from utils.cache import with_cache
 from utils.network import request_abroad_website
-import datetime as dt
 
 header = {
     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/97.0.4692.99 Safari/537.36',
@@ -37,6 +39,7 @@ async def steamdata(appid: str, udid: str) -> RespBody:
         dt_struct = dt.datetime.strptime(time_str, '%Y 年 %m 月 %d 日')
         ptime = dt_struct.strftime('%Y-%m-%d %H:%M:%S +0800')
     except Exception as e:
+        logger.exception(e)
         return RespBody(status='parsererr', msg=f'acaparsererr: {repr(e)}')
 
     data = RespBody.Data(

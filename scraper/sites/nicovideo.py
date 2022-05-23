@@ -1,5 +1,6 @@
 import datetime as dt
 import re
+from loguru import logger
 
 import ujson
 from lxml import etree
@@ -24,6 +25,7 @@ async def nicovideodata(smid: str, udid: str) -> RespBody:
         uid = re.match(r'.*user/(\d+)', user_url).group(1)
         author = f'nicovideo-author:{uid}'
     except Exception as e:
+        logger.exception(e)
         return RespBody(status='parsererr', msg=f'nicoparsererr: {repr(e)}')
 
     data = RespBody.Data(

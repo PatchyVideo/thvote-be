@@ -1,6 +1,7 @@
 import datetime as dt
 
 import ujson
+from loguru import logger
 from lxml import etree
 from model import RespBody
 from pytz import timezone
@@ -28,6 +29,7 @@ async def wbdata(wid: str, udid: str) -> RespBody:
         author = f'weibo-author:{uid}'
 
     except Exception as e:
+        logger.exception(e)
         return RespBody(status='parsererr', msg=f'acparsererr: {repr(e)}')
 
     data = RespBody.Data(
