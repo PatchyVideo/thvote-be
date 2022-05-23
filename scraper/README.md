@@ -20,7 +20,7 @@ blank: WIP
 - [x] Weibo (mobile)
 - [x] Dizzylab
 - [x] Steam
-- [ ] Dlsite
+- [x] Dlsite
 - [ ] Melonbooks
 - [ ] Bandcamp
 - [ ] Soundcloud

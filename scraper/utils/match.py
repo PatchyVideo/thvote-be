@@ -84,3 +84,8 @@ async def match_dizzy(text: str) -> str:
 async def match_steam(text: str) -> str:
     if match_normal := re.match(r'.*store.steampowered.com/app/(\d+)', text):
         return match_normal.group(1)
+
+
+async def match_dlsite(text: str) -> str:
+    if match_normal := re.match(r'.*dlsite.com.+?(RJ\d+)', text):
+        return match_normal.group(1)
