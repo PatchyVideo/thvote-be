@@ -46,8 +46,7 @@ async def pixdata(pid: str, udid: str) -> RespBody:
             status = 'warning'
             msg += 'may not touhou. '
         if bad:
-            status = 'warning'
-            msg += f'bad tag: {bad}'
+            return RespBody(status='r18', msg=f'bad tag: {bad}')
 
         data = RespBody.Data(
             title=data['title'],
