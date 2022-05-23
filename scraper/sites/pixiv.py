@@ -10,7 +10,10 @@ from utils.parse import html_to_plain_text
 
 @with_cache(site='pixiv', limit=0.2)
 async def pixdata(pid: str, udid: str) -> RespBody:
-    async with PixivClient(proxy=get_cache('proxies')['all://']) as client:
+    proxies = get_cache('proxies')
+    if proxies:
+        proxies = proxies.get('all://')
+    async with PixivClient(proxy=proxies) as client:
         aapi = AppPixivAPI(client=client)
         await aapi.login(refresh_token=get_cache('pixiv_token'))
         info = await aapi.illust_detail(pid)
