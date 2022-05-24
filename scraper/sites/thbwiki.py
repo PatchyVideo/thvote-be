@@ -43,25 +43,27 @@ async def thbdata(entry: str, udid: str) -> RespBody:
         ctime = release_date[0]['timestamp']
         ptime = time.strftime(
             "%Y-%m-%d %H:%M:%S %z", time.localtime(int(ctime)))
-    author = []
-    author_name = []
+    author_list = []
+    author_name_list = []
     producer = d['制作方']
     if producer:
         for p in producer:
             p_name = p['fulltext']
             p_id = f'thbwiki-author:{p_name}'
-            author.append(p_id)
-            author_name.append(p_name)
+            author_list.append(p_id)
+            author_name_list.append(p_name)
     sell = d['发售方']
     if sell:
         for s in sell:
             s_name = s['fulltext']
             s_id = f'thbwiki-author:{s_name}'
-            author.append(s_id)
-            author_name.append(s_name)
-    if author:
-        author = list(tuple(author))
-        author_name = list(tuple(author_name))
+            author_list.append(s_id)
+            author_name_list.append(s_name)
+    if author_list:
+        author = []
+        [author.append(x) for x in author_list if x not in author]
+        author_name = []
+        [author_name.append(x) for x in author_name_list if x not in author_name]
 
     tname = 'OTHER'
     if d['专辑名称']:

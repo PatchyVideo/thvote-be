@@ -60,7 +60,7 @@ async def match_nicovideo(text: str) -> str:
 async def match_thbwiki(text: str) -> str:
     if match_short := re.match(r'.*thwiki.cc/-/\w+', text):
         return match_short.group()
-    if match_normal := re.match(r'.*thwiki.cc/([\u4e00-\u9fa5A-Za-z0-9%]+)', text):
+    if match_normal := re.match(r'.*thwiki.cc/([%/.\w]+)', text):
         return match_normal.group(1)
 
 
