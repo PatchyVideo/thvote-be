@@ -20,7 +20,7 @@ async def thbdata(entry: str, udid: str) -> RespBody:
         'action': 'ask',
         'format': 'json',
         'formatversion': 2,
-        'query': f'[[{entry}]]|?封面图片|?专辑名称|?同人志名称|?视频名称|?软件名称|?发售日期|?制作方|?发售方'
+        'query': f'[[{entry}]]|?封面图片|?专辑名称|?同人志名称|?视频名称|?软件名称|?发售日期|?制作方|?发售方|?出品方|?原画师|?模型名称'
     })
     r = ujson.loads(resp.content.decode('utf-8'))
     result = r['query']['results']
@@ -43,27 +43,11 @@ async def thbdata(entry: str, udid: str) -> RespBody:
         ctime = release_date[0]['timestamp']
         ptime = time.strftime(
             "%Y-%m-%d %H:%M:%S %z", time.localtime(int(ctime)))
-    author_list = []
-    author_name_list = []
-    producer = d['制作方']
-    if producer:
-        for p in producer:
-            p_name = p['fulltext']
-            p_id = f'thbwiki-author:{p_name}'
-            author_list.append(p_id)
-            author_name_list.append(p_name)
-    sell = d['发售方']
-    if sell:
-        for s in sell:
-            s_name = s['fulltext']
-            s_id = f'thbwiki-author:{s_name}'
-            author_list.append(s_id)
-            author_name_list.append(s_name)
-    if author_list:
-        author = []
-        [author.append(x) for x in author_list if x not in author]
-        author_name = []
-        [author_name.append(x) for x in author_name_list if x not in author_name]
+    author_list = d['制作方'] + d['发售方'] + d['出品方'] + d['原画师']
+    author_list = [x['fulltext'] for x in author_list]
+    author = []
+    [author.append(x) for x in author_list if x not in author]
+    author_name = [f'thbwiki-author:{x}' for x in author]
 
     tname = 'OTHER'
     if d['专辑名称']:
@@ -74,6 +58,8 @@ async def thbdata(entry: str, udid: str) -> RespBody:
         tname = 'VIDEO'
     elif d['软件名称']:
         tname = 'SOFTWARE'
+    elif d['模型名称']:
+        tname = 'CRAFT'
 
     data = RespBody.Data(
         title=title,
