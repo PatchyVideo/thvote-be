@@ -17,6 +17,9 @@ async def dizzydata(wid: str, udid: str) -> RespBody:
     html = r.content.decode('utf-8')
     try:
         page = etree.HTML(html)
+        pagetitle = page.xpath('/html/head/title')[0].text
+        if '出错了' in pagetitle:
+            return RespBody(status='err', msg=f'error when request {url}')
         title = page.xpath('//div[@class="col"]/h1')[0].text
         cover = page.xpath('/html/head/link[@rel="shortcut icon"]')[0].attrib['href']
 
