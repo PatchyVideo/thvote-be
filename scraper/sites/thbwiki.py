@@ -20,7 +20,7 @@ async def thbdata(entry: str, udid: str) -> RespBody:
         'action': 'ask',
         'format': 'json',
         'formatversion': 2,
-        'query': f'[[{entry}]]|?封面图片|?专辑名称|?同人志名称|?视频名称|?软件名称|?发售日期|?制作方'
+        'query': f'[[{entry}]]|?封面图片|?专辑名称|?同人志名称|?视频名称|?软件名称|?发售日期|?制作方|?发售方'
     })
     r = ujson.loads(resp.content.decode('utf-8'))
     result = r['query']['results']
@@ -43,12 +43,25 @@ async def thbdata(entry: str, udid: str) -> RespBody:
         ctime = release_date[0]['timestamp']
         ptime = time.strftime(
             "%Y-%m-%d %H:%M:%S %z", time.localtime(int(ctime)))
-    author = None
-    author_name = None
+    author = []
+    author_name = []
     producer = d['制作方']
     if producer:
-        author_name = producer[0]['fulltext']
-        author = f'thbwiki-author:{author_name}'
+        for p in producer:
+            p_name = p['fulltext']
+            p_id = f'thbwiki-author:{p_name}'
+            author.append(p_id)
+            author_name.append(p_name)
+    sell = d['发售方']
+    if sell:
+        for s in sell:
+            s_name = s['fulltext']
+            s_id = f'thbwiki-author:{s_name}'
+            author.append(s_id)
+            author_name.append(s_name)
+    if author:
+        author = list(tuple(author))
+        author_name = list(tuple(author_name))
 
     tname = 'OTHER'
     if d['专辑名称']:
@@ -65,8 +78,8 @@ async def thbdata(entry: str, udid: str) -> RespBody:
         udid=udid,
         cover=cover,
         ptime=ptime,
-        author=[author],
-        author_name=[author_name],
+        author=author,
+        author_name=author_name,
         tname=tname,
     )
     return RespBody(data=data)
