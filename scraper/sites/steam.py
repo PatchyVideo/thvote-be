@@ -16,6 +16,8 @@ header = {
 async def steamdata(appid: str, udid: str) -> RespBody:
     url = f'https://store.steampowered.com/app/{appid}'
     r = await request_abroad_website(url, headers=header)
+    if r.status_code == 302:
+        return RespBody(status='err', msg=f'no content with {url}')
     html = r.content.decode('utf-8')
     try:
         page = etree.HTML(html)
