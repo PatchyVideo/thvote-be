@@ -87,9 +87,7 @@ async def thbdata(entry: str, udid: str) -> RespBody:
     if urlen:
         set_cache(udid_format.format(entry=urlen), ret)
     else:
-        en = quote(entry)
-        if not get_cache(entry):
-            set_cache(udid_format.format(entry=en), ret)
+        set_cache(udid_format.format(entry=quote(entry)), ret)
     if jump:
         set_cache(udid_format.format(entry=jump), ret)
     return ret
