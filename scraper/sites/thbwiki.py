@@ -1,21 +1,27 @@
 import re
 import time
-from urllib.parse import unquote
+from urllib.parse import quote, unquote
 
 import ujson
 from model import RespBody
-from utils.cache import with_cache
+from utils.cache import get_cache, set_cache, with_cache
 from utils.network import request_abroad_api, request_abroad_website
 
 api = 'https://thwiki.cc/api.php'
+udid_format = 'thbwiki:{entry}'
 
 
 @with_cache(site='thbwiki')
 async def thbdata(entry: str, udid: str) -> RespBody:
+    short = None
+    urlen = None
+    jump = None
     if '%' in entry:
-        entry = unquote(entry)
-    if 'http' in entry:
-        entry = await prase_short(entry)
+        urlen = entry
+        entry = unquote(urlen)
+    if entry[:2] == '-/':
+        short = entry
+        entry = await prase_short(short)
     resp = await request_abroad_website(api, data={
         'action': 'ask',
         'format': 'json',
@@ -61,6 +67,11 @@ async def thbdata(entry: str, udid: str) -> RespBody:
     elif d['模型名称']:
         tname = 'CRAFT'
 
+    fulltext = data['fulltext']
+    if fulltext != entry:
+        jump = entry
+        entry = fulltext
+    udid = udid_format.format(entry=fulltext)
     data = RespBody.Data(
         title=title,
         udid=udid,
@@ -70,11 +81,22 @@ async def thbdata(entry: str, udid: str) -> RespBody:
         author_name=author_name,
         tname=tname,
     )
-    return RespBody(data=data)
+    ret = RespBody(data=data)
+    if short:
+        set_cache(udid_format.format(entry=short), ret)
+    if urlen:
+        set_cache(udid_format.format(entry=urlen), ret)
+    else:
+        en = quote(entry)
+        if not get_cache(entry):
+            set_cache(udid_format.format(entry=en), ret)
+    if jump:
+        set_cache(udid_format.format(entry=jump), ret)
+    return ret
 
 
-async def prase_short(link: str) -> str:
-    short = re.match(r'.*thwiki.cc/-/(\w+)', link).group(1)
+async def prase_short(short: str) -> str:
+    short = short.replace('-/', '')
     pageid = short2pageid(short)
     resp = await request_abroad_api(api, data={
         'action': 'parse',

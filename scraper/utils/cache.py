@@ -58,7 +58,7 @@ def clean_cache():
         redis_client.delete(cache)
 
 
-# clean()
+# clean_cache()
 
 cache_config = [
     'proxies',
@@ -90,6 +90,7 @@ def with_cache(site: str, limit: float = None):
             resp: RespBody = await func(wid, udid)
             set_cache(f'{site}_limit', time.time())
             if resp.status == 'ok':
+                udid = resp.data.udid
                 if resp.data.cover:
                     resp.data.cover=resp.data.cover.replace('http:','https:')
                 set_cache(udid, resp)
