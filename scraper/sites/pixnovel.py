@@ -49,8 +49,7 @@ async def pixndata(pid: str, udid: str) -> RespBody:
         data = RespBody.Data(
             title=data['title'],
             udid=udid,
-            cover=data['image_urls']['square_medium'].replace(
-                'pximg.net', 'pixiv.re'),
+            cover=data['image_urls']['square_medium'],
             desc=desc,
             ptime=get_ptime(data['create_date']),
             author=[author],
