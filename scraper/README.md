@@ -22,8 +22,6 @@ blank: WIP
 - [x] Steam
 - [x] Dlsite
 - [ ] Melonbooks
-- [ ] Bandcamp
-- [ ] Soundcloud
 
 not support: weibo (PC)
 
@@ -41,7 +39,7 @@ not support: weibo (PC)
 
 |field|type|example|remark|
 |-|-|-|-|
-|`status`|`String`|`ok`|possible values: `ok`, `err`, `warning`, `apierr`, `parsererr`, `except`
+|`status`|`String`|`ok`|possible values: `ok`, `err`, `warning`, `apierr`, `parsererr`, `except`, `r18`
 |`msg`|`String`|`ok`|
 |`data`|`Object`| none |refer below
 
@@ -58,6 +56,8 @@ meaning of the `status`:
 `apierr`: match the content but something wrong while try to get information from the third party api (e.g. reach rate limit, the api itself get wrong).
 
 `except`: program itself throw an exception. detail in `msg`.
+
+`r18`: content against china's law.
 
 ### `data` object
 
@@ -101,7 +101,7 @@ pixiv_token = 'pixiv_token'
 pixiv_bad_tags = [
     'R-18','R-18G',    # add more...
 ]
-# when artwork have the tag(s) above, status will set to warning (but data will provide normally)
+# when artwork has above tag(s), status will set to r18 (and data will not be provided).
 
 ytbapi_key = 'ytbapi_key'
 # API key for google's YouTube Data API v3
