@@ -30,7 +30,7 @@ async def wbdata(wid: str, udid: str) -> RespBody:
 
     except Exception as e:
         logger.exception(e)
-        return RespBody(status='parsererr', msg=f'acparsererr: {repr(e)}')
+        return RespBody(status='parsererr', msg=f'weiboparsererr: {repr(e)}')
 
     data = RespBody.Data(
         title=f'{data["user"]["screen_name"]}的微博',

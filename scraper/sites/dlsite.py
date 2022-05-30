@@ -86,7 +86,7 @@ async def dlsitedata(rjid: str, udid: str) -> RespBody:
         ptime = dt_struct.strftime('%Y-%m-%d %H:%M:%S +0800')
     except Exception as e:
         logger.exception(e)
-        return RespBody(status='parsererr', msg=f'acaparsererr: {repr(e)}')
+        return RespBody(status='parsererr', msg=f'dlsiteparsererr: {repr(e)}')
 
     data = RespBody.Data(
         title=title,
