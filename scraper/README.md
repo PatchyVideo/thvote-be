@@ -108,6 +108,10 @@ ytbapi_key = 'ytbapi_key'
 # see:
 # https://console.developers.google.com/apis/api/youtube.googleapis.com
 
+clear_key = 'clear_key'
+# any string
+# submit url `https://thwiki.cc/<clear_key>` will tell server to clear cache
+
 [redis_config]
     host = 'localhost'
     port = 6379

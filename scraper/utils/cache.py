@@ -56,25 +56,35 @@ def clean_cache():
     for cache in scan_cache('scraper_cache'):
         logger.debug(f'REDIS DELETE {cache}')
         redis_client.delete(cache)
+    logger.success('CACHE CLEAR SUCCESSFUL')
+
+
+def init_cache():
+    cache_config = [
+        'proxies',
+        'twiapi_auth',
+        'pixiv_token',
+        'pixiv_bad_tags',
+        'ytbapi_key',
+        'clear_key',
+    ]
+    for conf in cache_config:
+        set_cache(conf, config.get(conf))
+    logger.success('CACHE INIT SUCCESSFUL')
 
 
 # clean_cache()
-
-cache_config = [
-    'proxies',
-    'twiapi_auth',
-    'pixiv_token',
-    'pixiv_bad_tags',
-    'ytbapi_key',
-]
-for conf in cache_config:
-    set_cache(conf, config.get(conf))
+init_cache()
 
 
 def with_cache(site: str, limit: float = None):
     def wrapper(func):
         @wraps(func)
         async def inner(wid: str, udid: str = None):
+            if site == 'thbwiki' and wid == get_cache('clear_key'):
+                clean_cache()
+                init_cache()
+                return RespBody(status='success')
             udid = f'{site}:{wid}'
             cached = get_cache(udid)
             if cached:
@@ -92,7 +102,7 @@ def with_cache(site: str, limit: float = None):
             if resp.status == 'ok':
                 udid = resp.data.udid
                 if resp.data.cover:
-                    resp.data.cover=resp.data.cover.replace('http:','https:')
+                    resp.data.cover = resp.data.cover.replace('http:', 'https:')
                 set_cache(udid, resp)
             else:
                 set_cache(udid, resp, timedelta(minutes=1))
