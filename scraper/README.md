@@ -21,7 +21,7 @@ blank: WIP
 - [x] Dizzylab
 - [x] Steam
 - [x] Dlsite
-- [ ] Melonbooks
+- [x] Melonbooks
 
 not support: weibo (PC)
 
