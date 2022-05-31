@@ -38,7 +38,7 @@ async def melondata(wid: str, udid: str) -> RespBody:
         time_str = page.xpath('//*[@id="title"]/div/div/div[1]/div/em/span')[0].text
         dt_struct = dt.datetime.strptime(time_str, '%Y年%m月%d日')
         ptime = dt_struct.strftime('%Y-%m-%d %H:%M:%S +0800')
-        status = 'success'
+        status = 'ok'
         msg = ''
         # tags = [tag.text for tag in page.xpath('//*[@id="title"]/div/div[2]/div[1]/div/span/span')]
     except Exception as e:
