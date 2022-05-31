@@ -67,6 +67,7 @@ def init_cache():
         'pixiv_bad_tags',
         'ytbapi_key',
         'clear_key',
+        'melon_proxy',
     ]
     for conf in cache_config:
         set_cache(conf, config.get(conf))

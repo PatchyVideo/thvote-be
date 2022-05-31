@@ -3,7 +3,7 @@ import datetime as dt
 from loguru import logger
 from lxml import etree
 from model import RespBody
-from utils.cache import with_cache
+from utils.cache import get_cache, with_cache
 from utils.network import request_abroad_website
 
 header = {
@@ -13,7 +13,7 @@ header = {
 
 @with_cache(site='melonbooks', limit=0.2)
 async def melondata(wid: str, udid: str) -> RespBody:
-    url = f'https://www.melonbooks.co.jp/detail/detail.php?product_id={wid}'
+    url = f'https://{get_cache("melon_proxy")}/detail/detail.php?product_id={wid}'
     r = await request_abroad_website(url, headers=header)
     html = r.content.decode('utf-8')
     try:
