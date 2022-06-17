@@ -91,7 +91,10 @@ pub struct CPSubmit {
 	pub name_b: String,
 	pub name_c: Option<String>,
 	pub active: Option<String>,
-	pub first: Option<bool>
+	pub first: Option<bool>,
+	#[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(default)]
+	pub reason: Option<String>
 }
 
 impl PartialEq for CPSubmit {

@@ -40,7 +40,7 @@ impl SubmitValidatorV1 {
 			return Err(ServiceError::new_human_readable(SERVICE_NAME, "INVALID_CONTENT", format!("数量{}不在范围内[1,8]", data.characters.len())));
 		}
 		for c in data.characters.iter() {
-			if c.reason.as_ref().map_or(0, |f| f.len()) > 1000 {
+			if c.reason.as_ref().map_or(0, |f| f.len()) > 4096 {
 				return Err(ServiceError::new_human_readable(SERVICE_NAME, "INVALID_CONTENT", "理由过长".into()));
 			}
 			if c.first.unwrap_or_default() {
@@ -69,7 +69,7 @@ impl SubmitValidatorV1 {
 			return Err(ServiceError::new_human_readable(SERVICE_NAME, "INVALID_CONTENT", format!("数量{}不在范围内[1,12]", data.music.len())));
 		}
 		for c in data.music.iter() {
-			if c.reason.as_ref().map_or(0, |f| f.len()) > 1000 {
+			if c.reason.as_ref().map_or(0, |f| f.len()) > 4096 {
 				return Err(ServiceError::new_human_readable(SERVICE_NAME, "INVALID_CONTENT", "理由过长".into()));
 			}
 			if c.first.unwrap_or_default() {
@@ -97,6 +97,9 @@ impl SubmitValidatorV1 {
 			return Err(ServiceError::new_human_readable(SERVICE_NAME, "INVALID_CONTENT", format!("数量{}不在范围内[1,4]", data.cps.len())));
 		}
 		for c in data.cps.iter() {
+			if c.reason.as_ref().map_or(0, |f| f.len()) > 4096 {
+				return Err(ServiceError::new_human_readable(SERVICE_NAME, "INVALID_CONTENT", "理由过长".into()));
+			}
 			if c.first.unwrap_or_default() {
 				if first_set {
 					return Err(ServiceError::new_human_readable(SERVICE_NAME, "INVALID_CONTENT", "多个本命".into()));

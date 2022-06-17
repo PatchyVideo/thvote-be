@@ -172,6 +172,10 @@ pub struct CPSubmit {
 	pub active: Option<String>,
 	/// 本命
 	pub first: Option<bool>,
+	#[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(default)]
+	/// Reason
+	pub reason: Option<String>
 }
 
 #[derive(juniper::GraphQLObject, Clone, Serialize, Deserialize)]
@@ -187,6 +191,10 @@ pub struct CPSubmitQuery {
 	pub active: Option<String>,
 	/// 本命
 	pub first: Option<bool>,
+	/// Reason
+	#[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(default)]
+	pub reason: Option<String>
 }
 
 #[derive(juniper::GraphQLInputObject, Clone)]
