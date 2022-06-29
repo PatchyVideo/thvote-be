@@ -13,7 +13,7 @@ use crate::common::VoteTokenClaim;
 use crate::context::Context;
 use jwt_simple::{prelude::*, algorithms::ECDSAP256kPublicKeyLike};
 
-use bson::DateTime;
+use chrono::{DateTime, Utc};
 use serde_derive::{Serialize, Deserialize};
 use bson::oid::ObjectId;
 
