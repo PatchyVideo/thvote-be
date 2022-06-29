@@ -4,6 +4,7 @@ use juniper::RootNode;
 
 use chrono::{DateTime, Utc};
 
+use crate::result_query::CharacterOrMusicRanking;
 use crate::submit_handler::CPSubmitGQL;
 use crate::submit_handler::CPSubmitRestQuery;
 use crate::submit_handler::CharacterSubmitGQL;
@@ -104,6 +105,16 @@ impl Query {
 	/// Get Dojin
 	async fn getSubmitDojinVote(context: &Context, vote_token: String) -> FieldResult<DojinSubmitRestQuery> {
 		submit_handler::getSubmitDojinVote_impl(context, vote_token).await
+	}
+	
+	// ------------------------------------------------
+	//     result_query
+	// ------------------------------------------------
+	async fn queryCharacterOrMusicRanking(context: &Context, query: Option<String>) -> FieldResult<CharacterOrMusicRanking> {
+		result_query::queryCharacterOrMusicRanking_impl(context, query).await
+	}
+	async fn listReasonsCharacter(context: &Context, name: String) -> FieldResult<Vec<String>> {
+		result_query::listReasonsCharacter_impl(context, name).await
 	}
 }
 
