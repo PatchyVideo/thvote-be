@@ -5,6 +5,7 @@ use juniper::RootNode;
 use chrono::{DateTime, Utc};
 
 use crate::result_query::CharacterOrMusicRanking;
+use crate::result_query::Reasons;
 use crate::submit_handler::CPSubmitGQL;
 use crate::submit_handler::CPSubmitRestQuery;
 use crate::submit_handler::CharacterSubmitGQL;
@@ -113,7 +114,7 @@ impl Query {
 	async fn queryCharacterOrMusicRanking(context: &Context, query: Option<String>) -> FieldResult<CharacterOrMusicRanking> {
 		result_query::queryCharacterOrMusicRanking_impl(context, query).await
 	}
-	async fn listReasonsCharacter(context: &Context, name: String) -> FieldResult<Vec<String>> {
+	async fn listReasonsCharacter(context: &Context, name: String) -> FieldResult<Reasons> {
 		result_query::listReasonsCharacter_impl(context, name).await
 	}
 }

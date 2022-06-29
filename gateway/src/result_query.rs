@@ -66,6 +66,7 @@ pub struct RankingEntry {
 	pub trend: Vec<VotingTrendItem>
 }
 
+#[derive(juniper::GraphQLObject, Clone, Serialize, Deserialize)]
 pub struct CharacterOrMusicRanking {
     pub items: Vec<RankingEntry>
 }
@@ -86,6 +87,11 @@ pub async fn queryCharacterOrMusicRanking_impl(context: &Context, query: Option<
     Ok(CharacterOrMusicRanking {items: vec![]})
 }
 
-pub async fn listReasonsCharacter_impl(context: &Context, name: String) -> FieldResult<Vec<String>> {
-    Ok(vec![])
+#[derive(juniper::GraphQLObject, Clone, Serialize, Deserialize)]
+pub struct Reasons {
+    pub items: Vec<String>
+}
+
+pub async fn listReasonsCharacter_impl(context: &Context, name: String) -> FieldResult<Reasons> {
+    Ok(Reasons {items: vec![]})
 }
