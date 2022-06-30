@@ -1,0 +1,66 @@
+ident = @{ ASCII_ALPHA ~ (ASCII_ALPHANUMERIC | "_")* }
+int = { ("+" | "-")? ~ ASCII_DIGIT+ }
+
+string = ${ "\"" ~ inner ~ "\"" }
+inner = @{ char* }
+char = {
+    !("\"" | "\\") ~ ANY
+    | "\\" ~ ("\"" | "\\" | "/" | "b" | "f" | "n" | "r" | "t")
+    | "\\" ~ ("u" ~ ASCII_HEX_DIGIT{4})
+}
+
+int_inner = { int }
+ident_inner = { ident }
+
+field = {
+    ident
+    ~ ":"
+    ~ (int_inner | string | ident_inner)
+}
+
+field_list = {
+    (field | entity)*
+}
+
+entity = {
+    ident
+    ~ "{"
+    ~ field_list
+    ~ "}"
+}
+
+in_condition = {
+    ident ~ ":" ~ (int_inner | string)
+}
+
+eq_condition = {
+    ident ~ "=" ~ (int_inner | string)
+}
+
+condition = {
+    (in_condition | eq_condition)
+}
+
+or_query = {
+	and_query ~ "OR" ~ query
+}
+
+query = {
+    (or_query | and_query)
+}
+
+primary_query = {
+    ("(" ~ query ~ ")" | condition)
+}
+
+and_query = {
+    (primary_query ~ "AND" ~ and_query | primary_query ~ "AND" ~ primary_query | primary_query)
+}
+
+root = {
+    SOI
+    ~ query
+    ~ EOI
+}
+
+WHITESPACE = _{ " " | "\t" | "\n" | "\r" }
