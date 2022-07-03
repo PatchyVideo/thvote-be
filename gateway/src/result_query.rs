@@ -71,7 +71,7 @@ pub struct CharacterOrMusicRanking {
     pub items: Vec<RankingEntry>
 }
 
-pub async fn queryCharacterOrMusicRanking_impl(context: &Context, query: Option<String>) -> FieldResult<CharacterOrMusicRanking> {
+pub async fn queryCharacterRanking_impl(context: &Context, query: Option<String>) -> FieldResult<CharacterOrMusicRanking> {
 	// let mut options = VerificationOptions::default();
 	// options.allowed_audiences = Some(HashSet::from_strings(&["vote"]));
 	// let result = context.public_key.public_key().verify_token::<VoteTokenClaim>(&vote_token, Some(options));
@@ -84,6 +84,10 @@ pub async fn queryCharacterOrMusicRanking_impl(context: &Context, query: Option<
 	// } else {
 	// 	return Err(ServiceError::new_jwt_error(SERVICE_NAME, None).into_field_error());
 	// }
+    Ok(CharacterOrMusicRanking {items: vec![]})
+}
+
+pub async fn queryMusicRanking_impl(context: &Context, query: Option<String>) -> FieldResult<CharacterOrMusicRanking> {
     Ok(CharacterOrMusicRanking {items: vec![]})
 }
 

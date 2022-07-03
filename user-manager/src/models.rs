@@ -54,7 +54,7 @@ pub struct Voter {
 }
 
 impl Voter {
-	/// Generate a unqiue id connectted to voter for a given year
+	/// Generate a unique id connected to voter for a given year
 	pub fn generate_vote_id(&self, vote_year: u32) -> Result<String, ServiceError> {
 		if self.phone_verified || self.email_verified {
 			let id = self._id.as_ref().unwrap().clone().to_string();
@@ -68,28 +68,26 @@ impl Voter {
 	/// 3. valid until
 	/// 4. scope (vote or login)
 	pub fn generate_vote_token(&self, vote_year: u32, vote_start: chrono::DateTime<chrono::Utc>, vote_end: chrono::DateTime<chrono::Utc>, key: &ES256kKeyPair) -> Result<String, ServiceError> {
-		let addtional_info = VoteTokenClaim {
+		let additional_info = VoteTokenClaim {
 			vote_id: Some(self.generate_vote_id(vote_year)?)
 		};
 		let diff = vote_end - vote_start;
 		let claims = Claims::with_custom_claims_given_valid_period(
-			addtional_info, 
+			additional_info, 
 			UnixTimeStamp::new(vote_start.timestamp() as u64, 0), 
 			Duration::from_secs(diff.num_seconds() as _)
 		)
 		.with_audience("vote");
-		// let claims = Claims::with_custom_claims(addtional_info, Duration::from_hours(7 * 24))
-		// 	.with_audience("vote");
 		Ok(key.sign(claims).unwrap())
 	}
 	/// Generate a signed JWT token for user space with
 	/// 1. valid until
 	/// 2. scope (vote or login)
 	pub fn generate_user_auth(&self, key: &ES256kKeyPair) -> String {
-		let addtional_info = VoteTokenClaim {
+		let additional_info = VoteTokenClaim {
 			vote_id: Some(self._id.as_ref().unwrap().clone().to_string())
 		};
-		let claims = Claims::with_custom_claims(addtional_info, Duration::from_hours(7 * 24))
+		let claims = Claims::with_custom_claims(additional_info, Duration::from_hours(7 * 24))
 			.with_audience("userspace");
 		key.sign(claims).unwrap()
 	}

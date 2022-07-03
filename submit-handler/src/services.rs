@@ -1,10 +1,12 @@
+use std::collections::HashSet;
+
 use bson::{doc, oid::ObjectId};
 use futures_util::{TryStreamExt};
 use mongodb::{Collection, Database};
 use pvrustlib::ServiceError;
 use redlock::RedLock;
 
-use crate::models::{CPSubmitRest, CharacterSubmitRest, MusicSubmitRest, PaperSubmitRest, WorkSubmitRest, VotingStatus, SubmitMetadata, DojinSubmitRest};
+use crate::models::{CPSubmitRest, CharacterSubmitRest, MusicSubmitRest, PaperSubmitRest, WorkSubmitRest, VotingStatus, SubmitMetadata, DojinSubmitRest, VotingStatistics};
 use crate::{models, validator};
 use crate::common::{SERVICE_NAME};
 
@@ -224,6 +226,40 @@ impl SubmitServiceV1 {
 			cps: cp,
 			papers: paper,
 			dojin: dojin
+		})
+	}
+	pub async fn get_voting_statistics(&self) -> Result<VotingStatistics, ServiceError> {
+		let all_ch_voter = self.character_coll.distinct("meta.vote_id", doc!{}, None).await.map_err(|e| ServiceError::new(SERVICE_NAME, format!("{:?}", e)))?;
+		let all_cp_voter = self.cp_coll.distinct("meta.vote_id", doc!{}, None).await.map_err(|e| ServiceError::new(SERVICE_NAME, format!("{:?}", e)))?;
+		let all_music_voter = self.music_coll.distinct("meta.vote_id", doc!{}, None).await.map_err(|e| ServiceError::new(SERVICE_NAME, format!("{:?}", e)))?;
+		let mut all_voters = HashSet::new();
+		for voter in all_ch_voter.iter() {
+			let item: CharacterSubmitRest = bson::from_bson(voter.clone()).map_err(|e| ServiceError::new(SERVICE_NAME, format!("{:?}", e)))?;
+			all_voters.insert(item.meta.vote_id);
+		}
+		for voter in all_cp_voter.iter() {
+			let item: CPSubmitRest = bson::from_bson(voter.clone()).map_err(|e| ServiceError::new(SERVICE_NAME, format!("{:?}", e)))?;
+			all_voters.insert(item.meta.vote_id);
+		}
+		for voter in all_music_voter.iter() {
+			let item: MusicSubmitRest = bson::from_bson(voter.clone()).map_err(|e| ServiceError::new(SERVICE_NAME, format!("{:?}", e)))?;
+			all_voters.insert(item.meta.vote_id);
+		}
+		let mut all_voters_inc_paper = all_voters.clone();
+		let all_paper_voter = self.paper_coll.distinct("meta.vote_id", doc!{}, None).await.map_err(|e| ServiceError::new(SERVICE_NAME, format!("{:?}", e)))?;
+		let all_dojin_voter = self.dojin_coll.distinct("meta.vote_id", doc!{}, None).await.map_err(|e| ServiceError::new(SERVICE_NAME, format!("{:?}", e)))?;
+		for voter in all_paper_voter.iter() {
+			let item: PaperSubmitRest = bson::from_bson(voter.clone()).map_err(|e| ServiceError::new(SERVICE_NAME, format!("{:?}", e)))?;
+			all_voters_inc_paper.insert(item.meta.vote_id);
+		}
+		Ok(VotingStatistics {
+			num_user: all_voters_inc_paper.len() as _,
+			num_finished_paper: 0,
+			num_finished_voting: all_voters.len() as _,
+			num_character: all_ch_voter.len() as _,
+			num_cp: all_cp_voter.len() as _,
+			num_music: all_music_voter.len() as _,
+			num_dojin: all_dojin_voter.len() as _,
 		})
 	}
 }

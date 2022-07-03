@@ -153,3 +153,14 @@ pub struct VotingStatus {
 	/// 同人作品是否提交
 	pub dojin: bool,
 }
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct VotingStatistics {
+	pub num_user: u64,
+	pub num_finished_paper: u64,
+	pub num_finished_voting: u64,
+	pub num_character: u64,
+	pub num_cp: u64,
+	pub num_music: u64,
+	pub num_dojin: u64,
+}

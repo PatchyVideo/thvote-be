@@ -84,3 +84,8 @@ pub async fn get_submit_dojin_v1(service: SubmitServiceV1Wrapper, body: actix_we
 pub async fn get_voting_status_v1(service: SubmitServiceV1Wrapper, body: actix_web::web::Json<models::QuerySubmitRequest>) -> Result<web::Json<models::VotingStatus>, ServiceError> {
 	Ok(web::Json(service.get_voting_status(body.0.vote_id).await?))
 }
+
+pub async fn get_voting_statistics_v1(service: SubmitServiceV1Wrapper, body: actix_web::web::Json<EmptyJSON>) -> Result<web::Json<models::VotingStatistics>, ServiceError> {
+	Ok(web::Json(service.get_voting_statistics().await?))
+}
+
