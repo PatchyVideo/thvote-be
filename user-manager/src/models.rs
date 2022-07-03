@@ -75,7 +75,7 @@ impl Voter {
 		let claims = Claims::with_custom_claims_given_valid_period(
 			addtional_info, 
 			UnixTimeStamp::new(vote_start.timestamp() as u64, 0), 
-			Duration::from_days(diff.num_days() as _)
+			Duration::from_secs(diff.num_seconds() as _)
 		)
 		.with_audience("vote");
 		// let claims = Claims::with_custom_claims(addtional_info, Duration::from_hours(7 * 24))
