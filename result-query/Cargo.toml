@@ -8,8 +8,21 @@ edition = "2021"
 [dependencies]
 pest = "2"
 pest_derive = "2"
-mongodb = "2.1"
+tokio = { version = "1", features = ["full"] }
 bson = { version = "2", features = ["chrono-0_4"] } # Needed for using chrono datetime in doc
-tokio = "1"
 chrono = "0.4" # Used for setting DateTimes
 serde = "1" # Used in the Map Data into Structs section
+actix-web = "4"
+actix-cors = "0.6"
+actix-rt = "2.7.0"
+pvrustlib = {path = "../pvrustlib"}
+
+[dependencies.mongodb]
+version = "2"
+default-features = false
+features = ["tokio-runtime"]
+
+[profile.release]
+lto = true # Link Time Optimization (LTO)
+#panic = "abort"
+

@@ -11,6 +11,7 @@ use pvrustlib::json_request_gateway;
 use crate::common::SERVICE_NAME;
 use crate::common::VoteTokenClaim;
 use crate::context::Context;
+use crate::services::RESULT_QUERY;
 use jwt_simple::{prelude::*, algorithms::ECDSAP256kPublicKeyLike};
 
 use chrono::{DateTime, Utc};
@@ -68,27 +69,31 @@ pub struct RankingEntry {
 
 #[derive(juniper::GraphQLObject, Clone, Serialize, Deserialize)]
 pub struct CharacterOrMusicRanking {
-    pub items: Vec<RankingEntry>
+    pub entries: Vec<RankingEntry>
 }
 
+#[derive(Clone, Serialize, Deserialize)]
+pub struct RankingQueryRequest {
+	#[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(default)]
+	pub query: Option<String>
+}
+
+
 pub async fn queryCharacterRanking_impl(context: &Context, query: Option<String>) -> FieldResult<CharacterOrMusicRanking> {
-	// let mut options = VerificationOptions::default();
-	// options.allowed_audiences = Some(HashSet::from_strings(&["vote"]));
-	// let result = context.public_key.public_key().verify_token::<VoteTokenClaim>(&vote_token, Some(options));
-	// if let Ok(claim) = result {
-	// 	let query_json = QuerySubmitRest {
-	// 		vote_id: claim.custom.vote_id.ok_or(ServiceError::new_jwt_error(SERVICE_NAME, None))?
-	// 	};
-	// 	let post_result: VotingStatus = json_request_gateway(SERVICE_NAME, &format!("http://{}/v1/voting-status/", SUBMIT_HANDLER), query_json).await?;
-	// 	Ok(post_result)
-	// } else {
-	// 	return Err(ServiceError::new_jwt_error(SERVICE_NAME, None).into_field_error());
-	// }
-    Ok(CharacterOrMusicRanking {items: vec![]})
+	let query_json = RankingQueryRequest {
+		query
+	};
+	let post_result: CharacterOrMusicRanking = json_request_gateway(SERVICE_NAME, &format!("http://{}/v1/chars-rank/", RESULT_QUERY), query_json).await?;
+	Ok(post_result)
 }
 
 pub async fn queryMusicRanking_impl(context: &Context, query: Option<String>) -> FieldResult<CharacterOrMusicRanking> {
-    Ok(CharacterOrMusicRanking {items: vec![]})
+    let query_json = RankingQueryRequest {
+		query
+	};
+	let post_result: CharacterOrMusicRanking = json_request_gateway(SERVICE_NAME, &format!("http://{}/v1/musics-rank/", RESULT_QUERY), query_json).await?;
+	Ok(post_result)
 }
 
 #[derive(juniper::GraphQLObject, Clone, Serialize, Deserialize)]
