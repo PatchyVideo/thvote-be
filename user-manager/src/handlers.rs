@@ -137,7 +137,7 @@ pub async fn update_password(ctx: web::Data<AppContext>, request: HttpRequest, b
 
 
 pub async fn user_token_status(ctx: web::Data<AppContext>, body: actix_web::web::Json<models::TokenStatusInputs>) -> Result<web::Json<EmptyJSON>, ServiceError> {
-	//let claim = ctx.key_pair.public_key().verify_token::<VoteTokenClaim>(&body.user_token, None).map_err(|e| ServiceError::new_jwt_error(SERVICE_NAME, Some(format!("{:?}", e))))?;
+	let claim = ctx.key_pair.public_key().verify_token::<VoteTokenClaim>(&body.user_token, None).map_err(|e| ServiceError::new_jwt_error(SERVICE_NAME, Some(format!("{:?}", e))))?;
 	return Ok(web::Json(EmptyJSON::new()))
 }
 

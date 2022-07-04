@@ -331,7 +331,7 @@ use crate::services::*;
 pub async fn submitCharacterVote_impl(context: &Context, content: &CharacterSubmitGQL) -> FieldResult<bool> {
 	let mut options = VerificationOptions::default();
 	options.allowed_audiences = Some(HashSet::from_strings(&["vote"]));
-	let result = get_vote_claim_from_token(&content.vote_token, Some(options));
+	let result = context.public_key.public_key().verify_token::<VoteTokenClaim>(&content.vote_token, Some(options));
 	println!("{:?}", result);
 	if let Ok(claim) = result {
 		let submit_json = CharacterSubmitRest {
@@ -349,7 +349,7 @@ pub async fn submitCharacterVote_impl(context: &Context, content: &CharacterSubm
 pub async fn submitMusicVote_impl(context: &Context, content: &MusicSubmitGQL) -> FieldResult<bool> {
 	let mut options = VerificationOptions::default();
 	options.allowed_audiences = Some(HashSet::from_strings(&["vote"]));
-	let result = get_vote_claim_from_token(&content.vote_token, Some(options));
+	let result = context.public_key.public_key().verify_token::<VoteTokenClaim>(&content.vote_token, Some(options));
 	if let Ok(claim) = result {
 		let submit_json = MusicSubmitRest {
 			meta: generate_submit_metadata(&claim.custom.vote_id.ok_or(ServiceError::new_jwt_error(SERVICE_NAME, None))?, context),
@@ -365,7 +365,7 @@ pub async fn submitMusicVote_impl(context: &Context, content: &MusicSubmitGQL) -
 pub async fn submitCPVote_impl(context: &Context, content: &CPSubmitGQL) -> FieldResult<bool> {
 	let mut options = VerificationOptions::default();
 	options.allowed_audiences = Some(HashSet::from_strings(&["vote"]));
-	let result = get_vote_claim_from_token(&content.vote_token, Some(options));
+	let result = context.public_key.public_key().verify_token::<VoteTokenClaim>(&content.vote_token, Some(options));
 	if let Ok(claim) = result {
 		let submit_json = CPSubmitRest {
 			meta: generate_submit_metadata(&claim.custom.vote_id.ok_or(ServiceError::new_jwt_error(SERVICE_NAME, None))?, context),
@@ -381,7 +381,7 @@ pub async fn submitCPVote_impl(context: &Context, content: &CPSubmitGQL) -> Fiel
 pub async fn submitPaperVote_impl(context: &Context, content: &PaperSubmitGQL) -> FieldResult<bool> {
 	let mut options = VerificationOptions::default();
 	options.allowed_audiences = Some(HashSet::from_strings(&["vote"]));
-	let result = get_vote_claim_from_token(&content.vote_token, Some(options));
+	let result = context.public_key.public_key().verify_token::<VoteTokenClaim>(&content.vote_token, Some(options));
 	if let Ok(claim) = result {
 		let submit_json = PaperSubmitRest {
 			meta: generate_submit_metadata(&claim.custom.vote_id.ok_or(ServiceError::new_jwt_error(SERVICE_NAME, None))?, context),
@@ -397,7 +397,7 @@ pub async fn submitPaperVote_impl(context: &Context, content: &PaperSubmitGQL) -
 pub async fn submitDojinVote_impl(context: &Context, content: &DojinSubmitGQL) -> FieldResult<bool> {
 	let mut options = VerificationOptions::default();
 	options.allowed_audiences = Some(HashSet::from_strings(&["vote"]));
-	let result = get_vote_claim_from_token(&content.vote_token, Some(options));
+	let result = context.public_key.public_key().verify_token::<VoteTokenClaim>(&content.vote_token, Some(options));
 	if let Ok(claim) = result {
 		let submit_json = DojinSubmitRest {
 			meta: generate_submit_metadata(&claim.custom.vote_id.ok_or(ServiceError::new_jwt_error(SERVICE_NAME, None))?, context),
@@ -414,7 +414,7 @@ pub async fn submitDojinVote_impl(context: &Context, content: &DojinSubmitGQL) -
 pub async fn getSubmitCharacterVote_impl(context: &Context, vote_token: String) -> FieldResult<CharacterSubmitRestQuery> {
 	let mut options = VerificationOptions::default();
 	options.allowed_audiences = Some(HashSet::from_strings(&["vote"]));
-	let result = get_vote_claim_from_token(&vote_token, Some(options));
+	let result = context.public_key.public_key().verify_token::<VoteTokenClaim>(&vote_token, Some(options));
 	if let Ok(claim) = result {
 		let query_json = QuerySubmitRest {
 			vote_id: claim.custom.vote_id.ok_or(ServiceError::new_jwt_error(SERVICE_NAME, None))?
@@ -429,7 +429,7 @@ pub async fn getSubmitCharacterVote_impl(context: &Context, vote_token: String) 
 pub async fn getSubmitMusicVote_impl(context: &Context, vote_token: String) -> FieldResult<MusicSubmitRestQuery> {
 	let mut options = VerificationOptions::default();
 	options.allowed_audiences = Some(HashSet::from_strings(&["vote"]));
-	let result = get_vote_claim_from_token(&vote_token, Some(options));
+	let result = context.public_key.public_key().verify_token::<VoteTokenClaim>(&vote_token, Some(options));
 	if let Ok(claim) = result {
 		let query_json = QuerySubmitRest {
 			vote_id: claim.custom.vote_id.ok_or(ServiceError::new_jwt_error(SERVICE_NAME, None))?
@@ -444,7 +444,7 @@ pub async fn getSubmitMusicVote_impl(context: &Context, vote_token: String) -> F
 pub async fn getSubmitCPVote_impl(context: &Context, vote_token: String) -> FieldResult<CPSubmitRestQuery> {
 	let mut options = VerificationOptions::default();
 	options.allowed_audiences = Some(HashSet::from_strings(&["vote"]));
-	let result = get_vote_claim_from_token(&vote_token, Some(options));
+	let result = context.public_key.public_key().verify_token::<VoteTokenClaim>(&vote_token, Some(options));
 	if let Ok(claim) = result {
 		let query_json = QuerySubmitRest {
 			vote_id: claim.custom.vote_id.ok_or(ServiceError::new_jwt_error(SERVICE_NAME, None))?
@@ -459,7 +459,7 @@ pub async fn getSubmitCPVote_impl(context: &Context, vote_token: String) -> Fiel
 pub async fn getSubmitPaperVote_impl(context: &Context, vote_token: String) -> FieldResult<PaperSubmitRestQuery> {
 	let mut options = VerificationOptions::default();
 	options.allowed_audiences = Some(HashSet::from_strings(&["vote"]));
-	let result = get_vote_claim_from_token(&vote_token, Some(options));
+	let result = context.public_key.public_key().verify_token::<VoteTokenClaim>(&vote_token, Some(options));
 	if let Ok(claim) = result {
 		let query_json = QuerySubmitRest {
 			vote_id: claim.custom.vote_id.ok_or(ServiceError::new_jwt_error(SERVICE_NAME, None))?
@@ -474,7 +474,7 @@ pub async fn getSubmitPaperVote_impl(context: &Context, vote_token: String) -> F
 pub async fn getSubmitDojinVote_impl(context: &Context, vote_token: String) -> FieldResult<DojinSubmitRestQuery> {
 	let mut options = VerificationOptions::default();
 	options.allowed_audiences = Some(HashSet::from_strings(&["vote"]));
-	let result = get_vote_claim_from_token(&vote_token, Some(options));
+	let result = context.public_key.public_key().verify_token::<VoteTokenClaim>(&vote_token, Some(options));
 	if let Ok(claim) = result {
 		let query_json = QuerySubmitRest {
 			vote_id: claim.custom.vote_id.ok_or(ServiceError::new_jwt_error(SERVICE_NAME, None))?
@@ -490,7 +490,7 @@ pub async fn getSubmitDojinVote_impl(context: &Context, vote_token: String) -> F
 pub async fn getVotingStatus_impl(context: &Context, vote_token: String) -> FieldResult<VotingStatus> {
 	let mut options = VerificationOptions::default();
 	options.allowed_audiences = Some(HashSet::from_strings(&["vote"]));
-	let result = get_vote_claim_from_token(&vote_token, Some(options));
+	let result = context.public_key.public_key().verify_token::<VoteTokenClaim>(&vote_token, Some(options));
 	if let Ok(claim) = result {
 		let query_json = QuerySubmitRest {
 			vote_id: claim.custom.vote_id.ok_or(ServiceError::new_jwt_error(SERVICE_NAME, None))?
