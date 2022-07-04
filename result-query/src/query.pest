@@ -12,29 +12,21 @@ char = {
 int_inner = { int }
 ident_inner = { ident }
 
-field = {
-    ident
-    ~ ":"
-    ~ (int_inner | string | ident_inner)
+value = {
+    (int_inner | string)
 }
 
-field_list = {
-    (field | entity)*
-}
-
-entity = {
-    ident
-    ~ "{"
-    ~ field_list
-    ~ "}"
+value_list = {
+    "[" ~ "]" |
+    "[" ~ value ~ ("," ~ value)* ~ "]"
 }
 
 in_condition = {
-    ident ~ ":" ~ (int_inner | string)
+    ident ~ ":" ~ value_list
 }
 
 eq_condition = {
-    ident ~ "=" ~ (int_inner | string)
+    ident ~ "=" ~ value
 }
 
 condition = {
@@ -54,7 +46,7 @@ primary_query = {
 }
 
 and_query = {
-    (primary_query ~ "AND" ~ and_query | primary_query ~ "AND" ~ primary_query | primary_query)
+    (primary_query ~ "AND" ~ and_query | primary_query)
 }
 
 root = {

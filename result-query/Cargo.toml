@@ -6,3 +6,10 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+pest = "2"
+pest_derive = "2"
+mongodb = "2.1"
+bson = { version = "2", features = ["chrono-0_4"] } # Needed for using chrono datetime in doc
+tokio = "1"
+chrono = "0.4" # Used for setting DateTimes
+serde = "1" # Used in the Map Data into Structs section
