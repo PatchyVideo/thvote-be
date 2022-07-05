@@ -37,9 +37,11 @@ fn parse_value_list(mut root: Pairs<Rule>) -> Result<Vec<String>, Box<dyn std::e
 fn parse_in_condition(mut root: Pairs<Rule>) -> Result<Document, Box<dyn std::error::Error + Send + Sync>> {
 	let ident = root.next().unwrap().as_str();
 	let value_list = root.next().unwrap();
+	let mut vl = parse_value_list(value_list.into_inner())?;
+	vl.sort();
 	Ok(doc! {
 		ident: {
-			"$in": parse_value_list(value_list.into_inner())?
+			"$in": vl
 		}
 	})
 }

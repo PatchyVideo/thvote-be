@@ -5,13 +5,16 @@ extern crate pest;
 extern crate pest_derive;
 
 use actix_web::{App, HttpRequest, HttpServer, Responder, web::{self, Data}};
+use mongodb::{options::ClientOptions, Client};
 
+mod service_error;
 mod models;
 mod handlers;
 mod parser;
 mod comm;
 mod context;
-mod handlers;
+mod query;
+mod common;
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
@@ -23,7 +26,7 @@ async fn main() -> std::io::Result<()> {
 	let db = client.database("submits_v1_final");
 
     let ctx = context::AppContext {
-        db: db,
+        db: db.clone(),
         votes_coll: db.collection("votes"),
     };
     HttpServer::new(move || {

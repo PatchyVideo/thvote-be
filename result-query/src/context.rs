@@ -1,10 +1,9 @@
 use std::sync::Arc;
 use std::cell::Cell;
 
-use jwt_simple::prelude::ES256kKeyPair;
+use bson::Document;
 use mongodb::{Collection, Database};
 
-use crate::models::{ActivityLogEntry, Voter};
 
 #[derive(Clone, Debug)]
 pub struct AppContext {

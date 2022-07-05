@@ -69,7 +69,17 @@ pub struct RankingEntry {
 
 #[derive(juniper::GraphQLObject, Clone, Serialize, Deserialize)]
 pub struct CharacterOrMusicRanking {
-    pub entries: Vec<RankingEntry>
+    pub entries: Vec<RankingEntry>,
+	/// 角色数/音乐数
+	pub total_unique_items: i32,
+	/// 总本命数
+	pub total_first: i32,
+	/// 总票数
+	pub total_votes: i32,
+	/// 全角色平均票数
+	pub average_votes_per_item: f64,
+	/// 全角色中位票数
+	pub median_votes_per_item: f64,
 }
 
 #[derive(Clone, Serialize, Deserialize)]
