@@ -1,10 +1,11 @@
 [workspace]
 members = [
     "gateway",
-    "result-query",
     "submit-handler",
     "user-manager",
     "vote-data",
     "autocomplete",
     "pvrustlib"
 ]
+exclude  = ["result-query"]
+

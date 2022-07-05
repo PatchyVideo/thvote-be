@@ -1,5 +1,6 @@
 
 use std::collections::HashSet;
+use chrono::{DateTime, Utc};
 use serde_derive::{Serialize, Deserialize};
 
 
@@ -105,5 +106,6 @@ pub struct RankingQueryResponse {
 pub struct RankingQueryRequest {
 	#[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default)]
-	pub query: Option<String>
+	pub query: Option<String>,
+	pub vote_start: DateTime<Utc>
 }

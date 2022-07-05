@@ -86,21 +86,24 @@ pub struct CharacterOrMusicRanking {
 pub struct RankingQueryRequest {
 	#[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default)]
-	pub query: Option<String>
+	pub query: Option<String>,
+	pub vote_start: DateTime<Utc>
 }
 
 
-pub async fn queryCharacterRanking_impl(context: &Context, query: Option<String>) -> FieldResult<CharacterOrMusicRanking> {
+pub async fn queryCharacterRanking_impl(context: &Context, query: Option<String>, vote_start: DateTime<Utc>) -> FieldResult<CharacterOrMusicRanking> {
 	let query_json = RankingQueryRequest {
-		query
+		query,
+		vote_start
 	};
 	let post_result: CharacterOrMusicRanking = json_request_gateway(SERVICE_NAME, &format!("http://{}/v1/chars-rank/", RESULT_QUERY), query_json).await?;
 	Ok(post_result)
 }
 
-pub async fn queryMusicRanking_impl(context: &Context, query: Option<String>) -> FieldResult<CharacterOrMusicRanking> {
+pub async fn queryMusicRanking_impl(context: &Context, query: Option<String>, vote_start: DateTime<Utc>) -> FieldResult<CharacterOrMusicRanking> {
     let query_json = RankingQueryRequest {
-		query
+		query,
+		vote_start
 	};
 	let post_result: CharacterOrMusicRanking = json_request_gateway(SERVICE_NAME, &format!("http://{}/v1/musics-rank/", RESULT_QUERY), query_json).await?;
 	Ok(post_result)
