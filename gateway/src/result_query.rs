@@ -87,6 +87,7 @@ pub struct RankingQueryRequest {
 	#[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default)]
 	pub query: Option<String>,
+	/// 投票开始时间，UTC
 	pub vote_start: DateTime<Utc>
 }
 
