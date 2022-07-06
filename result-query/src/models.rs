@@ -24,14 +24,14 @@ pub struct ValidQuestionnaireResponse {
 	pub answer_str: Option<String>
 }
 
-#[derive(Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct VotingTrendItem {
 	pub hrs: i32,
 	pub vote_count: i32
 }
 
 /// 用于角色和音乐
-#[derive(Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct RankingEntry {
 	/// 排名
 	pub rank: i32,
@@ -73,23 +73,8 @@ pub struct RankingEntry {
 	pub trend: Vec<VotingTrendItem>
 }
 
-#[derive(Clone, Serialize, Deserialize)]
-pub struct RankingMeta {
-	/// 角色数/音乐数
-	pub total_unique_items: i32,
-	/// 总本命数
-	pub total_first: i32,
-	/// 总票数
-	pub total_votes: i32,
-	/// 全角色平均票数
-	pub average_votes_per_item: f64,
-	/// 全角色中位票数
-	pub median_votes_per_item: i32,
-}
-
-#[derive(Clone, Serialize, Deserialize)]
-pub struct RankingQueryResponse {
-	pub entries: Vec<RankingEntry>,
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct RankingGlobal {
 	/// 角色数/音乐数
 	pub total_unique_items: i32,
 	/// 总本命数
@@ -103,9 +88,30 @@ pub struct RankingQueryResponse {
 }
 
 #[derive(Clone, Serialize, Deserialize)]
+pub struct RankingQueryResponse {
+	pub entries: Vec<RankingEntry>,
+	pub global: RankingGlobal
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct CachedRankingEntry {
+	pub key: String,
+	pub vote_year: i32,
+	pub entry: RankingEntry
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct CachedRankingGlobal {
+	pub key: String,
+	pub vote_year: i32,
+	pub global: RankingGlobal
+}
+
+#[derive(Clone, Serialize, Deserialize)]
 pub struct RankingQueryRequest {
 	#[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default)]
 	pub query: Option<String>,
-	pub vote_start: DateTime<Utc>
+	pub vote_start: DateTime<Utc>,
+	pub vote_year: i32
 }

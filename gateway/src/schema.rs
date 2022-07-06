@@ -111,13 +111,13 @@ impl Query {
 	// ------------------------------------------------
 	//     result_query
 	// ------------------------------------------------
-	async fn queryCharacterRanking(context: &Context, query: Option<String>, vote_start: DateTime<Utc>) -> FieldResult<CharacterOrMusicRanking> {
-		result_query::queryCharacterRanking_impl(context, query, vote_start).await
+	async fn queryCharacterRanking(context: &Context, query: Option<String>, vote_start: DateTime<Utc>, vote_year: i32) -> FieldResult<CharacterOrMusicRanking> {
+		result_query::queryCharacterRanking_impl(context, query, vote_start, vote_year).await
 	}
-	async fn queryMusicRanking(context: &Context, query: Option<String>, vote_start: DateTime<Utc>) -> FieldResult<CharacterOrMusicRanking> {
-		result_query::queryMusicRanking_impl(context, query, vote_start).await
+	async fn queryMusicRanking(context: &Context, query: Option<String>, vote_start: DateTime<Utc>, vote_year: i32) -> FieldResult<CharacterOrMusicRanking> {
+		result_query::queryMusicRanking_impl(context, query, vote_start, vote_year).await
 	}
-	async fn listReasonsCharacter(context: &Context, name: String) -> FieldResult<Reasons> {
+	async fn listReasonsCharacter(context: &Context, name: String, query: Option<String>, vote_year: i32) -> FieldResult<Reasons> {
 		result_query::listReasonsCharacter_impl(context, name).await
 	}
 }

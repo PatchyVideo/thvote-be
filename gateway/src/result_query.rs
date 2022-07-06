@@ -68,8 +68,7 @@ pub struct RankingEntry {
 }
 
 #[derive(juniper::GraphQLObject, Clone, Serialize, Deserialize)]
-pub struct CharacterOrMusicRanking {
-    pub entries: Vec<RankingEntry>,
+pub struct RankingGlobal {
 	/// 角色数/音乐数
 	pub total_unique_items: i32,
 	/// 总本命数
@@ -82,29 +81,39 @@ pub struct CharacterOrMusicRanking {
 	pub median_votes_per_item: f64,
 }
 
+#[derive(juniper::GraphQLObject, Clone, Serialize, Deserialize)]
+pub struct CharacterOrMusicRanking {
+    pub entries: Vec<RankingEntry>,
+	pub global: RankingGlobal
+}
+
 #[derive(Clone, Serialize, Deserialize)]
 pub struct RankingQueryRequest {
 	#[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default)]
 	pub query: Option<String>,
 	/// 投票开始时间，UTC
-	pub vote_start: DateTime<Utc>
+	pub vote_start: DateTime<Utc>,
+	/// 第几届
+	pub vote_year: i32
 }
 
 
-pub async fn queryCharacterRanking_impl(context: &Context, query: Option<String>, vote_start: DateTime<Utc>) -> FieldResult<CharacterOrMusicRanking> {
+pub async fn queryCharacterRanking_impl(context: &Context, query: Option<String>, vote_start: DateTime<Utc>, vote_year: i32) -> FieldResult<CharacterOrMusicRanking> {
 	let query_json = RankingQueryRequest {
 		query,
-		vote_start
+		vote_start,
+		vote_year
 	};
 	let post_result: CharacterOrMusicRanking = json_request_gateway(SERVICE_NAME, &format!("http://{}/v1/chars-rank/", RESULT_QUERY), query_json).await?;
 	Ok(post_result)
 }
 
-pub async fn queryMusicRanking_impl(context: &Context, query: Option<String>, vote_start: DateTime<Utc>) -> FieldResult<CharacterOrMusicRanking> {
+pub async fn queryMusicRanking_impl(context: &Context, query: Option<String>, vote_start: DateTime<Utc>, vote_year: i32) -> FieldResult<CharacterOrMusicRanking> {
     let query_json = RankingQueryRequest {
 		query,
-		vote_start
+		vote_start,
+		vote_year
 	};
 	let post_result: CharacterOrMusicRanking = json_request_gateway(SERVICE_NAME, &format!("http://{}/v1/musics-rank/", RESULT_QUERY), query_json).await?;
 	Ok(post_result)

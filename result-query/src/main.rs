@@ -28,6 +28,8 @@ async fn main() -> std::io::Result<()> {
     let ctx = context::AppContext {
         db: db.clone(),
         votes_coll: db.collection("votes"),
+        chars_entry_cache_coll: db.collection("cache_chars_entry"),
+        chars_global_cache_coll: db.collection("cache_chars_global"),
     };
     HttpServer::new(move || {
         App::new().app_data(Data::new(ctx.clone()))

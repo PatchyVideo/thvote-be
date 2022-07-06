@@ -1,13 +1,13 @@
 use std::collections::{HashMap, HashSet};
 
-use bson::Document;
+use bson::{Document, doc};
 use chrono::Utc;
 use mongodb::Collection;
 use futures::stream::{StreamExt, TryStreamExt};
 use serde_derive::{Serialize, Deserialize};
 
 
-use crate::{parser, common::SERVICE_NAME, context::AppContext, models::{self, SubmitMetadata, RankingEntry, VotingTrendItem, RankingQueryResponse}, service_error::ServiceError};
+use crate::{parser, common::SERVICE_NAME, context::AppContext, models::{self, SubmitMetadata, RankingEntry, VotingTrendItem, RankingQueryResponse, RankingGlobal, CachedRankingEntry, CachedRankingGlobal}, service_error::ServiceError};
 
 #[derive(Clone, Serialize, Deserialize)]
 struct PartialVotePaperEntry {
@@ -43,9 +43,27 @@ pub fn process_query(query: Option<String>) -> Result<(Option<Document>, String)
 	}
 }
 
-pub async fn chars_ranking(ctx: &AppContext, query: Option<String>, vote_start: bson::DateTime) ->  Result<models::RankingQueryResponse, ServiceError> {
+pub async fn chars_ranking(ctx: &AppContext, query: Option<String>, vote_start: bson::DateTime, vote_year: i32) ->  Result<models::RankingQueryResponse, ServiceError> {
 	let (filter, cache_key) = process_query(query)?;
 	// find in cache
+	let cache_query = doc! {
+		"key": cache_key.clone(),
+		"vote_year": vote_year
+	};
+	let cached_global = ctx.chars_global_cache_coll.find_one(cache_query.clone(), None).await.map_err(|e| ServiceError::new(SERVICE_NAME, format!("{:?}", e)))?;
+	if let Some(cached_global) = cached_global {
+		let mut cached_entries = ctx.chars_entry_cache_coll.find(cache_query, None).await.map_err(|e| ServiceError::new(SERVICE_NAME, format!("{:?}", e)))?;
+		let mut entries = Vec::with_capacity(300);
+		while let Some(Ok(entry)) = cached_entries.next().await {
+			entries.push(entry.entry);
+		}
+		// build response
+		let resp = RankingQueryResponse {
+			entries: entries,
+			global: cached_global.global
+		};
+		return Ok(resp);
+	};
 	// else
 	let mut votes_cursor = ctx.votes_coll.find(filter, None).await.map_err(|e| ServiceError::new(SERVICE_NAME, format!("{:?}", e)))?;
 	let mut hrs_bins: HashMap<String, Vec<i32>> = HashMap::new();
@@ -145,13 +163,37 @@ pub async fn chars_ranking(ctx: &AppContext, query: Option<String>, vote_start: 
 	} else {
 		per_char_vote_count_count_only_vec[num_char / 2] as f64
 	};
-	let resp = RankingQueryResponse {
-		entries: chars_result,
+	let global = RankingGlobal {
 		total_unique_items: num_char as _,
 		total_first: total_first_votes,
 		total_votes,
 		average_votes_per_item: avg,
 		median_votes_per_item: median,
+	};
+
+	// build cache
+	let cached_entries = chars_result
+		.iter()
+		.map(|f| {
+			CachedRankingEntry {
+				key: cache_key.clone(),
+				vote_year,
+				entry: f.clone()
+			}
+		})
+		.collect::<Vec<_>>();
+	let cached_global = CachedRankingGlobal {
+		key: cache_key.clone(),
+		vote_year,
+		global: global.clone()
+	};
+	ctx.chars_entry_cache_coll.insert_many(cached_entries, None).await.map_err(|e| ServiceError::new(SERVICE_NAME, format!("{:?}", e)))?;
+	ctx.chars_global_cache_coll.insert_one(cached_global, None).await.map_err(|e| ServiceError::new(SERVICE_NAME, format!("{:?}", e)))?;
+
+	// build response
+	let resp = RankingQueryResponse {
+		entries: chars_result,
+		global
 	};
 	Ok(resp)
 }

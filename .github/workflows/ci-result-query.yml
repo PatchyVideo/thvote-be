@@ -1,0 +1,17 @@
+name: CI thvote-result-query
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/ci-result-query.yml
+      - .github/workflows/ci-rust.yml
+      - result-query/**
+      - pvrustlib/**
+
+jobs:
+  call-build:
+    uses: ./.github/workflows/ci-rust.yml
+    with:
+      folder: result-query
+      name: thvote-result-query
