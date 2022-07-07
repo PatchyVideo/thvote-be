@@ -14,6 +14,8 @@ fn rename_ident(ident: &str) -> String {
 		match ident {
 			"chars" => "chars.name",
 			"musics" => "musics.name",
+			"chars_first" => "chars_first.name",
+			"musics_first" => "musics_first.name",
 			a => a
 		}.into()
 	}
