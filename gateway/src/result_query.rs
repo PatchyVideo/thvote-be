@@ -18,13 +18,13 @@ use chrono::{DateTime, Utc};
 use serde_derive::{Serialize, Deserialize};
 use bson::oid::ObjectId;
 
-#[derive(juniper::GraphQLObject, Clone, Serialize, Deserialize)]
+#[derive(juniper::GraphQLObject, Debug, Clone, Serialize, Deserialize)]
 pub struct VotingTrendItem {
 	pub hrs: i32,
 	pub cnt: i32
 }
 
-#[derive(juniper::GraphQLObject, Clone, Serialize, Deserialize)]
+#[derive(juniper::GraphQLObject, Debug, Clone, Serialize, Deserialize)]
 /// 用于角色和音乐
 pub struct RankingEntry {
 	/// 排名
@@ -64,8 +64,63 @@ pub struct RankingEntry {
 	/// 占总体女性比例
 	pub female_percentage_per_total: f64,
 	/// 趋势
-	pub trend: Vec<VotingTrendItem>
+	pub trend: Vec<VotingTrendItem>,
+	/// 理由
+	pub reasons: Vec<String>,
 }
+
+#[derive(juniper::GraphQLObject, Debug, Clone, Serialize, Deserialize)]
+pub struct CPItem {
+	pub a: String,
+	pub b: String,
+	pub c: Option<String>
+}
+
+/// 用于CP
+#[derive(juniper::GraphQLObject, Debug, Clone, Serialize, Deserialize)]
+pub struct CPRankingEntry {
+	/// 排名
+	pub rank: i32,
+	/// 角色名
+	pub cp: CPItem,
+	/// A主动率
+	pub a_active: f64,
+	/// B主动率
+	pub b_active: f64,
+	/// C主动率
+	pub c_active: f64,
+	/// 无主动率
+	pub none_active: f64,
+	/// 票数
+	pub vote_count: i32,
+	/// 本命票数
+	pub first_vote_count: i32,
+	/// 本命率
+	pub first_vote_percentage: f64,
+	/// 本命加权
+	pub first_vote_count_weighted: i32,
+	/// 票数占比
+	pub vote_percentage: f64,
+	/// 本命占比
+	pub first_percentage: f64,
+	/// 男性票数
+	pub male_vote_count: i32,
+	/// 男性比例 P(male|voted)
+	pub male_percentage_per_char: f64,
+	/// 占总体男性比例 P(voted|male)
+	pub male_percentage_per_total: f64,
+	/// 女性票数
+	pub female_vote_count: i32,
+	/// 女性比例
+	pub female_percentage_per_char: f64,
+	/// 占总体女性比例
+	pub female_percentage_per_total: f64,
+	/// 趋势
+	pub trend: Vec<VotingTrendItem>,
+	/// 理由
+	pub reasons: Vec<String>,
+}
+
 
 #[derive(juniper::GraphQLObject, Clone, Serialize, Deserialize)]
 pub struct RankingGlobal {
@@ -83,14 +138,20 @@ pub struct RankingGlobal {
 
 #[derive(juniper::GraphQLObject, Clone, Serialize, Deserialize)]
 pub struct CharacterOrMusicRanking {
-    pub entries: Vec<RankingEntry>,
+	pub entries: Vec<RankingEntry>,
+	pub global: RankingGlobal
+}
+
+#[derive(juniper::GraphQLObject, Clone, Serialize, Deserialize)]
+pub struct CPRanking {
+	pub entries: Vec<CPRankingEntry>,
 	pub global: RankingGlobal
 }
 
 #[derive(Clone, Serialize, Deserialize)]
 pub struct RankingQueryRequest {
 	#[serde(skip_serializing_if = "Option::is_none")]
-    #[serde(default)]
+	#[serde(default)]
 	pub query: Option<String>,
 	/// 投票开始时间，UTC
 	pub vote_start: DateTime<Utc>,
@@ -110,7 +171,7 @@ pub async fn queryCharacterRanking_impl(context: &Context, query: Option<String>
 }
 
 pub async fn queryMusicRanking_impl(context: &Context, query: Option<String>, vote_start: DateTime<Utc>, vote_year: i32) -> FieldResult<CharacterOrMusicRanking> {
-    let query_json = RankingQueryRequest {
+	let query_json = RankingQueryRequest {
 		query,
 		vote_start,
 		vote_year
@@ -119,11 +180,12 @@ pub async fn queryMusicRanking_impl(context: &Context, query: Option<String>, vo
 	Ok(post_result)
 }
 
-#[derive(juniper::GraphQLObject, Clone, Serialize, Deserialize)]
-pub struct Reasons {
-    pub items: Vec<String>
-}
-
-pub async fn listReasonsCharacter_impl(context: &Context, name: String) -> FieldResult<Reasons> {
-    Ok(Reasons {items: vec![]})
+pub async fn queryCPRanking_impl(context: &Context, query: Option<String>, vote_start: DateTime<Utc>, vote_year: i32) -> FieldResult<CPRanking> {
+	let query_json = RankingQueryRequest {
+		query,
+		vote_start,
+		vote_year
+	};
+	let post_result: CPRanking = json_request_gateway(SERVICE_NAME, &format!("http://{}/v1/cps-rank/", RESULT_QUERY), query_json).await?;
+	Ok(post_result)
 }

@@ -32,13 +32,16 @@ async fn main() -> std::io::Result<()> {
         chars_global_cache_coll: db.collection("cache_chars_global"),
         musics_entry_cache_coll: db.collection("cache_musics_entry"),
         musics_global_cache_coll: db.collection("cache_musics_global"),
+        cps_entry_cache_coll: db.collection("cache_cps_entry"),
+        cps_global_cache_coll: db.collection("cache_cps_global"),
     };
     HttpServer::new(move || {
         App::new().app_data(Data::new(ctx.clone()))
             .route("/v1/chars-rank", web::post().to(handlers::chars_rank))
             .route("/v1/musics-rank", web::post().to(handlers::musics_rank))
+            .route("/v1/cps-rank", web::post().to(handlers::cps_rank))
     })
-    .bind("0.0.0.0:80")?
+    .bind("0.0.0.0:8080")?
     .run()
     .await
 }

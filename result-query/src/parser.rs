@@ -81,7 +81,6 @@ fn parse_condition(mut root: Pairs<Rule>) -> Result<Document, Box<dyn std::error
 
 fn parse_primary_query(mut root: Pairs<Rule>) -> Result<Document, Box<dyn std::error::Error + Send + Sync>> {
 	let q = root.next().unwrap();
-	println!("{}",q);
 	match q.as_rule() {
 		Rule::query => {
 			parse_query(q.into_inner())
@@ -139,7 +138,6 @@ fn parse_root(mut root: Pairs<Rule>) -> Result<Document, Box<dyn std::error::Err
 			parse_query(q.into_inner())
 		},
 		a => {
-			println!("{:?}", a);
 			unreachable!()
 		}
 	}

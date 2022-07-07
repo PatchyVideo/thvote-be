@@ -18,12 +18,13 @@ pub struct SubmitMetadata {
 }
 
 
-#[derive(Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct CPItem {
 	pub a: String,
 	pub b: String,
 	pub c: Option<String>,
 	pub active: Option<String>,
+	pub reason: Option<String>
 }
 
 impl Hash for CPItem {
@@ -38,6 +39,10 @@ impl PartialEq for CPItem {
     fn eq(&self, other: &Self) -> bool {
         self.a == other.a && self.b == other.b && self.c == other.c
     }
+}
+
+impl Eq for CPItem {
+	
 }
 
 #[derive(Clone, Serialize, Deserialize)]
@@ -93,7 +98,54 @@ pub struct RankingEntry {
 	/// 占总体女性比例
 	pub female_percentage_per_total: f64,
 	/// 趋势
-	pub trend: Vec<VotingTrendItem>
+	pub trend: Vec<VotingTrendItem>,
+	/// 理由
+	pub reasons: Vec<String>,
+}
+
+/// 用于CP
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct CPRankingEntry {
+	/// 排名
+	pub rank: i32,
+	/// 角色名
+	pub cp: CPItem,
+	/// A主动率
+	pub a_active: f64,
+	/// B主动率
+	pub b_active: f64,
+	/// C主动率
+	pub c_active: f64,
+	/// 无主动率
+	pub none_active: f64,
+	/// 票数
+	pub vote_count: i32,
+	/// 本命票数
+	pub first_vote_count: i32,
+	/// 本命率
+	pub first_vote_percentage: f64,
+	/// 本命加权
+	pub first_vote_count_weighted: i32,
+	/// 票数占比
+	pub vote_percentage: f64,
+	/// 本命占比
+	pub first_percentage: f64,
+	/// 男性票数
+	pub male_vote_count: i32,
+	/// 男性比例 P(male|voted)
+	pub male_percentage_per_char: f64,
+	/// 占总体男性比例 P(voted|male)
+	pub male_percentage_per_total: f64,
+	/// 女性票数
+	pub female_vote_count: i32,
+	/// 女性比例
+	pub female_percentage_per_char: f64,
+	/// 占总体女性比例
+	pub female_percentage_per_total: f64,
+	/// 趋势
+	pub trend: Vec<VotingTrendItem>,
+	/// 理由
+	pub reasons: Vec<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -116,11 +168,24 @@ pub struct RankingQueryResponse {
 	pub global: RankingGlobal
 }
 
+#[derive(Clone, Serialize, Deserialize)]
+pub struct CPRankingQueryResponse {
+	pub entries: Vec<CPRankingEntry>,
+	pub global: RankingGlobal
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct CachedRankingEntry {
 	pub key: String,
 	pub vote_year: i32,
 	pub entry: RankingEntry
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct CachedCPRankingEntry {
+	pub key: String,
+	pub vote_year: i32,
+	pub entry: CPRankingEntry
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
