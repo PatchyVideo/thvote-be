@@ -38,6 +38,11 @@ fn parse_in_condition(mut root: Pairs<Rule>) -> Result<Document, Box<dyn std::er
 	let ident = root.next().unwrap().as_str();
 	let value_list = root.next().unwrap();
 	let mut vl = parse_value_list(value_list.into_inner())?;
+	let ident = if ident.chars().next().unwrap() == 'q' {
+		format!("{}.opt", ident)
+	} else {
+		ident.to_string()
+	};
 	vl.sort();
 	Ok(doc! {
 		ident: {
@@ -49,6 +54,11 @@ fn parse_in_condition(mut root: Pairs<Rule>) -> Result<Document, Box<dyn std::er
 fn parse_eq_condition(mut root: Pairs<Rule>) -> Result<Document, Box<dyn std::error::Error + Send + Sync>> {
 	let ident = root.next().unwrap().as_str();
 	let v = root.next().unwrap();
+	let ident = if ident.chars().next().unwrap() == 'q' {
+		format!("{}.opt", ident)
+	} else {
+		ident.to_string()
+	};
 	Ok(doc! {
 		ident: {
 			"$in": [parse_value(v.into_inner())?]

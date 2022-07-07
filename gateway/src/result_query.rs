@@ -20,8 +20,8 @@ use bson::oid::ObjectId;
 
 #[derive(juniper::GraphQLObject, Clone, Serialize, Deserialize)]
 pub struct VotingTrendItem {
-	pub date: DateTime<Utc>,
-	pub vote_count: i32
+	pub hrs: i32,
+	pub cnt: i32
 }
 
 #[derive(juniper::GraphQLObject, Clone, Serialize, Deserialize)]

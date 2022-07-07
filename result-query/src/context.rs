@@ -13,4 +13,6 @@ pub struct AppContext {
     pub votes_coll: Collection<Document>,
     pub chars_entry_cache_coll: Collection<CachedRankingEntry>,
     pub chars_global_cache_coll: Collection<CachedRankingGlobal>,
+    pub musics_entry_cache_coll: Collection<CachedRankingEntry>,
+    pub musics_global_cache_coll: Collection<CachedRankingGlobal>,
 }

@@ -30,6 +30,8 @@ async fn main() -> std::io::Result<()> {
         votes_coll: db.collection("votes"),
         chars_entry_cache_coll: db.collection("cache_chars_entry"),
         chars_global_cache_coll: db.collection("cache_chars_global"),
+        musics_entry_cache_coll: db.collection("cache_musics_entry"),
+        musics_global_cache_coll: db.collection("cache_musics_global"),
     };
     HttpServer::new(move || {
         App::new().app_data(Data::new(ctx.clone()))

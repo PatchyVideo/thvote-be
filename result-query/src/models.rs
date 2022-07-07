@@ -27,7 +27,7 @@ pub struct ValidQuestionnaireResponse {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct VotingTrendItem {
 	pub hrs: i32,
-	pub vote_count: i32
+	pub cnt: i32
 }
 
 /// 用于角色和音乐
