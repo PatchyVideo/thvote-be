@@ -20,6 +20,7 @@ actix-rt = "2.7.0"
 futures = "0.3"
 serde_derive = "1"
 serde_json = { version = "1" }
+derivative = "2"
 
 [dependencies.mongodb]
 version = "2"

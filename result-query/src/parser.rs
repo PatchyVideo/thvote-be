@@ -7,10 +7,16 @@ use pest::{Parser, iterators::Pairs};
 #[grammar = "query.pest"] // relative to src
 pub struct QueryParser;
 
-
-
-pub struct Query {
-	pub root: Document
+fn rename_ident(ident: &str) -> String {
+	if ident.chars().next().unwrap() == 'q' {
+		format!("{}.opt", ident)
+	} else {
+		match ident {
+			"chars" => "chars.name",
+			"musics" => "musics.name",
+			a => a
+		}.into()
+	}
 }
 
 fn parse_value(mut root: Pairs<Rule>) -> Result<String, Box<dyn std::error::Error + Send + Sync>> {
@@ -38,11 +44,7 @@ fn parse_in_condition(mut root: Pairs<Rule>) -> Result<Document, Box<dyn std::er
 	let ident = root.next().unwrap().as_str();
 	let value_list = root.next().unwrap();
 	let mut vl = parse_value_list(value_list.into_inner())?;
-	let ident = if ident.chars().next().unwrap() == 'q' {
-		format!("{}.opt", ident)
-	} else {
-		ident.to_string()
-	};
+	let ident = rename_ident(ident);
 	vl.sort();
 	Ok(doc! {
 		ident: {
@@ -54,11 +56,7 @@ fn parse_in_condition(mut root: Pairs<Rule>) -> Result<Document, Box<dyn std::er
 fn parse_eq_condition(mut root: Pairs<Rule>) -> Result<Document, Box<dyn std::error::Error + Send + Sync>> {
 	let ident = root.next().unwrap().as_str();
 	let v = root.next().unwrap();
-	let ident = if ident.chars().next().unwrap() == 'q' {
-		format!("{}.opt", ident)
-	} else {
-		ident.to_string()
-	};
+	let ident = rename_ident(ident);
 	Ok(doc! {
 		ident: {
 			"$in": [parse_value(v.into_inner())?]

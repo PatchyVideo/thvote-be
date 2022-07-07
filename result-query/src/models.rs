@@ -1,6 +1,7 @@
 
-use std::collections::HashSet;
+use std::{collections::HashSet, hash::Hash};
 use chrono::{DateTime, Utc};
+use derivative::Derivative;
 use serde_derive::{Serialize, Deserialize};
 
 
@@ -16,6 +17,28 @@ pub struct SubmitMetadata {
 	pub additional_fingreprint: Option<String>
 }
 
+
+#[derive(Clone, Serialize, Deserialize)]
+pub struct CPItem {
+	pub a: String,
+	pub b: String,
+	pub c: Option<String>,
+	pub active: Option<String>,
+}
+
+impl Hash for CPItem {
+    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+        self.a.hash(state);
+        self.b.hash(state);
+        self.c.hash(state);
+    }
+}
+
+impl PartialEq for CPItem {
+    fn eq(&self, other: &Self) -> bool {
+        self.a == other.a && self.b == other.b && self.c == other.c
+    }
+}
 
 #[derive(Clone, Serialize, Deserialize)]
 pub struct ValidQuestionnaireResponse {
