@@ -37,7 +37,7 @@ pub struct RankingEntry {
 	pub first_vote_count: i32,
 	/// 本命率
 	pub first_vote_percentage: f64,
-	/// 本命甲醛
+	/// 本命加权
 	pub first_vote_count_weighted: i32,
 	/// 所属作品类型
 	pub character_type: String,
@@ -53,9 +53,9 @@ pub struct RankingEntry {
 	pub first_percentage: f64,
 	/// 男性票数
 	pub male_vote_count: i32,
-	/// 男性比例
+	/// 男性比例 P(male|voted)
 	pub male_percentage_per_char: f64,
-	/// 占总体男性比例
+	/// 占总体男性比例 P(voted|male)
 	pub male_percentage_per_total: f64,
 	/// 女性票数
 	pub female_vote_count: i32,
