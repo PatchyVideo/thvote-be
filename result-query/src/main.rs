@@ -37,11 +37,11 @@ async fn main() -> std::io::Result<()> {
     };
     HttpServer::new(move || {
         App::new().app_data(Data::new(ctx.clone()))
-            .route("/v1/chars-rank", web::post().to(handlers::chars_rank))
-            .route("/v1/musics-rank", web::post().to(handlers::musics_rank))
-            .route("/v1/cps-rank", web::post().to(handlers::cps_rank))
+            .route("/v1/chars-rank/", web::post().to(handlers::chars_rank))
+            .route("/v1/musics-rank/", web::post().to(handlers::musics_rank))
+            .route("/v1/cps-rank/", web::post().to(handlers::cps_rank))
     })
-    .bind("0.0.0.0:8080")?
+    .bind("0.0.0.0:80")?
     .run()
     .await
 }
