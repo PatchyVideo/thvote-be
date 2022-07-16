@@ -62,6 +62,50 @@ pub fn process_query(query: Option<String>) -> Result<(Option<Document>, String)
 	}
 }
 
+
+pub async fn chars_reasons(ctx: &AppContext, query: Option<String>, vote_start: bson::DateTime, vote_year: i32, rank: i32) ->  Result<models::ReasonsResponse, ServiceError> {
+	let (filter, cache_key) = process_query(query)?;
+	let filter = if let Some(filter) = filter {
+		doc! {
+			"$and": [filter, {"vote_year": vote_year}]
+		}
+	} else {
+		doc! {
+			"vote_year": vote_year
+		}
+	};
+	// find in cache
+	let cache_query = doc! {
+		"key": cache_key.clone(),
+		"vote_year": vote_year
+	};
+	let cached_global = ctx.chars_global_cache_coll.find_one(cache_query.clone(), None).await.map_err(|e| ServiceError::new(SERVICE_NAME, format!("{:?}", e)))?;
+	if let Some(cached_global) = cached_global {
+		let mut cached_entries = ctx.chars_entry_cache_coll.find(cache_query, None).await.map_err(|e| ServiceError::new(SERVICE_NAME, format!("{:?}", e)))?;
+		let mut entries = Vec::with_capacity(300);
+		while let Some(Ok(entry)) = cached_entries.next().await {
+			entries.push(entry.entry);
+		}
+		// build response
+		if rank >= 1 && rank <= entries.len() as i32 {
+			let resp = models::ReasonsResponse {
+				reasons: entries[(rank - 1) as usize].reasons.clone()
+			};
+			Ok(resp)
+		} else {
+			let resp = models::ReasonsResponse {
+				reasons: vec![]
+			};
+			Ok(resp)
+		}
+	} else {
+		let resp = models::ReasonsResponse {
+			reasons: vec![]
+		};
+		Ok(resp)
+	}
+}
+
 pub async fn chars_ranking(ctx: &AppContext, query: Option<String>, vote_start: bson::DateTime, vote_year: i32) ->  Result<models::RankingQueryResponse, ServiceError> {
 	let (filter, cache_key) = process_query(query)?;
 	let filter = if let Some(filter) = filter {
@@ -152,7 +196,15 @@ pub async fn chars_ranking(ctx: &AppContext, query: Option<String>, vote_start: 
 	let mut per_char_vote_count_vec: Vec<(&String, &i32)> = per_char_vote_count.iter().collect();
 	let mut per_char_vote_count_count_only_vec: Vec<i32> = per_char_vote_count.iter().map(|(a, b)| *b).collect();
 	per_char_vote_count_count_only_vec.sort();
-	per_char_vote_count_vec.sort_by(|a, b| b.1.cmp(a.1));
+	per_char_vote_count_vec.sort_by(
+		|a, b| {
+			if b.1 == a.1 {
+				per_char_vote_first_count.get(b.0).cloned().unwrap_or_default().cmp(&per_char_vote_first_count.get(a.0).cloned().unwrap_or_default())
+			} else {
+				b.1.cmp(a.1)
+			}
+		}
+	);
 	let mut rank = 1;
 	if total_male == 0 {
 		total_male = 1;
@@ -249,6 +301,49 @@ pub async fn chars_ranking(ctx: &AppContext, query: Option<String>, vote_start: 
 	Ok(resp)
 }
 
+pub async fn musics_reasons(ctx: &AppContext, query: Option<String>, vote_start: bson::DateTime, vote_year: i32, rank: i32) ->  Result<models::ReasonsResponse, ServiceError> {
+	let (filter, cache_key) = process_query(query)?;
+	let filter = if let Some(filter) = filter {
+		doc! {
+			"$and": [filter, {"vote_year": vote_year}]
+		}
+	} else {
+		doc! {
+			"vote_year": vote_year
+		}
+	};
+	// find in cache
+	let cache_query = doc! {
+		"key": cache_key.clone(),
+		"vote_year": vote_year
+	};
+	let cached_global = ctx.musics_global_cache_coll.find_one(cache_query.clone(), None).await.map_err(|e| ServiceError::new(SERVICE_NAME, format!("{:?}", e)))?;
+	if let Some(cached_global) = cached_global {
+		let mut cached_entries = ctx.musics_entry_cache_coll.find(cache_query, None).await.map_err(|e| ServiceError::new(SERVICE_NAME, format!("{:?}", e)))?;
+		let mut entries = Vec::with_capacity(300);
+		while let Some(Ok(entry)) = cached_entries.next().await {
+			entries.push(entry.entry);
+		}
+		// build response
+		if rank >= 1 && rank <= entries.len() as i32 {
+			let resp = models::ReasonsResponse {
+				reasons: entries[(rank - 1) as usize].reasons.clone()
+			};
+			Ok(resp)
+		} else {
+			let resp = models::ReasonsResponse {
+				reasons: vec![]
+			};
+			Ok(resp)
+		}
+	} else {
+		let resp = models::ReasonsResponse {
+			reasons: vec![]
+		};
+		Ok(resp)
+	}
+}
+
 pub async fn musics_ranking(ctx: &AppContext, query: Option<String>, vote_start: bson::DateTime, vote_year: i32) ->  Result<models::RankingQueryResponse, ServiceError> {
 	let (filter, cache_key) = process_query(query)?;
 	let filter = if let Some(filter) = filter {
@@ -339,7 +434,15 @@ pub async fn musics_ranking(ctx: &AppContext, query: Option<String>, vote_start:
 	let mut per_music_vote_count_vec: Vec<(&String, &i32)> = per_music_vote_count.iter().collect();
 	let mut per_music_vote_count_count_only_vec: Vec<i32> = per_music_vote_count.iter().map(|(a, b)| *b).collect();
 	per_music_vote_count_count_only_vec.sort();
-	per_music_vote_count_vec.sort_by(|a, b| b.1.cmp(a.1));
+	per_music_vote_count_vec.sort_by(
+		|a, b| {
+			if b.1 == a.1 {
+				per_music_vote_first_count.get(b.0).cloned().unwrap_or_default().cmp(&per_music_vote_first_count.get(a.0).cloned().unwrap_or_default())
+			} else {
+				b.1.cmp(a.1)
+			}
+		}
+	);
 	let mut rank = 1;
 	if total_male == 0 {
 		total_male = 1;
@@ -434,6 +537,49 @@ pub async fn musics_ranking(ctx: &AppContext, query: Option<String>, vote_start:
 		global
 	};
 	Ok(resp)
+}
+
+pub async fn cps_reasons(ctx: &AppContext, query: Option<String>, vote_start: bson::DateTime, vote_year: i32, rank: i32) ->  Result<models::ReasonsResponse, ServiceError> {
+	let (filter, cache_key) = process_query(query)?;
+	let filter = if let Some(filter) = filter {
+		doc! {
+			"$and": [filter, {"vote_year": vote_year}]
+		}
+	} else {
+		doc! {
+			"vote_year": vote_year
+		}
+	};
+	// find in cache
+	let cache_query = doc! {
+		"key": cache_key.clone(),
+		"vote_year": vote_year
+	};
+	let cached_global = ctx.cps_global_cache_coll.find_one(cache_query.clone(), None).await.map_err(|e| ServiceError::new(SERVICE_NAME, format!("{:?}", e)))?;
+	if let Some(cached_global) = cached_global {
+		let mut cached_entries = ctx.cps_entry_cache_coll.find(cache_query, None).await.map_err(|e| ServiceError::new(SERVICE_NAME, format!("{:?}", e)))?;
+		let mut entries = Vec::with_capacity(300);
+		while let Some(Ok(entry)) = cached_entries.next().await {
+			entries.push(entry.entry);
+		}
+		// build response
+		if rank >= 1 && rank <= entries.len() as i32 {
+			let resp = models::ReasonsResponse {
+				reasons: entries[(rank - 1) as usize].reasons.clone()
+			};
+			Ok(resp)
+		} else {
+			let resp = models::ReasonsResponse {
+				reasons: vec![]
+			};
+			Ok(resp)
+		}
+	} else {
+		let resp = models::ReasonsResponse {
+			reasons: vec![]
+		};
+		Ok(resp)
+	}
 }
 
 pub async fn cps_ranking(ctx: &AppContext, query: Option<String>, vote_start: bson::DateTime, vote_year: i32) ->  Result<models::CPRankingQueryResponse, ServiceError> {
@@ -540,10 +686,18 @@ pub async fn cps_ranking(ctx: &AppContext, query: Option<String>, vote_start: bs
 		}
 	}
 	let mut cps_result = Vec::with_capacity(300);
-	let mut per_cp_vote_count_vec: Vec<(&CPItem, &i32)> = per_cp_vote_count.iter().collect();
+	let mut per_cp_vote_count_vec: Vec<(&CPItem, &i32)> = per_cp_vote_count.iter().filter(|(a, b)| **b > 1).collect();
 	let mut per_cp_vote_count_count_only_vec: Vec<i32> = per_cp_vote_count.iter().map(|(a, b)| *b).collect();
 	per_cp_vote_count_count_only_vec.sort();
-	per_cp_vote_count_vec.sort_by(|a, b| b.1.cmp(a.1));
+	per_cp_vote_count_vec.sort_by(
+		|a, b| {
+			if b.1 == a.1 {
+				per_cp_vote_first_count.get(b.0).cloned().unwrap_or_default().cmp(&per_cp_vote_first_count.get(a.0).cloned().unwrap_or_default())
+			} else {
+				b.1.cmp(a.1)
+			}
+		}
+	);
 	let mut rank = 1;
 	if total_male == 0 {
 		total_male = 1;

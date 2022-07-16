@@ -28,17 +28,17 @@ pub struct CPItem {
 }
 
 impl Hash for CPItem {
-    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
-        self.a.hash(state);
-        self.b.hash(state);
-        self.c.hash(state);
-    }
+	fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+		self.a.hash(state);
+		self.b.hash(state);
+		self.c.hash(state);
+	}
 }
 
 impl PartialEq for CPItem {
-    fn eq(&self, other: &Self) -> bool {
-        self.a == other.a && self.b == other.b && self.c == other.c
-    }
+	fn eq(&self, other: &Self) -> bool {
+		self.a == other.a && self.b == other.b && self.c == other.c
+	}
 }
 
 impl Eq for CPItem {
@@ -163,6 +163,22 @@ pub struct RankingGlobal {
 }
 
 #[derive(Clone, Serialize, Deserialize)]
+pub struct ReasonsRequest {
+	#[serde(skip_serializing_if = "Option::is_none")]
+	#[serde(default)]
+	pub query: Option<String>,
+	pub vote_start: DateTime<Utc>,
+	pub vote_year: i32,
+	pub rank: i32
+}
+
+
+#[derive(Clone, Serialize, Deserialize)]
+pub struct ReasonsResponse {
+	pub reasons: Vec<String>
+}
+
+#[derive(Clone, Serialize, Deserialize)]
 pub struct RankingQueryResponse {
 	pub entries: Vec<RankingEntry>,
 	pub global: RankingGlobal
@@ -198,7 +214,7 @@ pub struct CachedRankingGlobal {
 #[derive(Clone, Serialize, Deserialize)]
 pub struct RankingQueryRequest {
 	#[serde(skip_serializing_if = "Option::is_none")]
-    #[serde(default)]
+	#[serde(default)]
 	pub query: Option<String>,
 	pub vote_start: DateTime<Utc>,
 	pub vote_year: i32

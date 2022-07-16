@@ -114,11 +114,20 @@ impl Query {
 	async fn queryCharacterRanking(context: &Context, query: Option<String>, vote_start: DateTime<Utc>, vote_year: i32) -> FieldResult<CharacterOrMusicRanking> {
 		result_query::queryCharacterRanking_impl(context, query, vote_start, vote_year).await
 	}
+	async fn queryCharacterReasons(context: &Context, query: Option<String>, vote_start: DateTime<Utc>, vote_year: i32, rank: i32) -> FieldResult<CharacterOrMusicRanking> {
+		result_query::queryCharacterReasons_impl(context, query, vote_start, vote_year, rank).await
+	}
 	async fn queryMusicRanking(context: &Context, query: Option<String>, vote_start: DateTime<Utc>, vote_year: i32) -> FieldResult<CharacterOrMusicRanking> {
 		result_query::queryMusicRanking_impl(context, query, vote_start, vote_year).await
 	}
+	async fn queryMusicReasons(context: &Context, query: Option<String>, vote_start: DateTime<Utc>, vote_year: i32, rank: i32) -> FieldResult<CharacterOrMusicRanking> {
+		result_query::queryMusicReasons_impl(context, query, vote_start, vote_year, rank).await
+	}
 	async fn queryCPRanking(context: &Context, query: Option<String>, vote_start: DateTime<Utc>, vote_year: i32) -> FieldResult<CPRanking> {
 		result_query::queryCPRanking_impl(context, query, vote_start, vote_year).await
+	}
+	async fn queryCPReasons(context: &Context, query: Option<String>, vote_start: DateTime<Utc>, vote_year: i32, rank: i32) -> FieldResult<CharacterOrMusicRanking> {
+		result_query::queryCPReasons_impl(context, query, vote_start, vote_year, rank).await
 	}
 }
 
