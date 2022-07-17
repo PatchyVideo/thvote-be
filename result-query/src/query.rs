@@ -217,7 +217,7 @@ pub async fn chars_ranking(ctx: &AppContext, query: Option<String>, vote_start: 
 		total_first_votes = 1;
 	}
 	let mut display_rank = 1;
-	let mut last_votes = (0, 0);
+	let mut last_votes = (0);
 	for (ch, _) in per_char_vote_count_vec {
 		let trend = hrs_bins
 			.get(ch)
@@ -229,7 +229,7 @@ pub async fn chars_ranking(ctx: &AppContext, query: Option<String>, vote_start: 
 				VotingTrendItem { hrs: hrs as _, cnt: *cnt }
 			})
 			.collect::<Vec<_>>();
-		let entry = RankingEntry {
+		let mut entry = RankingEntry {
 			rank,
 			display_rank,
 			name: ch.clone(),
@@ -252,13 +252,14 @@ pub async fn chars_ranking(ctx: &AppContext, query: Option<String>, vote_start: 
 			trend,
 			reasons: reasons.get(ch).unwrap_or(&vec![]).clone()
 		};
-		let cur_votes = (entry.vote_count, entry.first_vote_count);
-		chars_result.push(entry);
-		rank += 1;
+		let cur_votes = (entry.vote_count);
 		if last_votes != cur_votes {
 			display_rank = rank;
+			entry.display_rank = display_rank;
 		}
+		rank += 1;
 		last_votes = cur_votes;
+		chars_result.push(entry);
 	};
 	let num_char = per_char_vote_count_count_only_vec.len();
 	let avg = if num_char == 0 { 0f64 } else { total_votes as f64 / num_char as f64 };
@@ -464,7 +465,7 @@ pub async fn musics_ranking(ctx: &AppContext, query: Option<String>, vote_start:
 		total_first_votes = 1;
 	}
 	let mut display_rank = 1;
-	let mut last_votes = (0, 0);
+	let mut last_votes = (0);
 	for (ch, _) in per_music_vote_count_vec {
 		let trend = hrs_bins
 			.get(ch)
@@ -476,7 +477,7 @@ pub async fn musics_ranking(ctx: &AppContext, query: Option<String>, vote_start:
 				VotingTrendItem { hrs: hrs as _, cnt: *cnt }
 			})
 			.collect::<Vec<_>>();
-		let entry = RankingEntry {
+		let mut entry = RankingEntry {
 			rank,
 			display_rank,
 			name: ch.clone(),
@@ -499,13 +500,14 @@ pub async fn musics_ranking(ctx: &AppContext, query: Option<String>, vote_start:
 			trend,
 			reasons: reasons.get(ch).unwrap_or(&vec![]).clone()
 		};
-		let cur_votes = (entry.vote_count, entry.first_vote_count);
-		musics_result.push(entry);
-		rank += 1;
+		let cur_votes = (entry.vote_count);
 		if last_votes != cur_votes {
 			display_rank = rank;
+			entry.display_rank = display_rank;
 		}
+		rank += 1;
 		last_votes = cur_votes;
+		musics_result.push(entry);
 	};
 	let num_music = per_music_vote_count_count_only_vec.len();
 	let avg = if num_music == 0 { 0f64 } else { total_votes as f64 / num_music as f64 };
@@ -728,7 +730,7 @@ pub async fn cps_ranking(ctx: &AppContext, query: Option<String>, vote_start: bs
 		total_first_votes = 1;
 	}
 	let mut display_rank = 1;
-	let mut last_votes = (0, 0);
+	let mut last_votes = (0);
 	for (ch, _) in per_cp_vote_count_vec {
 		let trend = hrs_bins
 			.get(ch)
@@ -740,7 +742,7 @@ pub async fn cps_ranking(ctx: &AppContext, query: Option<String>, vote_start: bs
 				VotingTrendItem { hrs: hrs as _, cnt: *cnt }
 			})
 			.collect::<Vec<_>>();
-		let entry = CPRankingEntry {
+		let mut entry = CPRankingEntry {
 			rank,
 			display_rank,
 			cp: ch.clone(),
@@ -763,13 +765,14 @@ pub async fn cps_ranking(ctx: &AppContext, query: Option<String>, vote_start: bs
 			trend,
 			reasons: reasons.get(ch).unwrap_or(&vec![]).clone()
 		};
-		let cur_votes = (entry.vote_count, entry.first_vote_count);
-		cps_result.push(entry);
-		rank += 1;
+		let cur_votes = (entry.vote_count);
 		if last_votes != cur_votes {
 			display_rank = rank;
+			entry.display_rank = display_rank;
 		}
+		rank += 1;
 		last_votes = cur_votes;
+		cps_result.push(entry);
 	};
 	let num_cp = per_cp_vote_count_count_only_vec.len();
 	let avg = if num_cp == 0 { 0f64 } else { total_votes as f64 / num_cp as f64 };
