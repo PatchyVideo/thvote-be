@@ -63,6 +63,8 @@ pub struct VotingTrendItem {
 pub struct RankingEntry {
 	/// 排名
 	pub rank: i32,
+	/// 展示排名
+	pub display_rank: i32,
 	/// 角色名
 	pub name: String,
 	/// 票数
@@ -108,6 +110,8 @@ pub struct RankingEntry {
 pub struct CPRankingEntry {
 	/// 排名
 	pub rank: i32,
+	/// 展示排名
+	pub display_rank: i32,
 	/// 角色名
 	pub cp: CPItem,
 	/// A主动率

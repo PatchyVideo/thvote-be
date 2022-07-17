@@ -2,7 +2,7 @@ use std::collections::{HashMap, HashSet};
 
 use bson::{Document, doc};
 use chrono::Utc;
-use mongodb::Collection;
+use mongodb::{Collection, options::FindOptions};
 use futures::stream::{StreamExt, TryStreamExt};
 use serde_derive::{Serialize, Deserialize};
 
@@ -81,15 +81,16 @@ pub async fn chars_reasons(ctx: &AppContext, query: Option<String>, vote_start: 
 	};
 	let cached_global = ctx.chars_global_cache_coll.find_one(cache_query.clone(), None).await.map_err(|e| ServiceError::new(SERVICE_NAME, format!("{:?}", e)))?;
 	if let Some(cached_global) = cached_global {
-		let mut cached_entries = ctx.chars_entry_cache_coll.find(cache_query, None).await.map_err(|e| ServiceError::new(SERVICE_NAME, format!("{:?}", e)))?;
+		let opt = FindOptions::builder().skip(Some((std::cmp::max(rank, 1) - 1) as u64)).limit(1).build();
+		let mut cached_entries = ctx.chars_entry_cache_coll.find(cache_query, Some(opt)).await.map_err(|e| ServiceError::new(SERVICE_NAME, format!("{:?}", e)))?;
 		let mut entries = Vec::with_capacity(300);
 		while let Some(Ok(entry)) = cached_entries.next().await {
 			entries.push(entry.entry);
 		}
 		// build response
-		if rank >= 1 && rank <= entries.len() as i32 {
+		if entries.len() != 0 {
 			let resp = models::ReasonsResponse {
-				reasons: entries[(rank - 1) as usize].reasons.clone()
+				reasons: entries[0].reasons.clone()
 			};
 			Ok(resp)
 		} else {
@@ -215,6 +216,8 @@ pub async fn chars_ranking(ctx: &AppContext, query: Option<String>, vote_start: 
 	if total_first_votes == 0 {
 		total_first_votes = 1;
 	}
+	let mut display_rank = 1;
+	let mut last_votes = (0, 0);
 	for (ch, _) in per_char_vote_count_vec {
 		let trend = hrs_bins
 			.get(ch)
@@ -227,7 +230,8 @@ pub async fn chars_ranking(ctx: &AppContext, query: Option<String>, vote_start: 
 			})
 			.collect::<Vec<_>>();
 		let entry = RankingEntry {
-			rank: rank,
+			rank,
+			display_rank,
 			name: ch.clone(),
 			vote_count: *per_char_vote_count.get(ch).unwrap_or(&0),
 			first_vote_count: *per_char_vote_first_count.get(ch).unwrap_or(&0),
@@ -248,8 +252,13 @@ pub async fn chars_ranking(ctx: &AppContext, query: Option<String>, vote_start: 
 			trend,
 			reasons: reasons.get(ch).unwrap_or(&vec![]).clone()
 		};
+		let cur_votes = (entry.vote_count, entry.first_vote_count);
 		chars_result.push(entry);
 		rank += 1;
+		if last_votes != cur_votes {
+			display_rank = rank;
+		}
+		last_votes = cur_votes;
 	};
 	let num_char = per_char_vote_count_count_only_vec.len();
 	let avg = if num_char == 0 { 0f64 } else { total_votes as f64 / num_char as f64 };
@@ -319,15 +328,16 @@ pub async fn musics_reasons(ctx: &AppContext, query: Option<String>, vote_start:
 	};
 	let cached_global = ctx.musics_global_cache_coll.find_one(cache_query.clone(), None).await.map_err(|e| ServiceError::new(SERVICE_NAME, format!("{:?}", e)))?;
 	if let Some(cached_global) = cached_global {
-		let mut cached_entries = ctx.musics_entry_cache_coll.find(cache_query, None).await.map_err(|e| ServiceError::new(SERVICE_NAME, format!("{:?}", e)))?;
+		let opt = FindOptions::builder().skip(Some((std::cmp::max(rank, 1) - 1) as u64)).limit(1).build();
+		let mut cached_entries = ctx.musics_entry_cache_coll.find(cache_query, Some(opt)).await.map_err(|e| ServiceError::new(SERVICE_NAME, format!("{:?}", e)))?;
 		let mut entries = Vec::with_capacity(300);
 		while let Some(Ok(entry)) = cached_entries.next().await {
 			entries.push(entry.entry);
 		}
 		// build response
-		if rank >= 1 && rank <= entries.len() as i32 {
+		if entries.len() != 0 {
 			let resp = models::ReasonsResponse {
-				reasons: entries[(rank - 1) as usize].reasons.clone()
+				reasons: entries[0].reasons.clone()
 			};
 			Ok(resp)
 		} else {
@@ -453,6 +463,8 @@ pub async fn musics_ranking(ctx: &AppContext, query: Option<String>, vote_start:
 	if total_first_votes == 0 {
 		total_first_votes = 1;
 	}
+	let mut display_rank = 1;
+	let mut last_votes = (0, 0);
 	for (ch, _) in per_music_vote_count_vec {
 		let trend = hrs_bins
 			.get(ch)
@@ -465,7 +477,8 @@ pub async fn musics_ranking(ctx: &AppContext, query: Option<String>, vote_start:
 			})
 			.collect::<Vec<_>>();
 		let entry = RankingEntry {
-			rank: rank,
+			rank,
+			display_rank,
 			name: ch.clone(),
 			vote_count: *per_music_vote_count.get(ch).unwrap_or(&0),
 			first_vote_count: *per_music_vote_first_count.get(ch).unwrap_or(&0),
@@ -486,8 +499,13 @@ pub async fn musics_ranking(ctx: &AppContext, query: Option<String>, vote_start:
 			trend,
 			reasons: reasons.get(ch).unwrap_or(&vec![]).clone()
 		};
+		let cur_votes = (entry.vote_count, entry.first_vote_count);
 		musics_result.push(entry);
 		rank += 1;
+		if last_votes != cur_votes {
+			display_rank = rank;
+		}
+		last_votes = cur_votes;
 	};
 	let num_music = per_music_vote_count_count_only_vec.len();
 	let avg = if num_music == 0 { 0f64 } else { total_votes as f64 / num_music as f64 };
@@ -557,15 +575,16 @@ pub async fn cps_reasons(ctx: &AppContext, query: Option<String>, vote_start: bs
 	};
 	let cached_global = ctx.cps_global_cache_coll.find_one(cache_query.clone(), None).await.map_err(|e| ServiceError::new(SERVICE_NAME, format!("{:?}", e)))?;
 	if let Some(cached_global) = cached_global {
-		let mut cached_entries = ctx.cps_entry_cache_coll.find(cache_query, None).await.map_err(|e| ServiceError::new(SERVICE_NAME, format!("{:?}", e)))?;
+		let opt = FindOptions::builder().skip(Some((std::cmp::max(rank, 1) - 1) as u64)).limit(1).build();
+		let mut cached_entries = ctx.cps_entry_cache_coll.find(cache_query, Some(opt)).await.map_err(|e| ServiceError::new(SERVICE_NAME, format!("{:?}", e)))?;
 		let mut entries = Vec::with_capacity(300);
 		while let Some(Ok(entry)) = cached_entries.next().await {
 			entries.push(entry.entry);
 		}
 		// build response
-		if rank >= 1 && rank <= entries.len() as i32 {
+		if entries.len() != 0 {
 			let resp = models::ReasonsResponse {
-				reasons: entries[(rank - 1) as usize].reasons.clone()
+				reasons: entries[0].reasons.clone()
 			};
 			Ok(resp)
 		} else {
@@ -708,6 +727,8 @@ pub async fn cps_ranking(ctx: &AppContext, query: Option<String>, vote_start: bs
 	if total_first_votes == 0 {
 		total_first_votes = 1;
 	}
+	let mut display_rank = 1;
+	let mut last_votes = (0, 0);
 	for (ch, _) in per_cp_vote_count_vec {
 		let trend = hrs_bins
 			.get(ch)
@@ -720,7 +741,8 @@ pub async fn cps_ranking(ctx: &AppContext, query: Option<String>, vote_start: bs
 			})
 			.collect::<Vec<_>>();
 		let entry = CPRankingEntry {
-			rank: rank,
+			rank,
+			display_rank,
 			cp: ch.clone(),
 			a_active: *a_active.get(ch).unwrap_or(&0) as f64 / *per_cp_vote_count.get(ch).unwrap_or(&0) as f64,
 			b_active: *b_active.get(ch).unwrap_or(&0) as f64 / *per_cp_vote_count.get(ch).unwrap_or(&0) as f64,
@@ -741,8 +763,13 @@ pub async fn cps_ranking(ctx: &AppContext, query: Option<String>, vote_start: bs
 			trend,
 			reasons: reasons.get(ch).unwrap_or(&vec![]).clone()
 		};
+		let cur_votes = (entry.vote_count, entry.first_vote_count);
 		cps_result.push(entry);
 		rank += 1;
+		if last_votes != cur_votes {
+			display_rank = rank;
+		}
+		last_votes = cur_votes;
 	};
 	let num_cp = per_cp_vote_count_count_only_vec.len();
 	let avg = if num_cp == 0 { 0f64 } else { total_votes as f64 / num_cp as f64 };
