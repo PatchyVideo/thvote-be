@@ -708,7 +708,7 @@ pub async fn cps_ranking(ctx: &AppContext, query: Option<String>, vote_start: bs
 	}
 	let mut cps_result = Vec::with_capacity(300);
 	let mut per_cp_vote_count_vec: Vec<(&CPItem, &i32)> = per_cp_vote_count.iter().filter(|(a, b)| **b > 1).collect();
-	let mut per_cp_vote_count_count_only_vec: Vec<i32> = per_cp_vote_count.iter().map(|(a, b)| *b).collect();
+	let mut per_cp_vote_count_count_only_vec: Vec<i32> = per_cp_vote_count.iter().filter(|(a, b)| **b > 1).map(|(a, b)| *b).collect();
 	per_cp_vote_count_count_only_vec.sort();
 	per_cp_vote_count_vec.sort_by(
 		|a, b| {
