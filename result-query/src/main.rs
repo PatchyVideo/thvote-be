@@ -34,6 +34,8 @@ async fn main() -> std::io::Result<()> {
         musics_global_cache_coll: db.collection("cache_musics_global"),
         cps_entry_cache_coll: db.collection("cache_cps_entry"),
         cps_global_cache_coll: db.collection("cache_cps_global"),
+        all_chars: db.collection("chars"),
+        all_musics: db.collection("musics"),
     };
     HttpServer::new(move || {
         App::new().app_data(Data::new(ctx.clone()))

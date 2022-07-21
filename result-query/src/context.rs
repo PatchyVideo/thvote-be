@@ -4,7 +4,7 @@ use std::cell::Cell;
 use bson::Document;
 use mongodb::{Collection, Database};
 
-use crate::models::{CachedRankingEntry, CachedRankingGlobal, CachedCPRankingEntry};
+use crate::models::{CachedRankingEntry, CachedRankingGlobal, CachedCPRankingEntry, PartialVoteItemEntry};
 
 
 #[derive(Clone, Debug)]
@@ -17,4 +17,6 @@ pub struct AppContext {
     pub musics_global_cache_coll: Collection<CachedRankingGlobal>,
     pub cps_entry_cache_coll: Collection<CachedCPRankingEntry>,
     pub cps_global_cache_coll: Collection<CachedRankingGlobal>,
+    pub all_chars: Collection<PartialVoteItemEntry>,
+    pub all_musics: Collection<PartialVoteItemEntry>,
 }

@@ -223,3 +223,9 @@ pub struct RankingQueryRequest {
 	pub vote_start: DateTime<Utc>,
 	pub vote_year: i32
 }
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct PartialVoteItemEntry {
+	pub vote_year: i32,
+	pub name: String
+}

@@ -108,6 +108,7 @@ pub async fn chars_reasons(ctx: &AppContext, query: Option<String>, vote_start: 
 }
 
 pub async fn chars_ranking(ctx: &AppContext, query: Option<String>, vote_start: bson::DateTime, vote_year: i32) ->  Result<models::RankingQueryResponse, ServiceError> {
+	let empty_query = query.is_none();
 	let (filter, cache_key) = process_query(query)?;
 	let filter = if let Some(filter) = filter {
 		doc! {
@@ -261,6 +262,46 @@ pub async fn chars_ranking(ctx: &AppContext, query: Option<String>, vote_start: 
 		last_votes = cur_votes;
 		chars_result.push(entry);
 	};
+	if empty_query {
+		let all_chars = {
+			let mut cursor = ctx.all_chars.find(doc!{}, None).await.map_err(|e| ServiceError::new(SERVICE_NAME, format!("{:?}", e)))?;
+			let mut items = Vec::with_capacity(600);
+			while let Some(Ok(vote)) = cursor.next().await {
+				items.push(vote);
+			}
+			items
+		};
+		let all_chars: HashSet<String> = HashSet::from_iter(all_chars.iter().map(|x| x.name.clone()));
+		let voted_chars: HashSet<String> = HashSet::from_iter(chars_result.iter().map(|x| x.name.clone()));
+		display_rank = rank;
+		for x in all_chars.difference(&voted_chars) {
+			let entry = RankingEntry {
+				rank,
+				display_rank,
+				name: x.clone(),
+				vote_count: 0,
+				first_vote_count: 0,
+				first_vote_percentage: 0f64,
+				first_vote_count_weighted: 0,
+				character_type: "todo".to_owned(),
+				character_origin: "todo".to_owned(),
+				first_appearance: "todo".to_owned(),
+				name_jpn: "todo".to_owned(),
+				vote_percentage: 0f64,
+				first_percentage: 0f64,
+				male_vote_count: 0,
+				male_percentage_per_char: 0f64,
+				male_percentage_per_total: 0f64,
+				female_vote_count: 0,
+				female_percentage_per_char: 0f64,
+				female_percentage_per_total: 0f64,
+				trend: vec![],
+				reasons: vec![]
+			};
+			rank += 1;
+			chars_result.push(entry);
+		}
+	};
 	let num_char = per_char_vote_count_count_only_vec.len();
 	let avg = if num_char == 0 { 0f64 } else { total_votes as f64 / num_char as f64 };
 	let median = if num_char % 2 == 0 {
@@ -356,6 +397,7 @@ pub async fn musics_reasons(ctx: &AppContext, query: Option<String>, vote_start:
 }
 
 pub async fn musics_ranking(ctx: &AppContext, query: Option<String>, vote_start: bson::DateTime, vote_year: i32) ->  Result<models::RankingQueryResponse, ServiceError> {
+	let empty_query = query.is_none();
 	let (filter, cache_key) = process_query(query)?;
 	let filter = if let Some(filter) = filter {
 		doc! {
@@ -508,6 +550,46 @@ pub async fn musics_ranking(ctx: &AppContext, query: Option<String>, vote_start:
 		rank += 1;
 		last_votes = cur_votes;
 		musics_result.push(entry);
+	};
+	if empty_query {
+		let all_musics = {
+			let mut cursor = ctx.all_musics.find(doc!{}, None).await.map_err(|e| ServiceError::new(SERVICE_NAME, format!("{:?}", e)))?;
+			let mut items = Vec::with_capacity(600);
+			while let Some(Ok(vote)) = cursor.next().await {
+				items.push(vote);
+			}
+			items
+		};
+		let all_musics: HashSet<String> = HashSet::from_iter(all_musics.iter().map(|x| x.name.clone()));
+		let voted_musics: HashSet<String> = HashSet::from_iter(musics_result.iter().map(|x| x.name.clone()));
+		display_rank = rank;
+		for x in all_musics.difference(&voted_musics) {
+			let entry = RankingEntry {
+				rank,
+				display_rank,
+				name: x.clone(),
+				vote_count: 0,
+				first_vote_count: 0,
+				first_vote_percentage: 0f64,
+				first_vote_count_weighted: 0,
+				character_type: "todo".to_owned(),
+				character_origin: "todo".to_owned(),
+				first_appearance: "todo".to_owned(),
+				name_jpn: "todo".to_owned(),
+				vote_percentage: 0f64,
+				first_percentage: 0f64,
+				male_vote_count: 0,
+				male_percentage_per_char: 0f64,
+				male_percentage_per_total: 0f64,
+				female_vote_count: 0,
+				female_percentage_per_char: 0f64,
+				female_percentage_per_total: 0f64,
+				trend: vec![],
+				reasons: vec![]
+			};
+			rank += 1;
+			musics_result.push(entry);
+		}
 	};
 	let num_music = per_music_vote_count_count_only_vec.len();
 	let avg = if num_music == 0 { 0f64 } else { total_votes as f64 / num_music as f64 };
