@@ -14,8 +14,6 @@ fn rename_ident(ident: &str) -> String {
 		match ident {
 			"chars" => "chars.name",
 			"musics" => "musics.name",
-			"chars_first" => "chars_first.name",
-			"musics_first" => "musics_first.name",
 			a => a
 		}.into()
 	}
@@ -147,7 +145,12 @@ fn parse_root(mut root: Pairs<Rule>) -> Result<Document, Box<dyn std::error::Err
 
 pub fn generate_mongodb_query(query: &str) -> Result<Document, Box<dyn std::error::Error + Send + Sync>> {
 	let root = super::parser::QueryParser::parse(Rule::root, query)?;
-	parse_root(root)
+	let r = parse_root(root)?;
+	println!("--------------------------------");
+	println!("{}", query);
+	println!("--------------------------------");
+	println!("{:#?}", r);
+	Ok(r)
 }
 
 #[test]
