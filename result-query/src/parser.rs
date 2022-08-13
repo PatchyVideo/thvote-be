@@ -108,10 +108,10 @@ fn parse_or_query(mut root: Pairs<Rule>) -> Result<Document, Box<dyn std::error:
 fn parse_and_query(mut root: Pairs<Rule>) -> Result<Document, Box<dyn std::error::Error + Send + Sync>> {
 	let primary_query = root.next().unwrap();
 	let left_primary_query = parse_primary_query(primary_query.into_inner())?;
-	if let Some(primary_query) = root.next() {
-		let right_primary_query = parse_primary_query(primary_query.into_inner())?;
+	if let Some(and_query) = root.next() {
+		let right_and_query = parse_and_query(and_query.into_inner())?;
 		Ok(doc! {
-			"$and": [left_primary_query, right_primary_query]
+			"$and": [left_primary_query, right_and_query]
 		})
 	} else {
 		Ok(left_primary_query)
