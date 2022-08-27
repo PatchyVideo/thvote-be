@@ -183,6 +183,10 @@ pub struct ReasonsResponse {
 }
 
 #[derive(Clone, Serialize, Deserialize)]
+pub struct TrendResponse {
+	pub trend: Vec<VotingTrendItem>
+}
+#[derive(Clone, Serialize, Deserialize)]
 pub struct RankingQueryResponse {
 	pub entries: Vec<RankingEntry>,
 	pub global: RankingGlobal

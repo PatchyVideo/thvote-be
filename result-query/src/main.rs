@@ -25,9 +25,12 @@ async fn main() -> std::io::Result<()> {
 
 	let db = client.database("submits_v1_final");
 
+    let redlock = redlock::RedLock::new(vec![comm::REDIS_ADDRESS]);
+
     let ctx = context::AppContext {
         db: db.clone(),
         votes_coll: db.collection("votes"),
+        lock: redlock,
         chars_entry_cache_coll: db.collection("cache_chars_entry"),
         chars_global_cache_coll: db.collection("cache_chars_global"),
         musics_entry_cache_coll: db.collection("cache_musics_entry"),
@@ -45,6 +48,9 @@ async fn main() -> std::io::Result<()> {
             .route("/v1/chars-reasons/", web::post().to(handlers::chars_reasons))
             .route("/v1/musics-reasons/", web::post().to(handlers::musics_reasons))
             .route("/v1/cps-reasons/", web::post().to(handlers::cps_reasons))
+            .route("/v1/chars-trend/", web::post().to(handlers::chars_trend))
+            .route("/v1/musics-trend/", web::post().to(handlers::musics_trend))
+            .route("/v1/cps-trend/", web::post().to(handlers::cps_trend))
     })
     .bind("0.0.0.0:80")?
     .run()

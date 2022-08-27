@@ -10,6 +10,7 @@ use crate::models::{CachedRankingEntry, CachedRankingGlobal, CachedCPRankingEntr
 #[derive(Clone, Debug)]
 pub struct AppContext {
     pub db: Database,
+	pub lock: redlock::RedLock,
     pub votes_coll: Collection<Document>,
     pub chars_entry_cache_coll: Collection<CachedRankingEntry>,
     pub chars_global_cache_coll: Collection<CachedRankingGlobal>,
