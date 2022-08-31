@@ -107,7 +107,7 @@ pub async fn chars_reasons(ctx: &AppContext, query: Option<String>, vote_start: 
 	}
 }
 
-pub async fn chars_trend(ctx: &AppContext, query: Option<String>, vote_start: bson::DateTime, vote_year: i32, rank: i32) ->  Result<models::TrendResponse, ServiceError> {
+pub async fn chars_trend(ctx: &AppContext, query: Option<String>, vote_start: bson::DateTime, vote_year: i32, name: String) ->  Result<models::TrendResponse, ServiceError> {
 	let (filter, cache_key) = process_query(query)?;
 	let filter = if let Some(filter) = filter {
 		doc! {
@@ -121,28 +121,15 @@ pub async fn chars_trend(ctx: &AppContext, query: Option<String>, vote_start: bs
 	// find in cache
 	let cache_query = doc! {
 		"key": cache_key.clone(),
-		"vote_year": vote_year
+		"vote_year": vote_year,
+		"entry.name": name
 	};
-	let cached_global = ctx.chars_global_cache_coll.find_one(cache_query.clone(), None).await.map_err(|e| ServiceError::new(SERVICE_NAME, format!("{:?}", e)))?;
-	if let Some(cached_global) = cached_global {
-		let opt = FindOptions::builder().skip(Some((std::cmp::max(rank, 1) - 1) as u64)).limit(1).build();
-		let mut cached_entries = ctx.chars_entry_cache_coll.find(cache_query, Some(opt)).await.map_err(|e| ServiceError::new(SERVICE_NAME, format!("{:?}", e)))?;
-		let mut entries = Vec::with_capacity(300);
-		while let Some(Ok(entry)) = cached_entries.next().await {
-			entries.push(entry.entry);
-		}
-		// build response
-		if entries.len() != 0 {
-			let resp = models::TrendResponse {
-				trend: entries[0].trend.clone()
-			};
-			Ok(resp)
-		} else {
-			let resp = models::TrendResponse {
-				trend: vec![]
-			};
-			Ok(resp)
-		}
+	let cached_entry = ctx.chars_entry_cache_coll.find_one(cache_query.clone(), None).await.map_err(|e| ServiceError::new(SERVICE_NAME, format!("{:?}", e)))?;
+	if let Some(cached_entry) = cached_entry {
+		let resp = models::TrendResponse {
+			trend: cached_entry.entry.trend
+		};
+		Ok(resp)
 	} else {
 		let resp = models::TrendResponse {
 			trend: vec![]
@@ -443,7 +430,7 @@ pub async fn musics_reasons(ctx: &AppContext, query: Option<String>, vote_start:
 	}
 }
 
-pub async fn musics_trend(ctx: &AppContext, query: Option<String>, vote_start: bson::DateTime, vote_year: i32, rank: i32) ->  Result<models::TrendResponse, ServiceError> {
+pub async fn musics_trend(ctx: &AppContext, query: Option<String>, vote_start: bson::DateTime, vote_year: i32, name: String) ->  Result<models::TrendResponse, ServiceError> {
 	let (filter, cache_key) = process_query(query)?;
 	let filter = if let Some(filter) = filter {
 		doc! {
@@ -457,28 +444,15 @@ pub async fn musics_trend(ctx: &AppContext, query: Option<String>, vote_start: b
 	// find in cache
 	let cache_query = doc! {
 		"key": cache_key.clone(),
-		"vote_year": vote_year
+		"vote_year": vote_year,
+		"entry.name": name
 	};
-	let cached_global = ctx.musics_global_cache_coll.find_one(cache_query.clone(), None).await.map_err(|e| ServiceError::new(SERVICE_NAME, format!("{:?}", e)))?;
-	if let Some(cached_global) = cached_global {
-		let opt = FindOptions::builder().skip(Some((std::cmp::max(rank, 1) - 1) as u64)).limit(1).build();
-		let mut cached_entries = ctx.musics_entry_cache_coll.find(cache_query, Some(opt)).await.map_err(|e| ServiceError::new(SERVICE_NAME, format!("{:?}", e)))?;
-		let mut entries = Vec::with_capacity(300);
-		while let Some(Ok(entry)) = cached_entries.next().await {
-			entries.push(entry.entry);
-		}
-		// build response
-		if entries.len() != 0 {
-			let resp = models::TrendResponse {
-				trend: entries[0].trend.clone()
-			};
-			Ok(resp)
-		} else {
-			let resp = models::TrendResponse {
-				trend: vec![]
-			};
-			Ok(resp)
-		}
+	let cached_entry = ctx.musics_entry_cache_coll.find_one(cache_query.clone(), None).await.map_err(|e| ServiceError::new(SERVICE_NAME, format!("{:?}", e)))?;
+	if let Some(cached_entry) = cached_entry {
+		let resp = models::TrendResponse {
+			trend: cached_entry.entry.trend
+		};
+		Ok(resp)
 	} else {
 		let resp = models::TrendResponse {
 			trend: vec![]
@@ -1003,7 +977,7 @@ pub async fn cps_ranking(ctx: &AppContext, query: Option<String>, vote_start: bs
 	Ok(resp)
 }
 
-pub async fn cps_trend(ctx: &AppContext, query: Option<String>, vote_start: bson::DateTime, vote_year: i32, rank: i32) ->  Result<models::TrendResponse, ServiceError> {
+pub async fn cps_trend(ctx: &AppContext, query: Option<String>, vote_start: bson::DateTime, vote_year: i32, name: String) ->  Result<models::TrendResponse, ServiceError> {
 	let (filter, cache_key) = process_query(query)?;
 	let filter = if let Some(filter) = filter {
 		doc! {
@@ -1017,28 +991,15 @@ pub async fn cps_trend(ctx: &AppContext, query: Option<String>, vote_start: bson
 	// find in cache
 	let cache_query = doc! {
 		"key": cache_key.clone(),
-		"vote_year": vote_year
+		"vote_year": vote_year,
+		"entry.name": name
 	};
-	let cached_global = ctx.cps_global_cache_coll.find_one(cache_query.clone(), None).await.map_err(|e| ServiceError::new(SERVICE_NAME, format!("{:?}", e)))?;
-	if let Some(cached_global) = cached_global {
-		let opt = FindOptions::builder().skip(Some((std::cmp::max(rank, 1) - 1) as u64)).limit(1).build();
-		let mut cached_entries = ctx.cps_entry_cache_coll.find(cache_query, Some(opt)).await.map_err(|e| ServiceError::new(SERVICE_NAME, format!("{:?}", e)))?;
-		let mut entries = Vec::with_capacity(300);
-		while let Some(Ok(entry)) = cached_entries.next().await {
-			entries.push(entry.entry);
-		}
-		// build response
-		if entries.len() != 0 {
-			let resp = models::TrendResponse {
-				trend: entries[0].trend.clone()
-			};
-			Ok(resp)
-		} else {
-			let resp = models::TrendResponse {
-				trend: vec![]
-			};
-			Ok(resp)
-		}
+	let cached_entry = ctx.cps_entry_cache_coll.find_one(cache_query.clone(), None).await.map_err(|e| ServiceError::new(SERVICE_NAME, format!("{:?}", e)))?;
+	if let Some(cached_entry) = cached_entry {
+		let resp = models::TrendResponse {
+			trend: cached_entry.entry.trend
+		};
+		Ok(resp)
 	} else {
 		let resp = models::TrendResponse {
 			trend: vec![]

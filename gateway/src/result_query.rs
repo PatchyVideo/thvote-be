@@ -177,6 +177,19 @@ pub struct ReasonsRequest {
 	pub rank: i32
 }
 
+#[derive(Clone, Serialize, Deserialize)]
+pub struct TrendRequest {
+	#[serde(skip_serializing_if = "Option::is_none")]
+	#[serde(default)]
+	pub query: Option<String>,
+	/// 投票开始时间，UTC
+	pub vote_start: DateTime<Utc>,
+	/// 第几届
+	pub vote_year: i32,
+	/// 名字
+	pub name: String
+}
+
 
 #[derive(juniper::GraphQLObject, Clone, Serialize, Deserialize)]
 pub struct Reasons {
@@ -209,12 +222,12 @@ pub async fn queryCharacterReasons_impl(context: &Context, query: Option<String>
 	Ok(post_result)
 }
 
-pub async fn queryCharacterTrend_impl(context: &Context, query: Option<String>, vote_start: DateTime<Utc>, vote_year: i32, rank: i32) -> FieldResult<Trends> {
-	let query_json = ReasonsRequest {
+pub async fn queryCharacterTrend_impl(context: &Context, query: Option<String>, vote_start: DateTime<Utc>, vote_year: i32, name: String) -> FieldResult<Trends> {
+	let query_json = TrendRequest {
 		query,
 		vote_start,
 		vote_year,
-		rank
+		name
 	};
 	let post_result: Trends = json_request_gateway(SERVICE_NAME, &format!("http://{}/v1/chars-trend/", RESULT_QUERY), query_json).await?;
 	Ok(post_result)
@@ -241,12 +254,12 @@ pub async fn queryMusicReasons_impl(context: &Context, query: Option<String>, vo
 	Ok(post_result)
 }
 
-pub async fn queryMusicTrend_impl(context: &Context, query: Option<String>, vote_start: DateTime<Utc>, vote_year: i32, rank: i32) -> FieldResult<Trends> {
-	let query_json = ReasonsRequest {
+pub async fn queryMusicTrend_impl(context: &Context, query: Option<String>, vote_start: DateTime<Utc>, vote_year: i32, name: String) -> FieldResult<Trends> {
+	let query_json = TrendRequest {
 		query,
 		vote_start,
 		vote_year,
-		rank
+		name
 	};
 	let post_result: Trends = json_request_gateway(SERVICE_NAME, &format!("http://{}/v1/musics-trend/", RESULT_QUERY), query_json).await?;
 	Ok(post_result)
@@ -273,12 +286,12 @@ pub async fn queryCPReasons_impl(context: &Context, query: Option<String>, vote_
 	Ok(post_result)
 }
 
-pub async fn queryCPTrend_impl(context: &Context, query: Option<String>, vote_start: DateTime<Utc>, vote_year: i32, rank: i32) -> FieldResult<Trends> {
-	let query_json = ReasonsRequest {
+pub async fn queryCPTrend_impl(context: &Context, query: Option<String>, vote_start: DateTime<Utc>, vote_year: i32, name: String) -> FieldResult<Trends> {
+	let query_json = TrendRequest {
 		query,
 		vote_start,
 		vote_year,
-		rank
+		name
 	};
 	let post_result: Trends = json_request_gateway(SERVICE_NAME, &format!("http://{}/v1/cps-trend/", RESULT_QUERY), query_json).await?;
 	Ok(post_result)

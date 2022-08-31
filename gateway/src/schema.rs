@@ -119,8 +119,8 @@ impl Query {
 	async fn queryCharacterReasons(context: &Context, query: Option<String>, vote_start: DateTime<Utc>, vote_year: i32, rank: i32) -> FieldResult<Reasons> {
 		result_query::queryCharacterReasons_impl(context, query, vote_start, vote_year, rank).await
 	}
-	async fn queryCharacterTrend(context: &Context, query: Option<String>, vote_start: DateTime<Utc>, vote_year: i32, rank: i32) -> FieldResult<Trends> {
-		result_query::queryCharacterTrend_impl(context, query, vote_start, vote_year, rank).await
+	async fn queryCharacterTrend(context: &Context, query: Option<String>, vote_start: DateTime<Utc>, vote_year: i32, name: String) -> FieldResult<Trends> {
+		result_query::queryCharacterTrend_impl(context, query, vote_start, vote_year, name).await
 	}
 	async fn queryMusicRanking(context: &Context, query: Option<String>, vote_start: DateTime<Utc>, vote_year: i32) -> FieldResult<CharacterOrMusicRanking> {
 		result_query::queryMusicRanking_impl(context, query, vote_start, vote_year).await
@@ -128,8 +128,8 @@ impl Query {
 	async fn queryMusicReasons(context: &Context, query: Option<String>, vote_start: DateTime<Utc>, vote_year: i32, rank: i32) -> FieldResult<Reasons> {
 		result_query::queryMusicReasons_impl(context, query, vote_start, vote_year, rank).await
 	}
-	async fn queryMusicTrend(context: &Context, query: Option<String>, vote_start: DateTime<Utc>, vote_year: i32, rank: i32) -> FieldResult<Trends> {
-		result_query::queryMusicTrend_impl(context, query, vote_start, vote_year, rank).await
+	async fn queryMusicTrend(context: &Context, query: Option<String>, vote_start: DateTime<Utc>, vote_year: i32, name: String) -> FieldResult<Trends> {
+		result_query::queryMusicTrend_impl(context, query, vote_start, vote_year, name).await
 	}
 	async fn queryCPRanking(context: &Context, query: Option<String>, vote_start: DateTime<Utc>, vote_year: i32) -> FieldResult<CPRanking> {
 		result_query::queryCPRanking_impl(context, query, vote_start, vote_year).await
@@ -137,8 +137,8 @@ impl Query {
 	async fn queryCPReasons(context: &Context, query: Option<String>, vote_start: DateTime<Utc>, vote_year: i32, rank: i32) -> FieldResult<Reasons> {
 		result_query::queryCPReasons_impl(context, query, vote_start, vote_year, rank).await
 	}
-	async fn queryCPTrend(context: &Context, query: Option<String>, vote_start: DateTime<Utc>, vote_year: i32, rank: i32) -> FieldResult<Trends> {
-		result_query::queryCPTrend_impl(context, query, vote_start, vote_year, rank).await
+	async fn queryCPTrend(context: &Context, query: Option<String>, vote_start: DateTime<Utc>, vote_year: i32, name: String) -> FieldResult<Trends> {
+		result_query::queryCPTrend_impl(context, query, vote_start, vote_year, name).await
 	}
 }
 
