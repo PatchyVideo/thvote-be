@@ -127,12 +127,14 @@ pub async fn chars_trend(ctx: &AppContext, query: Option<String>, vote_start: bs
 	let cached_entry = ctx.chars_entry_cache_coll.find_one(cache_query.clone(), None).await.map_err(|e| ServiceError::new(SERVICE_NAME, format!("{:?}", e)))?;
 	if let Some(cached_entry) = cached_entry {
 		let resp = models::TrendResponse {
-			trend: cached_entry.entry.trend
+			trend: cached_entry.entry.trend,
+			trend_first: cached_entry.entry.trend_first
 		};
 		Ok(resp)
 	} else {
 		let resp = models::TrendResponse {
-			trend: vec![]
+			trend: vec![],
+			trend_first: vec![]
 		};
 		Ok(resp)
 	}
@@ -175,6 +177,7 @@ pub async fn chars_ranking(ctx: &AppContext, query: Option<String>, vote_start: 
 	// else
 	let mut votes_cursor = ctx.votes_coll.find(filter, None).await.map_err(|e| ServiceError::new(SERVICE_NAME, format!("{:?}", e)))?;
 	let mut hrs_bins: HashMap<String, Vec<i32>> = HashMap::with_capacity(300);
+	let mut hrs_bins_first: HashMap<String, Vec<i32>> = HashMap::with_capacity(300);
 	let mut reasons: HashMap<String, Vec<String>> = HashMap::with_capacity(300);
 	let mut per_char_vote_count: HashMap<String, i32> = HashMap::with_capacity(300);
 	let mut per_char_vote_first_count: HashMap<String, i32> = HashMap::with_capacity(300);
@@ -189,15 +192,21 @@ pub async fn chars_ranking(ctx: &AppContext, query: Option<String>, vote_start: 
 		if pv.chars.is_none() || pv.chars_meta.is_none() {
 			continue;
 		}
+		let chs = pv.chars.as_ref().unwrap();
+		if chs.len() == 0 {
+			continue;
+		}
+		let hrs_diff = (pv.chars_meta.as_ref().unwrap().created_at.to_chrono() - vote_start.to_chrono()).num_hours() as usize;
 		if let Some(f) = &pv.chars_first {
 			if f.len() != 0 {
 				total_first_votes += 1;
 				*per_char_vote_first_count.entry(f[0].clone()).or_default() += 1;
+				if !hrs_bins_first.contains_key(&f[0]) {
+					hrs_bins_first.insert(f[0].clone(), vec![0i32; 24 * 30]);
+				}
+				let trend_hrs_bins = hrs_bins_first.get_mut(&f[0]).unwrap();
+				trend_hrs_bins[hrs_diff] += 1;
 			}
-		}
-		let chs = pv.chars.as_ref().unwrap();
-		if chs.len() == 0 {
-			continue;
 		}
 		total_votes += 1;
 		let is_male = if pv.q11011.opt[0] == "1101101" {
@@ -207,7 +216,6 @@ pub async fn chars_ranking(ctx: &AppContext, query: Option<String>, vote_start: 
 			total_female += 1;
 			false
 		};
-		let hrs_diff = (pv.chars_meta.as_ref().unwrap().created_at.to_chrono() - vote_start.to_chrono()).num_hours() as usize;
 		for ch in chs {
 			*per_char_vote_count.entry(ch.name.clone()).or_default() += 1;
 			if !hrs_bins.contains_key(&ch.name) {
@@ -252,9 +260,19 @@ pub async fn chars_ranking(ctx: &AppContext, query: Option<String>, vote_start: 
 		total_first_votes = 1;
 	}
 	let mut display_rank = 1;
-	let mut last_votes = (0);
+	let mut last_votes = 0;
 	for (ch, _) in per_char_vote_count_vec {
 		let trend = hrs_bins
+			.get(ch)
+			.unwrap()
+			.iter()
+			.enumerate()
+			.filter(|(_, cnt)| {**cnt != 0})
+			.map(|(hrs, cnt)| {
+				VotingTrendItem { hrs: hrs as _, cnt: *cnt }
+			})
+			.collect::<Vec<_>>();
+		let trend_first = hrs_bins_first
 			.get(ch)
 			.unwrap()
 			.iter()
@@ -284,10 +302,21 @@ pub async fn chars_ranking(ctx: &AppContext, query: Option<String>, vote_start: 
 			female_vote_count: *per_char_female_vote_count.get(ch).unwrap_or(&0),
 			female_percentage_per_char: *per_char_female_vote_count.get(ch).unwrap_or(&0) as f64 / *per_char_vote_count.get(ch).unwrap_or(&0) as f64,
 			female_percentage_per_total: *per_char_female_vote_count.get(ch).unwrap_or(&0) as f64 / total_female as f64,
+			rank_last_1: 0,
+			rank_last_2: 0,
+			vote_count_last_1: 0,
+			vote_count_last_2: 0,
+			first_vote_count_last_1: 0,
+			first_vote_count_last_2: 0,
+			first_vote_percentage_last_1: 0.0,
+			first_vote_percentage_last_2: 0.0,
+			vote_percentage_last_1: 0.0,
+			vote_percentage_last_2: 0.0,
 			trend,
+			trend_first,
 			reasons: reasons.get(ch).unwrap_or(&vec![]).clone()
 		};
-		let cur_votes = (entry.vote_count);
+		let cur_votes = entry.vote_count;
 		if last_votes != cur_votes {
 			display_rank = rank;
 			entry.display_rank = display_rank;
@@ -330,7 +359,18 @@ pub async fn chars_ranking(ctx: &AppContext, query: Option<String>, vote_start: 
 				female_percentage_per_char: 0f64,
 				female_percentage_per_total: 0f64,
 				trend: vec![],
-				reasons: vec![]
+				trend_first: vec![],
+				reasons: vec![],
+				rank_last_1: 0,
+				rank_last_2: 0,
+				vote_count_last_1: 0,
+				vote_count_last_2: 0,
+				first_vote_count_last_1: 0,
+				first_vote_count_last_2: 0,
+				first_vote_percentage_last_1: 0.0,
+				first_vote_percentage_last_2: 0.0,
+				vote_percentage_last_1: 0.0,
+				vote_percentage_last_2: 0.0,
 			};
 			rank += 1;
 			chars_result.push(entry);
@@ -450,12 +490,14 @@ pub async fn musics_trend(ctx: &AppContext, query: Option<String>, vote_start: b
 	let cached_entry = ctx.musics_entry_cache_coll.find_one(cache_query.clone(), None).await.map_err(|e| ServiceError::new(SERVICE_NAME, format!("{:?}", e)))?;
 	if let Some(cached_entry) = cached_entry {
 		let resp = models::TrendResponse {
-			trend: cached_entry.entry.trend
+			trend: cached_entry.entry.trend,
+			trend_first: cached_entry.entry.trend_first,
 		};
 		Ok(resp)
 	} else {
 		let resp = models::TrendResponse {
-			trend: vec![]
+			trend: vec![],
+			trend_first: vec![]
 		};
 		Ok(resp)
 	}
@@ -498,6 +540,7 @@ pub async fn musics_ranking(ctx: &AppContext, query: Option<String>, vote_start:
 	// else
 	let mut votes_cursor = ctx.votes_coll.find(filter, None).await.map_err(|e| ServiceError::new(SERVICE_NAME, format!("{:?}", e)))?;
 	let mut hrs_bins: HashMap<String, Vec<i32>> = HashMap::with_capacity(300);
+	let mut hrs_bins_first: HashMap<String, Vec<i32>> = HashMap::with_capacity(300);
 	let mut reasons: HashMap<String, Vec<String>> = HashMap::with_capacity(300);
 	let mut per_music_vote_count: HashMap<String, i32> = HashMap::with_capacity(300);
 	let mut per_music_vote_first_count: HashMap<String, i32> = HashMap::with_capacity(300);
@@ -512,15 +555,21 @@ pub async fn musics_ranking(ctx: &AppContext, query: Option<String>, vote_start:
 		if pv.musics.is_none() || pv.musics_meta.is_none() {
 			continue;
 		}
+		let chs = pv.musics.as_ref().unwrap();
+		if chs.len() == 0 {
+			continue;
+		}
+		let hrs_diff = (pv.musics_meta.as_ref().unwrap().created_at.to_chrono() - vote_start.to_chrono()).num_hours() as usize;
 		if let Some(f) = &pv.musics_first {
 			if f.len() != 0 {
 				total_first_votes += 1;
 				*per_music_vote_first_count.entry(f[0].clone()).or_default() += 1;
+				if !hrs_bins_first.contains_key(&f[0]) {
+					hrs_bins_first.insert(f[0].clone(), vec![0i32; 24 * 30]);
+				}
+				let trend_hrs_bins = hrs_bins_first.get_mut(&f[0]).unwrap();
+				trend_hrs_bins[hrs_diff] += 1;
 			}
-		}
-		let chs = pv.musics.as_ref().unwrap();
-		if chs.len() == 0 {
-			continue;
 		}
 		total_votes += 1;
 		let is_male = if pv.q11011.opt[0] == "1101101" {
@@ -530,7 +579,6 @@ pub async fn musics_ranking(ctx: &AppContext, query: Option<String>, vote_start:
 			total_female += 1;
 			false
 		};
-		let hrs_diff = (pv.musics_meta.as_ref().unwrap().created_at.to_chrono() - vote_start.to_chrono()).num_hours() as usize;
 		for ch in chs {
 			*per_music_vote_count.entry(ch.name.clone()).or_default() += 1;
 			if !hrs_bins.contains_key(&ch.name) {
@@ -587,6 +635,16 @@ pub async fn musics_ranking(ctx: &AppContext, query: Option<String>, vote_start:
 				VotingTrendItem { hrs: hrs as _, cnt: *cnt }
 			})
 			.collect::<Vec<_>>();
+		let trend_first = hrs_bins_first
+			.get(ch)
+			.unwrap()
+			.iter()
+			.enumerate()
+			.filter(|(_, cnt)| {**cnt != 0})
+			.map(|(hrs, cnt)| {
+				VotingTrendItem { hrs: hrs as _, cnt: *cnt }
+			})
+			.collect::<Vec<_>>();
 		let mut entry = RankingEntry {
 			rank,
 			display_rank,
@@ -608,7 +666,18 @@ pub async fn musics_ranking(ctx: &AppContext, query: Option<String>, vote_start:
 			female_percentage_per_char: *per_music_female_vote_count.get(ch).unwrap_or(&0) as f64 / *per_music_vote_count.get(ch).unwrap_or(&0) as f64,
 			female_percentage_per_total: *per_music_female_vote_count.get(ch).unwrap_or(&0) as f64 / total_female as f64,
 			trend,
-			reasons: reasons.get(ch).unwrap_or(&vec![]).clone()
+			trend_first,
+			reasons: reasons.get(ch).unwrap_or(&vec![]).clone(),
+			rank_last_1: 0,
+			rank_last_2: 0,
+			vote_count_last_1: 0,
+			vote_count_last_2: 0,
+			first_vote_count_last_1: 0,
+			first_vote_count_last_2: 0,
+			first_vote_percentage_last_1: 0.0,
+			first_vote_percentage_last_2: 0.0,
+			vote_percentage_last_1: 0.0,
+			vote_percentage_last_2: 0.0,
 		};
 		let cur_votes = (entry.vote_count);
 		if last_votes != cur_votes {
@@ -653,7 +722,18 @@ pub async fn musics_ranking(ctx: &AppContext, query: Option<String>, vote_start:
 				female_percentage_per_char: 0f64,
 				female_percentage_per_total: 0f64,
 				trend: vec![],
-				reasons: vec![]
+				trend_first: vec![],
+				reasons: vec![],
+				rank_last_1: 0,
+				rank_last_2: 0,
+				vote_count_last_1: 0,
+				vote_count_last_2: 0,
+				first_vote_count_last_1: 0,
+				first_vote_count_last_2: 0,
+				first_vote_percentage_last_1: 0.0,
+				first_vote_percentage_last_2: 0.0,
+				vote_percentage_last_1: 0.0,
+				vote_percentage_last_2: 0.0,
 			};
 			rank += 1;
 			musics_result.push(entry);
@@ -997,12 +1077,14 @@ pub async fn cps_trend(ctx: &AppContext, query: Option<String>, vote_start: bson
 	let cached_entry = ctx.cps_entry_cache_coll.find_one(cache_query.clone(), None).await.map_err(|e| ServiceError::new(SERVICE_NAME, format!("{:?}", e)))?;
 	if let Some(cached_entry) = cached_entry {
 		let resp = models::TrendResponse {
-			trend: cached_entry.entry.trend
+			trend: cached_entry.entry.trend,
+			trend_first: vec![]
 		};
 		Ok(resp)
 	} else {
 		let resp = models::TrendResponse {
-			trend: vec![]
+			trend: vec![],
+			trend_first: vec![]
 		};
 		Ok(resp)
 	}

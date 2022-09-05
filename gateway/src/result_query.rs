@@ -218,7 +218,8 @@ pub struct Reasons {
 
 #[derive(juniper::GraphQLObject, Clone, Serialize, Deserialize)]
 pub struct Trends {
-	pub trend: Vec<VotingTrendItem>
+	pub trend: Vec<VotingTrendItem>,
+	pub trend_first: Vec<VotingTrendItem>
 }
 
 pub async fn queryCharacterRanking_impl(context: &Context, query: Option<String>, vote_start: DateTime<Utc>, vote_year: i32) -> FieldResult<CharacterOrMusicRanking> {

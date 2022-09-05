@@ -63,16 +63,32 @@ pub struct VotingTrendItem {
 pub struct RankingEntry {
 	/// 排名
 	pub rank: i32,
+	/// 排名上一届
+	pub rank_last_1: i32,
+	/// 排名上上届
+	pub rank_last_2: i32,
 	/// 展示排名
 	pub display_rank: i32,
 	/// 角色名
 	pub name: String,
 	/// 票数
 	pub vote_count: i32,
+	/// 票数
+	pub vote_count_last_1: i32,
+	/// 票数
+	pub vote_count_last_2: i32,
 	/// 本命票数
 	pub first_vote_count: i32,
+	/// 本命票数上一届
+	pub first_vote_count_last_1: i32,
+	/// 本命票数上上届
+	pub first_vote_count_last_2: i32,
 	/// 本命率
 	pub first_vote_percentage: f64,
+	/// 本命率上一届
+	pub first_vote_percentage_last_1: f64,
+	/// 本命率上上届
+	pub first_vote_percentage_last_2: f64,
 	/// 本命加权
 	pub first_vote_count_weighted: i32,
 	/// 所属作品类型
@@ -85,6 +101,10 @@ pub struct RankingEntry {
 	pub name_jpn: String,
 	/// 票数占比
 	pub vote_percentage: f64,
+	/// 票数占比上一届
+	pub vote_percentage_last_1: f64,
+	/// 票数占比上上届
+	pub vote_percentage_last_2: f64,
 	/// 本命占比
 	pub first_percentage: f64,
 	/// 男性票数
@@ -101,6 +121,8 @@ pub struct RankingEntry {
 	pub female_percentage_per_total: f64,
 	/// 趋势
 	pub trend: Vec<VotingTrendItem>,
+	/// 本命趋势
+	pub trend_first: Vec<VotingTrendItem>,
 	/// 理由
 	pub reasons: Vec<String>,
 }
@@ -194,7 +216,8 @@ pub struct ReasonsResponse {
 
 #[derive(Clone, Serialize, Deserialize)]
 pub struct TrendResponse {
-	pub trend: Vec<VotingTrendItem>
+	pub trend: Vec<VotingTrendItem>,
+	pub trend_first: Vec<VotingTrendItem>
 }
 #[derive(Clone, Serialize, Deserialize)]
 pub struct RankingQueryResponse {
