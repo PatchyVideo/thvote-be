@@ -272,7 +272,8 @@ pub async fn chars_ranking(ctx: &AppContext, query: Option<String>, vote_start: 
 				VotingTrendItem { hrs: hrs as _, cnt: *cnt }
 			})
 			.collect::<Vec<_>>();
-		let trend_first = hrs_bins_first
+		let trend_first = if hrs_bins_first.contains_key(ch) {
+			hrs_bins_first
 			.get(ch)
 			.unwrap()
 			.iter()
@@ -281,7 +282,10 @@ pub async fn chars_ranking(ctx: &AppContext, query: Option<String>, vote_start: 
 			.map(|(hrs, cnt)| {
 				VotingTrendItem { hrs: hrs as _, cnt: *cnt }
 			})
-			.collect::<Vec<_>>();
+			.collect::<Vec<_>>()
+		} else {
+			vec![]
+		};
 		let mut entry = RankingEntry {
 			rank,
 			display_rank,
@@ -635,7 +639,8 @@ pub async fn musics_ranking(ctx: &AppContext, query: Option<String>, vote_start:
 				VotingTrendItem { hrs: hrs as _, cnt: *cnt }
 			})
 			.collect::<Vec<_>>();
-		let trend_first = hrs_bins_first
+		let trend_first = if hrs_bins_first.contains_key(ch) {
+			hrs_bins_first
 			.get(ch)
 			.unwrap()
 			.iter()
@@ -644,7 +649,10 @@ pub async fn musics_ranking(ctx: &AppContext, query: Option<String>, vote_start:
 			.map(|(hrs, cnt)| {
 				VotingTrendItem { hrs: hrs as _, cnt: *cnt }
 			})
-			.collect::<Vec<_>>();
+			.collect::<Vec<_>>()
+		} else {
+			vec![]
+		};
 		let mut entry = RankingEntry {
 			rank,
 			display_rank,
