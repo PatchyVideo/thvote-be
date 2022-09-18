@@ -284,3 +284,19 @@ pub struct GlobalStats {
 	pub num_male: i32,
 	pub num_female: i32,
 }
+
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+pub struct CompletionRateItem {
+	pub name: String,
+	pub rate: f64,
+	pub num_complete: i32,
+	pub total: i32
+}
+
+
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+pub struct CompletionRate {
+	pub vote_year: i32,
+	pub items: Vec<CompletionRateItem>
+}
+

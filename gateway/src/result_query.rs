@@ -245,6 +245,7 @@ pub struct GlobalStats {
 
 #[derive(juniper::GraphQLObject, Debug, Clone, Serialize, Deserialize, Default)]
 pub struct CompletionRateItem {
+	pub name: String,
 	pub rate: f64,
 	pub num_complete: i32,
 	pub total: i32

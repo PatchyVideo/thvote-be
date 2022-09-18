@@ -7,7 +7,7 @@ use futures::stream::{StreamExt, TryStreamExt};
 use serde_derive::{Serialize, Deserialize};
 
 
-use crate::{parser, common::SERVICE_NAME, context::AppContext, models::{self, SubmitMetadata, RankingEntry, VotingTrendItem, RankingQueryResponse, RankingGlobal, CachedRankingEntry, CachedRankingGlobal, CPItem, CPRankingQueryResponse, CPRankingEntry, CachedCPRankingEntry, GlobalStats}, service_error::ServiceError};
+use crate::{parser, common::SERVICE_NAME, context::AppContext, models::{self, SubmitMetadata, RankingEntry, VotingTrendItem, RankingQueryResponse, RankingGlobal, CachedRankingEntry, CachedRankingGlobal, CPItem, CPRankingQueryResponse, CPRankingEntry, CachedCPRankingEntry, GlobalStats, CompletionRate, CompletionRateItem}, service_error::ServiceError};
 
 #[derive(Clone, Serialize, Deserialize)]
 struct PartialVoteCharEntry {
@@ -1144,4 +1144,43 @@ pub async fn global_stats(ctx: &AppContext, vote_start: bson::DateTime, vote_yea
 	}
 	ctx.global_stats.insert_one(gs.clone(), None).await.map_err(|e| ServiceError::new(SERVICE_NAME, format!("{:?}", e)))?;
 	Ok(gs)
+}
+
+pub async fn completion_rates(ctx: &AppContext, vote_start: bson::DateTime, vote_year: i32) -> Result<models::CompletionRate, ServiceError> {
+	let filter = doc! {"vote_year": vote_year};
+	let cached_global = ctx.completion_rates.find_one(filter.clone(), None).await.map_err(|e| ServiceError::new(SERVICE_NAME, format!("{:?}", e)))?;
+	if let Some(cached_global) = cached_global {
+		return Ok(cached_global);
+	};
+	// else
+	let mut votes_cursor = ctx.votes_coll.find(filter, None).await.map_err(|e| ServiceError::new(SERVICE_NAME, format!("{:?}", e)))?;
+	let mut ret = CompletionRate::default();
+	ret.vote_year = vote_year;
+	let mut total_votes = 0i32;
+	let mut question_count_map: HashMap<String, i32> = HashMap::new();
+	while let Some(Ok(vote)) = votes_cursor.next().await {
+		total_votes += 1;
+		for (key, value) in vote.iter() {
+			if key.chars().next().unwrap() == 'q' {
+				if let Some(value_doc) = value.as_document() {
+					if let Ok(opt) = value_doc.get_array(&"opt") {
+						if opt.len() != 0 {
+							*question_count_map.entry(key.clone()).or_insert(0) += 1;
+						}
+					}
+				}
+			}
+		}
+	}
+	for (k, v) in question_count_map {
+		let rate = (v as f64) / (total_votes as f64);
+		ret.items.push(CompletionRateItem {
+			name: k,
+			rate,
+			num_complete: v,
+			total: total_votes
+		});
+	}
+	ctx.completion_rates.insert_one(ret.clone(), None).await.map_err(|e| ServiceError::new(SERVICE_NAME, format!("{:?}", e)))?;
+	Ok(ret)
 }

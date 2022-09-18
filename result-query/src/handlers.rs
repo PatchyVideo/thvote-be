@@ -93,3 +93,8 @@ pub async fn global_stats(ctx: web::Data<AppContext>, request: HttpRequest, body
 	let resp = query::global_stats(&ctx, bson::DateTime::from_chrono(body.vote_start), body.vote_year).await?;
 	Ok(web::Json(resp))
 }
+
+pub async fn completion_rates(ctx: web::Data<AppContext>, request: HttpRequest, body: actix_web::web::Json<models::GlobalStatsRequest>) -> Result<web::Json<models::CompletionRate>, ServiceError> {
+	let resp = query::completion_rates(&ctx, bson::DateTime::from_chrono(body.vote_start), body.vote_year).await?;
+	Ok(web::Json(resp))
+}

@@ -4,7 +4,7 @@ use std::cell::Cell;
 use bson::Document;
 use mongodb::{Collection, Database};
 
-use crate::models::{CachedRankingEntry, CachedRankingGlobal, CachedCPRankingEntry, PartialVoteItemEntry, GlobalStats};
+use crate::models::{CachedRankingEntry, CachedRankingGlobal, CachedCPRankingEntry, PartialVoteItemEntry, GlobalStats, CompletionRate};
 
 
 #[derive(Clone, Debug)]
@@ -21,4 +21,5 @@ pub struct AppContext {
     pub all_chars: Collection<PartialVoteItemEntry>,
     pub all_musics: Collection<PartialVoteItemEntry>,
     pub global_stats: Collection<GlobalStats>,
+    pub completion_rates: Collection<CompletionRate>,
 }
