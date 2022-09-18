@@ -6,6 +6,7 @@ use chrono::{DateTime, Utc};
 
 use crate::result_query::CPRanking;
 use crate::result_query::CharacterOrMusicRanking;
+use crate::result_query::CompletionRate;
 use crate::result_query::GlobalStats;
 use crate::result_query::Reasons;
 use crate::result_query::Trends;
@@ -155,6 +156,9 @@ impl Query {
 	}
 	async fn queryGlobalStats(context: &Context, vote_start: DateTime<Utc>, vote_year: i32) -> FieldResult<GlobalStats> {
 		result_query::queryGlobalStats_impl(context, vote_start, vote_year).await
+	}
+	async fn queryCompletionRates(context: &Context, vote_start: DateTime<Utc>, vote_year: i32) -> FieldResult<CompletionRate> {
+		result_query::queryCompletionRate_impl(context, vote_start, vote_year).await
 	}
 }
 

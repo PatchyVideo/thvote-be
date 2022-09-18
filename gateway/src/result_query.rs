@@ -243,6 +243,21 @@ pub struct GlobalStats {
 }
 
 
+#[derive(juniper::GraphQLObject, Debug, Clone, Serialize, Deserialize, Default)]
+pub struct CompletionRateItem {
+	pub rate: f64,
+	pub num_complete: i32,
+	pub total: i32
+}
+
+
+#[derive(juniper::GraphQLObject, Debug, Clone, Serialize, Deserialize, Default)]
+pub struct CompletionRate {
+	pub vote_year: i32,
+	pub items: Vec<CompletionRateItem>
+}
+
+
 pub async fn queryCharacterRanking_impl(context: &Context, query: Option<String>, vote_start: DateTime<Utc>, vote_year: i32) -> FieldResult<CharacterOrMusicRanking> {
 	let query_json = RankingQueryRequest {
 		query,
@@ -345,5 +360,14 @@ pub async fn queryGlobalStats_impl(context: &Context, vote_start: DateTime<Utc>,
 		vote_year
 	};
 	let post_result: GlobalStats = json_request_gateway(SERVICE_NAME, &format!("http://{}/v1/global-stats/", RESULT_QUERY), query_json).await?;
+	Ok(post_result)
+}
+
+pub async fn queryCompletionRate_impl(context: &Context, vote_start: DateTime<Utc>, vote_year: i32) -> FieldResult<CompletionRate> {
+	let query_json = GlobalStatsRequest {
+		vote_start,
+		vote_year
+	};
+	let post_result: CompletionRate = json_request_gateway(SERVICE_NAME, &format!("http://{}/v1/completion-rates/", RESULT_QUERY), query_json).await?;
 	Ok(post_result)
 }
