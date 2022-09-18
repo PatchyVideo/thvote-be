@@ -153,7 +153,7 @@ impl Query {
 		}
 		Ok(ret)
 	}
-	async fn queryGlobalStats(context: &Context, vote_start: DateTime<Utc>, vote_year: i32, names: Vec<String>) -> FieldResult<GlobalStats> {
+	async fn queryGlobalStats(context: &Context, vote_start: DateTime<Utc>, vote_year: i32) -> FieldResult<GlobalStats> {
 		result_query::queryGlobalStats_impl(context, vote_start, vote_year).await
 	}
 }
