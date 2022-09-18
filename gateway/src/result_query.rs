@@ -211,6 +211,14 @@ pub struct TrendRequest {
 }
 
 
+#[derive(Clone, Serialize, Deserialize)]
+pub struct GlobalStatsRequest {
+	/// 投票开始时间，UTC
+	pub vote_start: DateTime<Utc>,
+	/// 第几届
+	pub vote_year: i32,
+}
+
 #[derive(juniper::GraphQLObject, Clone, Serialize, Deserialize)]
 pub struct Reasons {
 	pub reasons: Vec<String>
@@ -221,6 +229,19 @@ pub struct Trends {
 	pub trend: Vec<VotingTrendItem>,
 	pub trend_first: Vec<VotingTrendItem>
 }
+
+#[derive(juniper::GraphQLObject, Debug, Clone, Serialize, Deserialize)]
+pub struct GlobalStats {
+	pub vote_year: i32,
+	pub num_vote: i32,
+	pub num_char: i32,
+	pub num_music: i32,
+	pub num_cp: i32,
+	pub num_doujin: i32,
+	pub num_male: i32,
+	pub num_female: i32,
+}
+
 
 pub async fn queryCharacterRanking_impl(context: &Context, query: Option<String>, vote_start: DateTime<Utc>, vote_year: i32) -> FieldResult<CharacterOrMusicRanking> {
 	let query_json = RankingQueryRequest {
@@ -315,5 +336,14 @@ pub async fn queryCPTrend_impl(context: &Context, query: Option<String>, vote_st
 		name
 	};
 	let post_result: Trends = json_request_gateway(SERVICE_NAME, &format!("http://{}/v1/cps-trend/", RESULT_QUERY), query_json).await?;
+	Ok(post_result)
+}
+
+pub async fn queryGlobalStats_impl(context: &Context, vote_start: DateTime<Utc>, vote_year: i32) -> FieldResult<GlobalStats> {
+	let query_json = GlobalStatsRequest {
+		vote_start,
+		vote_year
+	};
+	let post_result: GlobalStats = json_request_gateway(SERVICE_NAME, &format!("http://{}/v1/global-stats/", RESULT_QUERY), query_json).await?;
 	Ok(post_result)
 }

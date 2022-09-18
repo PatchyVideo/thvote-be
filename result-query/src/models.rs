@@ -266,3 +266,21 @@ pub struct PartialVoteItemEntry {
 	pub vote_year: i32,
 	pub name: String
 }
+
+#[derive(Clone, Serialize, Deserialize)]
+pub struct GlobalStatsRequest {
+	pub vote_start: DateTime<Utc>,
+	pub vote_year: i32
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+pub struct GlobalStats {
+	pub vote_year: i32,
+	pub num_vote: i32,
+	pub num_char: i32,
+	pub num_music: i32,
+	pub num_cp: i32,
+	pub num_doujin: i32,
+	pub num_male: i32,
+	pub num_female: i32,
+}

@@ -7,7 +7,7 @@ use futures::stream::{StreamExt, TryStreamExt};
 use serde_derive::{Serialize, Deserialize};
 
 
-use crate::{parser, common::SERVICE_NAME, context::AppContext, models::{self, SubmitMetadata, RankingEntry, VotingTrendItem, RankingQueryResponse, RankingGlobal, CachedRankingEntry, CachedRankingGlobal, CPItem, CPRankingQueryResponse, CPRankingEntry, CachedCPRankingEntry}, service_error::ServiceError};
+use crate::{parser, common::SERVICE_NAME, context::AppContext, models::{self, SubmitMetadata, RankingEntry, VotingTrendItem, RankingQueryResponse, RankingGlobal, CachedRankingEntry, CachedRankingGlobal, CPItem, CPRankingQueryResponse, CPRankingEntry, CachedCPRankingEntry, GlobalStats}, service_error::ServiceError};
 
 #[derive(Clone, Serialize, Deserialize)]
 struct PartialVoteCharEntry {
@@ -50,6 +50,9 @@ struct PartialVote {
 	#[serde(skip_serializing_if = "Option::is_none")]
 	#[serde(default)]
 	pub cps_meta: Option<SubmitMetadata>,
+	#[serde(skip_serializing_if = "Option::is_none")]
+	#[serde(default)]
+	pub doujins: Option<Vec<Document>>,
 }
 
 pub fn process_query(query: Option<String>) -> Result<(Option<Document>, String), ServiceError> {
@@ -1096,4 +1099,49 @@ pub async fn cps_trend(ctx: &AppContext, query: Option<String>, vote_start: bson
 		};
 		Ok(resp)
 	}
+}
+
+pub async fn global_stats(ctx: &AppContext, vote_start: bson::DateTime, vote_year: i32) -> Result<models::GlobalStats, ServiceError> {
+	let filter = doc! {"vote_year": vote_year};
+	let cached_global = ctx.global_stats.find_one(filter.clone(), None).await.map_err(|e| ServiceError::new(SERVICE_NAME, format!("{:?}", e)))?;
+	if let Some(cached_global) = cached_global {
+		return Ok(cached_global);
+	};
+	// else
+	let mut votes_cursor = ctx.votes_coll.find(filter, None).await.map_err(|e| ServiceError::new(SERVICE_NAME, format!("{:?}", e)))?;
+	let mut gs = GlobalStats::default();
+	gs.vote_year = vote_year;
+	while let Some(Ok(vote)) = votes_cursor.next().await {
+		let pv: PartialVote = bson::from_document(vote).unwrap();
+		gs.num_vote += 1;
+		if let Some(ch) = pv.chars {
+			if ch.len() != 0 {
+				gs.num_char += 1;
+			}
+		}
+		if let Some(ch) = pv.musics {
+			if ch.len() != 0 {
+				gs.num_music += 1;
+			}
+		}
+		if let Some(ch) = pv.cps {
+			if ch.len() != 0 {
+				gs.num_cp += 1;
+			}
+		}
+		if let Some(ch) = pv.doujins {
+			if ch.len() != 0 {
+				gs.num_doujin += 1;
+			}
+		}
+		let is_male = if pv.q11011.opt[0] == "1101101" {
+			gs.num_male += 1;
+			true
+		} else {
+			gs.num_female += 1;
+			false
+		};
+	}
+	ctx.global_stats.insert_one(gs.clone(), None).await.map_err(|e| ServiceError::new(SERVICE_NAME, format!("{:?}", e)))?;
+	Ok(gs)
 }

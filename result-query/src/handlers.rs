@@ -88,3 +88,8 @@ pub async fn cps_trend(ctx: web::Data<AppContext>, request: HttpRequest, body: a
 	let resp = query::cps_trend(&ctx, body.query.clone(), bson::DateTime::from_chrono(body.vote_start), body.vote_year, body.name.clone()).await?;
 	Ok(web::Json(resp))
 }
+
+pub async fn global_stats(ctx: web::Data<AppContext>, request: HttpRequest, body: actix_web::web::Json<models::GlobalStatsRequest>) -> Result<web::Json<models::GlobalStats>, ServiceError> {
+	let resp = query::global_stats(&ctx, bson::DateTime::from_chrono(body.vote_start), body.vote_year).await?;
+	Ok(web::Json(resp))
+}

@@ -39,6 +39,7 @@ async fn main() -> std::io::Result<()> {
         cps_global_cache_coll: db.collection("cache_cps_global"),
         all_chars: db.collection("chars"),
         all_musics: db.collection("musics"),
+        global_stats: db.collection("global_stats"),
     };
     HttpServer::new(move || {
         App::new().app_data(Data::new(ctx.clone()))
@@ -51,6 +52,7 @@ async fn main() -> std::io::Result<()> {
             .route("/v1/chars-trend/", web::post().to(handlers::chars_trend))
             .route("/v1/musics-trend/", web::post().to(handlers::musics_trend))
             .route("/v1/cps-trend/", web::post().to(handlers::cps_trend))
+            .route("/v1/global-stats/", web::post().to(handlers::global_stats))
     })
     .bind("0.0.0.0:80")?
     .run()

@@ -6,6 +6,7 @@ use chrono::{DateTime, Utc};
 
 use crate::result_query::CPRanking;
 use crate::result_query::CharacterOrMusicRanking;
+use crate::result_query::GlobalStats;
 use crate::result_query::Reasons;
 use crate::result_query::Trends;
 use crate::submit_handler::CPSubmitGQL;
@@ -151,6 +152,9 @@ impl Query {
 			ret.push(result_query::queryCPTrend_impl(context, None, vote_start, vote_year, name.clone()).await?);
 		}
 		Ok(ret)
+	}
+	async fn queryGlobalStats(context: &Context, vote_start: DateTime<Utc>, vote_year: i32, names: Vec<String>) -> FieldResult<GlobalStats> {
+		result_query::queryGlobalStats_impl(context, vote_start, vote_year).await
 	}
 }
 
