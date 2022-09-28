@@ -206,7 +206,7 @@ pub struct TrendRequest {
 	pub vote_start: DateTime<Utc>,
 	/// 第几届
 	pub vote_year: i32,
-	/// 名字
+	/// 名字或问题ID，q开头
 	pub name: String
 }
 
@@ -256,6 +256,47 @@ pub struct CompletionRateItem {
 pub struct CompletionRate {
 	pub vote_year: i32,
 	pub items: Vec<CompletionRateItem>
+}
+
+
+#[derive(juniper::GraphQLObject, Debug, Clone, Serialize, Deserialize, Default)]
+pub struct CachedQuestionAnswerItem {
+	pub aid: String,
+	pub votes: i32
+}
+
+#[derive(juniper::GraphQLObject, Debug, Clone, Serialize, Deserialize, Default)]
+pub struct CachedQuestionItem {
+	pub question_id: String,
+	/// fixed set of choices
+	pub answers_cat: Vec<CachedQuestionAnswerItem>,
+	/// open-ended answers
+	pub answers_str: Vec<String>
+}
+
+#[derive(juniper::GraphQLObject, Debug, Clone, Serialize, Deserialize)]
+pub struct CachedQuestionEntry {
+	pub key: String,
+	pub vote_year: i32,
+	pub entry: CachedQuestionItem
+}
+
+#[derive(juniper::GraphQLObject, Debug, Clone, Serialize, Deserialize)]
+pub struct QueryQuestionnaireRequest {
+	/// 投票开始时间，UTC
+	pub vote_start: DateTime<Utc>,
+	/// 第几届
+	pub vote_year: i32,
+	/// 要查询哪几个问题ID，q开头
+	pub questions_of_interest: Vec<String>,
+	#[serde(skip_serializing_if = "Option::is_none")]
+	#[serde(default)]
+	pub query: Option<String>,
+}
+
+#[derive(juniper::GraphQLObject, Debug, Clone, Serialize, Deserialize)]
+pub struct QueryQuestionnaireResponse {
+	pub entries: Vec<CachedQuestionItem>
 }
 
 
@@ -370,5 +411,27 @@ pub async fn queryCompletionRate_impl(context: &Context, vote_start: DateTime<Ut
 		vote_year
 	};
 	let post_result: CompletionRate = json_request_gateway(SERVICE_NAME, &format!("http://{}/v1/completion-rates/", RESULT_QUERY), query_json).await?;
+	Ok(post_result)
+}
+
+pub async fn queryQuestionnaire_impl(context: &Context, query: Option<String>, vote_start: DateTime<Utc>, vote_year: i32, questions_of_interest: Vec<String>) -> FieldResult<QueryQuestionnaireResponse> {
+	let query_json = QueryQuestionnaireRequest {
+		query,
+		vote_start,
+		vote_year,
+		questions_of_interest: questions_of_interest
+	};
+	let post_result: QueryQuestionnaireResponse = json_request_gateway(SERVICE_NAME, &format!("http://{}/v1/papers/", RESULT_QUERY), query_json).await?;
+	Ok(post_result)
+}
+
+pub async fn queryQuestionnaireTrend_impl(context: &Context, query: Option<String>, vote_start: DateTime<Utc>, vote_year: i32, name: String) -> FieldResult<Trends> {
+	let query_json = TrendRequest {
+		query,
+		vote_start,
+		vote_year,
+		name
+	};
+	let post_result: Trends = json_request_gateway(SERVICE_NAME, &format!("http://{}/v1/papers-trend/", RESULT_QUERY), query_json).await?;
 	Ok(post_result)
 }
