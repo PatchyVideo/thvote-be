@@ -271,7 +271,8 @@ pub struct CachedQuestionItem {
 	/// fixed set of choices
 	pub answers_cat: Vec<CachedQuestionAnswerItem>,
 	/// open-ended answers
-	pub answers_str: Vec<String>
+	pub answers_str: Vec<String>,
+	pub total_answers: i32
 }
 
 #[derive(juniper::GraphQLObject, Debug, Clone, Serialize, Deserialize)]
