@@ -41,6 +41,7 @@ async fn main() -> std::io::Result<()> {
         all_musics: db.collection("musics"),
         global_stats: db.collection("global_stats"),
         completion_rates: db.collection("completion_rates"),
+        paper_result: db.collection("paper_result"),
     };
     HttpServer::new(move || {
         App::new().app_data(Data::new(ctx.clone()))
@@ -55,6 +56,8 @@ async fn main() -> std::io::Result<()> {
             .route("/v1/cps-trend/", web::post().to(handlers::cps_trend))
             .route("/v1/global-stats/", web::post().to(handlers::global_stats))
             .route("/v1/completion-rates/", web::post().to(handlers::completion_rates))
+            .route("/v1/papers/", web::post().to(handlers::paper_query))
+            .route("/v1/papers-trend/", web::post().to(handlers::paper_trend))
     })
     .bind("0.0.0.0:80")?
     .run()

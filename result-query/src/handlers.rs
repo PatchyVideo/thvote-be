@@ -98,3 +98,25 @@ pub async fn completion_rates(ctx: web::Data<AppContext>, request: HttpRequest, 
 	let resp = query::completion_rates(&ctx, bson::DateTime::from_chrono(body.vote_start), body.vote_year).await?;
 	Ok(web::Json(resp))
 }
+
+
+pub async fn paper_query(ctx: web::Data<AppContext>, request: HttpRequest, body: actix_web::web::Json<models::QueryQuestionnaireRequest>) -> Result<web::Json<models::QueryQuestionnaireResponse>, ServiceError> {
+	if body.query.as_ref().map(|f| f.len()).unwrap_or_default() > 1000 {
+		// query too long
+		return Err(ServiceError::new_human_readable(SERVICE_NAME, "QUERY_TOO_LONG", "查询过长".into()));
+	};
+	if body.questions_of_interest.len() == 0 {
+		return Err(ServiceError::new_human_readable(SERVICE_NAME, "NO_QUESTIONNAIRE_REQUESTED", "没有问题查询".into()));
+	}
+	let resp = query::paper_result(&ctx, body.query.clone(), bson::DateTime::from_chrono(body.vote_start), body.vote_year, body.questions_of_interest.clone()).await?;
+	Ok(web::Json(resp))
+}
+
+pub async fn paper_trend(ctx: web::Data<AppContext>, request: HttpRequest, body: actix_web::web::Json<models::TrendRequest>) -> Result<web::Json<models::TrendResponse>, ServiceError> {
+	if body.query.as_ref().map(|f| f.len()).unwrap_or_default() > 1000 {
+		// query too long
+		return Err(ServiceError::new_human_readable(SERVICE_NAME, "QUERY_TOO_LONG", "查询过长".into()));
+	};
+	let resp = query::papers_trend(&ctx, body.query.clone(), bson::DateTime::from_chrono(body.vote_start), body.vote_year, body.name.clone()).await?;
+	Ok(web::Json(resp))
+}

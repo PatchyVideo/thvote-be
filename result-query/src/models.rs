@@ -208,7 +208,6 @@ pub struct TrendRequest {
 	pub name: String
 }
 
-
 #[derive(Clone, Serialize, Deserialize)]
 pub struct ReasonsResponse {
 	pub reasons: Vec<String>
@@ -300,3 +299,51 @@ pub struct CompletionRate {
 	pub items: Vec<CompletionRateItem>
 }
 
+
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+pub struct CachedQuestionAnswerItem {
+	pub aid: String,
+	pub votes: i32
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+pub struct CachedQuestionItem {
+	pub question_id: String,
+	/// fixed set of choices
+	pub answers_cat: Vec<CachedQuestionAnswerItem>,
+	/// open-ended answers
+	pub answers_str: Vec<String>,
+	pub total_answers: i32
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct CachedQuestionEntry {
+	pub key: String,
+	pub vote_year: i32,
+	pub entry: CachedQuestionItem,
+	pub trend: Vec<VotingTrendItem>
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct QueryQuestionnaireRequest {
+	/// 投票开始时间，UTC
+	pub vote_start: DateTime<Utc>,
+	/// 第几届
+	pub vote_year: i32,
+	/// 要查询哪几个问题ID，q开头
+	pub questions_of_interest: Vec<String>,
+	#[serde(skip_serializing_if = "Option::is_none")]
+	#[serde(default)]
+	pub query: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct QueryQuestionnaireResponse {
+	pub entries: Vec<CachedQuestionItem>
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct SinglePaperItem {
+	pub opt: Vec<String>,
+	pub ans: String
+}

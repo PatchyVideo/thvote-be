@@ -7,7 +7,7 @@ use futures::stream::{StreamExt, TryStreamExt};
 use serde_derive::{Serialize, Deserialize};
 
 
-use crate::{parser, common::SERVICE_NAME, context::AppContext, models::{self, SubmitMetadata, RankingEntry, VotingTrendItem, RankingQueryResponse, RankingGlobal, CachedRankingEntry, CachedRankingGlobal, CPItem, CPRankingQueryResponse, CPRankingEntry, CachedCPRankingEntry, GlobalStats, CompletionRate, CompletionRateItem}, service_error::ServiceError};
+use crate::{parser, common::SERVICE_NAME, context::AppContext, models::{self, SubmitMetadata, RankingEntry, VotingTrendItem, RankingQueryResponse, RankingGlobal, CachedRankingEntry, CachedRankingGlobal, CPItem, CPRankingQueryResponse, CPRankingEntry, CachedCPRankingEntry, GlobalStats, CompletionRate, CompletionRateItem, SinglePaperItem, CachedQuestionItem, CachedQuestionAnswerItem, CachedQuestionEntry, QueryQuestionnaireResponse}, service_error::ServiceError};
 
 #[derive(Clone, Serialize, Deserialize)]
 struct PartialVoteCharEntry {
@@ -53,6 +53,9 @@ struct PartialVote {
 	#[serde(skip_serializing_if = "Option::is_none")]
 	#[serde(default)]
 	pub doujins: Option<Vec<Document>>,
+	#[serde(skip_serializing_if = "Option::is_none")]
+	#[serde(default)]
+	pub paper_meta: Option<SubmitMetadata>,
 }
 
 pub fn process_query(query: Option<String>) -> Result<(Option<Document>, String), ServiceError> {
@@ -1183,4 +1186,158 @@ pub async fn completion_rates(ctx: &AppContext, vote_start: bson::DateTime, vote
 	}
 	ctx.completion_rates.insert_one(ret.clone(), None).await.map_err(|e| ServiceError::new(SERVICE_NAME, format!("{:?}", e)))?;
 	Ok(ret)
+}
+
+pub async fn paper_result(ctx: &AppContext, query: Option<String>, vote_start: bson::DateTime, vote_year: i32, questions_of_interest: Vec<String>) ->  Result<models::QueryQuestionnaireResponse, ServiceError> {
+	let questions_of_interest_set: HashSet<String> = HashSet::from_iter(questions_of_interest.clone().into_iter());
+	// result of each question is cached in mongodb
+	let (filter, cache_key) = process_query(query)?;
+	let filter = if let Some(filter) = filter {
+		doc! {
+			"$and": [filter, {"vote_year": vote_year}]
+		}
+	} else {
+		doc! {
+			"vote_year": vote_year
+		}
+	};
+	// step 1: find in cache
+	let lockid = format!("lock-paper_result-{}", cache_key);
+	let guard = ctx.lock.acquire_async(lockid.as_bytes(), 60 * 1000).await;
+	// find in cache
+	let cache_query = doc! {
+		"key": cache_key.clone(),
+		"vote_year": vote_year,
+		"entry.question_id": {
+			"$in": questions_of_interest
+		}
+	};
+	let mut found_question_ids: HashSet<String> = HashSet::new();
+	let mut result_entries = Vec::new();
+	let mut cached = ctx.paper_result.find(cache_query.clone(), None).await.map_err(|e| ServiceError::new(SERVICE_NAME, format!("{:?}", e)))?;
+	while let Some(Ok(entry)) = cached.next().await {
+		found_question_ids.insert(entry.entry.question_id.clone());
+		result_entries.push(entry.entry);
+	}
+	// step 2: find out which questions are not cache
+	let not_found_qids: HashSet<&String> = questions_of_interest_set.difference(&found_question_ids).collect::<_>();
+	// step 3: build result for those questions
+	if not_found_qids.len() != 0 {
+		let mut question2answer_count: HashMap<String, HashMap<String, i32>> = HashMap::new();
+		let mut question2answer_str: HashMap<String, Vec<String>> = HashMap::new();
+		let mut question2cnt: HashMap<String, i32> = HashMap::new();
+		let mut hrs_bins: HashMap<String, Vec<i32>> = HashMap::new();
+
+		let mut votes_cursor = ctx.votes_coll.find(filter, None).await.map_err(|e| ServiceError::new(SERVICE_NAME, format!("{:?}", e)))?;
+		while let Some(Ok(vote)) = votes_cursor.next().await {
+			for (key, value) in vote.iter() {
+				if not_found_qids.contains(key) {
+					if let Ok(vote_item) = bson::from_bson::<SinglePaperItem>(value.clone()) {
+						let answer_count_map = question2answer_count.entry(key.clone()).or_insert(HashMap::new());
+						*question2cnt.entry(key.clone()).or_insert(0) += 1;
+						for opt_item in vote_item.opt.iter() {
+							*answer_count_map.entry(opt_item.clone()).or_insert(0) += 1;
+						}
+						if vote_item.ans.len() != 0 {
+							question2answer_str.entry(key.clone()).or_insert(Vec::new()).push(vote_item.ans.clone());
+						}
+						let pv: PartialVote = bson::from_document(vote.clone()).unwrap();
+						if let Some(paper_meta) = pv.paper_meta {
+							if !hrs_bins.contains_key(key) {
+								hrs_bins.insert(key.clone(), vec![0i32; 24 * 30]);
+							}
+							let hrs_diff = (paper_meta.created_at.to_chrono() - vote_start.to_chrono()).num_hours() as usize;
+							let trend_hrs_bins = hrs_bins.get_mut(key).unwrap();
+							trend_hrs_bins[hrs_diff] += 1;
+						}
+					}
+				}
+			}
+		}
+
+		let mut result_items: Vec<CachedQuestionItem> = Vec::with_capacity(not_found_qids.len());
+		for qid in not_found_qids {
+			let mut item = CachedQuestionItem { question_id: qid.clone(), answers_cat: vec![], answers_str: vec![], total_answers: 0 };
+			if let Some(answer_count) = question2answer_count.get(qid) {
+				for (aid, cnt) in answer_count {
+					item.answers_cat.push(CachedQuestionAnswerItem { aid: aid.clone(), votes: *cnt });
+				}
+			};
+			if let Some(answer_str) = question2answer_str.get(qid) {
+				item.answers_str = answer_str.clone();
+			}
+			if let Some(cnt) = question2cnt.get(qid) {
+				item.total_answers = *cnt;
+			}
+			result_items.push(item);
+		}
+		result_entries.append(&mut result_items.clone());
+
+		let cached_entries = result_items
+			.iter()
+			.map(|f| {
+				CachedQuestionEntry {
+					key: cache_key.clone(),
+					vote_year: vote_year,
+					entry: f.clone(),
+					trend: {
+						if let Some(trend) = hrs_bins.get(&f.question_id) {
+							trend
+								.iter()
+								.enumerate()
+								.filter(|(_, cnt)| {**cnt != 0})
+								.map(|(hrs, cnt)| {
+									VotingTrendItem { hrs: hrs as _, cnt: *cnt }
+								})
+								.collect::<Vec<_>>()
+						} else {
+							vec![]
+						}
+					}
+				}
+			})
+			.collect::<Vec<_>>();
+		ctx.paper_result.insert_many(cached_entries, None).await.map_err(|e| ServiceError::new(SERVICE_NAME, format!("{:?}", e)))?;
+	}
+
+	Ok(
+		QueryQuestionnaireResponse {
+			entries: result_entries
+		}
+	)
+}
+
+pub async fn papers_trend(ctx: &AppContext, query: Option<String>, vote_start: bson::DateTime, vote_year: i32, question_id: String) ->  Result<models::TrendResponse, ServiceError> {
+	let (filter, cache_key) = process_query(query)?;
+	let filter = if let Some(filter) = filter {
+		doc! {
+			"$and": [filter, {"vote_year": vote_year}]
+		}
+	} else {
+		doc! {
+			"vote_year": vote_year
+		}
+	};
+	// find in cache
+	let cache_query = doc! {
+		"key": cache_key.clone(),
+		"vote_year": vote_year,
+		"entry.question_id": {
+			"$in": vec![question_id]
+		}
+	};
+	let cached_entry = ctx.paper_result.find_one(cache_query.clone(), None).await.map_err(|e| ServiceError::new(SERVICE_NAME, format!("{:?}", e)))?;
+	if let Some(cached_entry) = cached_entry {
+		let resp = models::TrendResponse {
+			trend: cached_entry.trend,
+			trend_first: vec![]
+		};
+		Ok(resp)
+	} else {
+		let resp = models::TrendResponse {
+			trend: vec![],
+			trend_first: vec![]
+		};
+		Ok(resp)
+	}
 }
