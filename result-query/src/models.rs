@@ -347,3 +347,43 @@ pub struct SinglePaperItem {
 	pub opt: Vec<String>,
 	pub ans: String
 }
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct CovoteItem {
+	pub a: String,
+	pub b: String,
+	/// chi_square
+	pub cs: f64,
+	/// mutual_info
+	pub mi: f64,
+	/// co vote rate (V1∩V2 / V1∪V2)
+	pub cv: f64,
+	pub m00: i32,
+	pub m01: i32,
+	pub m10: i32,
+	pub m11: i32,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct CachedCovote {
+	pub key: String,
+	pub vote_year: i32,
+	pub first_k: i32, // only top k participate in covote calculation
+	pub items: Vec<CovoteItem>
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct CovoteRequest {
+	/// 投票开始时间，UTC
+	pub vote_start: DateTime<Utc>,
+	#[serde(skip_serializing_if = "Option::is_none")]
+	#[serde(default)]
+	pub query: Option<String>,
+	pub vote_year: i32,
+	pub first_k: i32
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct CovoteResponse {
+	pub items: Vec<CovoteItem>
+}

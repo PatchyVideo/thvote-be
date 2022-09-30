@@ -120,3 +120,27 @@ pub async fn paper_trend(ctx: web::Data<AppContext>, request: HttpRequest, body:
 	let resp = query::papers_trend(&ctx, body.query.clone(), bson::DateTime::from_chrono(body.vote_start), body.vote_year, body.name.clone()).await?;
 	Ok(web::Json(resp))
 }
+
+pub async fn chars_covote(ctx: web::Data<AppContext>, request: HttpRequest, body: actix_web::web::Json<models::CovoteRequest>) -> Result<web::Json<models::CovoteResponse>, ServiceError> {
+	if body.query.as_ref().map(|f| f.len()).unwrap_or_default() > 1000 {
+		// query too long
+		return Err(ServiceError::new_human_readable(SERVICE_NAME, "QUERY_TOO_LONG", "查询过长".into()));
+	};
+	if body.first_k <= 0 {
+		return Err(ServiceError::new_human_readable(SERVICE_NAME, "INVALID_K", "无效的k参数".into()));
+	}
+	let resp = query::chars_covote(&ctx, body.query.clone(), bson::DateTime::from_chrono(body.vote_start), body.vote_year, body.first_k).await?;
+	Ok(web::Json(resp))
+}
+
+pub async fn musics_covote(ctx: web::Data<AppContext>, request: HttpRequest, body: actix_web::web::Json<models::CovoteRequest>) -> Result<web::Json<models::CovoteResponse>, ServiceError> {
+	if body.query.as_ref().map(|f| f.len()).unwrap_or_default() > 1000 {
+		// query too long
+		return Err(ServiceError::new_human_readable(SERVICE_NAME, "QUERY_TOO_LONG", "查询过长".into()));
+	};
+	if body.first_k <= 0 {
+		return Err(ServiceError::new_human_readable(SERVICE_NAME, "INVALID_K", "无效的k参数".into()));
+	}
+	let resp = query::musics_covote(&ctx, body.query.clone(), bson::DateTime::from_chrono(body.vote_start), body.vote_year, body.first_k).await?;
+	Ok(web::Json(resp))
+}

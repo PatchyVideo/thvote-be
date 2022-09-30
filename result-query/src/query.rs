@@ -1,13 +1,14 @@
-use std::collections::{HashMap, HashSet};
+use std::{collections::{HashMap, HashSet}, cmp::Ordering};
 
 use bson::{Document, doc};
 use chrono::Utc;
+use itertools::Itertools;
 use mongodb::{Collection, options::FindOptions};
 use futures::stream::{StreamExt, TryStreamExt};
 use serde_derive::{Serialize, Deserialize};
 
 
-use crate::{parser, common::SERVICE_NAME, context::AppContext, models::{self, SubmitMetadata, RankingEntry, VotingTrendItem, RankingQueryResponse, RankingGlobal, CachedRankingEntry, CachedRankingGlobal, CPItem, CPRankingQueryResponse, CPRankingEntry, CachedCPRankingEntry, GlobalStats, CompletionRate, CompletionRateItem, SinglePaperItem, CachedQuestionItem, CachedQuestionAnswerItem, CachedQuestionEntry, QueryQuestionnaireResponse}, service_error::ServiceError};
+use crate::{parser, common::SERVICE_NAME, context::AppContext, models::{self, SubmitMetadata, RankingEntry, VotingTrendItem, RankingQueryResponse, RankingGlobal, CachedRankingEntry, CachedRankingGlobal, CPItem, CPRankingQueryResponse, CPRankingEntry, CachedCPRankingEntry, GlobalStats, CompletionRate, CompletionRateItem, SinglePaperItem, CachedQuestionItem, CachedQuestionAnswerItem, CachedQuestionEntry, QueryQuestionnaireResponse, CovoteItem, CachedCovote}, service_error::ServiceError};
 
 #[derive(Clone, Serialize, Deserialize)]
 struct PartialVoteCharEntry {
@@ -1340,4 +1341,270 @@ pub async fn papers_trend(ctx: &AppContext, query: Option<String>, vote_start: b
 		};
 		Ok(resp)
 	}
+}
+
+pub async fn chars_covote(ctx: &AppContext, query: Option<String>, vote_start: bson::DateTime, vote_year: i32, top_k: i32) ->  Result<models::CovoteResponse, ServiceError> {
+	let (filter, cache_key) = process_query(query.clone())?;
+	let filter = if let Some(filter) = filter {
+		doc! {
+			"$and": [filter, {"vote_year": vote_year}]
+		}
+	} else {
+		doc! {
+			"vote_year": vote_year
+		}
+	};
+
+	// step 1: query cache
+	let lockid = format!("lock-chars_covote-{}", cache_key);
+	let guard = ctx.lock.acquire_async(lockid.as_bytes(), 60 * 1000).await;
+	// find in cache
+	let cache_query = doc! {
+		"key": cache_key.clone(),
+		"vote_year": vote_year,
+		"first_k": top_k
+	};
+	if let Some(cached) = ctx.covote_chars.find_one(cache_query.clone(), None).await.map_err(|e| ServiceError::new(SERVICE_NAME, format!("{:?}", e)))? {
+		return Ok(models::CovoteResponse { items: cached.items });
+	}
+	// step 2: build covote cache
+	let mut rank_resp = chars_ranking(ctx, query, vote_start, vote_year).await?;
+	rank_resp.entries.sort_by(
+		|a, b| {
+			a.rank.cmp(&b.rank)
+		}
+	);
+	let top_k = std::cmp::min(rank_resp.entries.len(), top_k as usize);
+	let mut contingency_tables = vec![[[0i32; 2]; 2]; ((top_k * top_k) - top_k) / 2 + top_k];
+	let mut item2rank_map: HashMap<String, i32> = HashMap::with_capacity(top_k);
+	let mut rank2item_map: Vec<String> = Vec::with_capacity(top_k);
+	for rank_item in rank_resp.entries[..top_k].iter() {
+		item2rank_map.insert(rank_item.name.clone(), rank_item.rank - 1);
+		rank2item_map.push(rank_item.name.clone());
+	}
+	let mut total_votes = 0i32;
+	let mut votes_cursor = ctx.votes_coll.find(filter, None).await.map_err(|e| ServiceError::new(SERVICE_NAME, format!("{:?}", e)))?;
+	while let Some(Ok(vote)) = votes_cursor.next().await {
+		let pv: PartialVote = bson::from_document(vote).unwrap();
+		if let Some(items) = pv.chars {
+			total_votes += 1;
+			let item_ids = items
+				.iter()
+				.filter(|f| {
+					item2rank_map.contains_key(&f.name)
+				})
+				.map(|f| {
+					*item2rank_map.get(&f.name).unwrap()
+				}).collect::<Vec<_>>();
+			for id in item_ids.iter() {
+				let rank_a = *id;
+				for rank_b in 0..rank_a {
+					let idx = (1 + rank_a) * rank_a / 2 + rank_b;
+					let contingency_table = &mut contingency_tables[idx as usize];
+					contingency_table[1][0] += 1;
+					contingency_table[1][1] -= 1;
+				}
+				let rank_b = *id;
+				for rank_a in (rank_b + 1)..(top_k as i32) {
+					let idx = (1 + rank_a) * rank_a / 2 + rank_b;
+					let contingency_table = &mut contingency_tables[idx as usize];
+					contingency_table[0][1] += 1;
+					contingency_table[1][1] -= 1;
+				}
+			}
+			for item_comb in item_ids.iter().combinations(2) {
+				let rank_a;
+				let rank_b;
+				if item_comb[0] >= item_comb[1] {
+					rank_a = item_comb[0];
+					rank_b = item_comb[1];
+				} else {
+					rank_a = item_comb[1];
+					rank_b = item_comb[0];
+				}
+				let idx = (1 + rank_a) * rank_a / 2 + rank_b;
+				let contingency_table = &mut contingency_tables[idx as usize];
+				contingency_table[0][0] += 1;
+				contingency_table[1][1] += 1;
+				contingency_table[0][1] -= 1;
+				contingency_table[1][0] -= 1;
+			}
+		}
+	}
+	for item in contingency_tables.iter_mut() {
+		item[1][1] += total_votes;
+	}
+	let mut result = Vec::with_capacity(contingency_tables.len());
+	for rank_a in 0..(top_k as i32) {
+		for rank_b in 0..rank_a {
+			let idx = (1 + rank_a) * rank_a / 2 + rank_b;
+			let contingency_table = &mut contingency_tables[idx as usize];
+			let m00 = contingency_table[0][0] as f64;
+			let m01 = contingency_table[0][1] as f64;
+			let m10 = contingency_table[1][0] as f64;
+			let m11 = contingency_table[1][1] as f64;
+			let total_votes = total_votes as f64;
+			result.push(
+				CovoteItem {
+					a: rank2item_map[rank_a as usize].clone(),
+					b: rank2item_map[rank_b as usize].clone(),
+					cs: {
+						(total_votes * (m00 * m11 - m01 * m10) * (m00 * m11 - m01 * m10)) /
+						((m00 + m10) * (m00 + m01) * (m11 + m10) * (m11 * m01))
+					},
+					cv: {
+						m00 / (m00 + m01 + m10)
+					},
+					mi: {
+						(m00 * total_votes) / ((m00 + m01) * (m00 + m10))
+					},
+					m00: m00 as i32,
+					m01: m01 as i32,
+					m10: m10 as i32,
+					m11: m11 as i32,
+				}
+			)
+		}
+	};
+	let cached = CachedCovote {
+		key: cache_key,
+		vote_year: vote_year,
+		first_k: top_k as i32,
+		items: result.clone()
+	};
+	ctx.covote_chars.insert_one(cached, None).await.map_err(|e| ServiceError::new(SERVICE_NAME, format!("{:?}", e)))?;
+	Ok(models::CovoteResponse { items: result })
+}
+
+pub async fn musics_covote(ctx: &AppContext, query: Option<String>, vote_start: bson::DateTime, vote_year: i32, top_k: i32) ->  Result<models::CovoteResponse, ServiceError> {
+	let (filter, cache_key) = process_query(query.clone())?;
+	let filter = if let Some(filter) = filter {
+		doc! {
+			"$and": [filter, {"vote_year": vote_year}]
+		}
+	} else {
+		doc! {
+			"vote_year": vote_year
+		}
+	};
+
+	// step 1: query cache
+	let lockid = format!("lock-musics_covote-{}", cache_key);
+	let guard = ctx.lock.acquire_async(lockid.as_bytes(), 60 * 1000).await;
+	// find in cache
+	let cache_query = doc! {
+		"key": cache_key.clone(),
+		"vote_year": vote_year,
+		"first_k": top_k
+	};
+	if let Some(cached) = ctx.covote_musics.find_one(cache_query.clone(), None).await.map_err(|e| ServiceError::new(SERVICE_NAME, format!("{:?}", e)))? {
+		return Ok(models::CovoteResponse { items: cached.items });
+	}
+	// step 2: build covote cache
+	let mut rank_resp = musics_ranking(ctx, query, vote_start, vote_year).await?;
+	rank_resp.entries.sort_by(
+		|a, b| {
+			a.rank.cmp(&b.rank)
+		}
+	);
+	let top_k = std::cmp::min(rank_resp.entries.len(), top_k as usize);
+	let mut contingency_tables = vec![[[0i32; 2]; 2]; ((top_k * top_k) - top_k) / 2 + top_k];
+	let mut item2rank_map: HashMap<String, i32> = HashMap::with_capacity(top_k);
+	let mut rank2item_map: Vec<String> = Vec::with_capacity(top_k);
+	for rank_item in rank_resp.entries[..top_k].iter() {
+		item2rank_map.insert(rank_item.name.clone(), rank_item.rank - 1);
+		rank2item_map.push(rank_item.name.clone());
+	}
+	let mut total_votes = 0i32;
+	let mut votes_cursor = ctx.votes_coll.find(filter, None).await.map_err(|e| ServiceError::new(SERVICE_NAME, format!("{:?}", e)))?;
+	while let Some(Ok(vote)) = votes_cursor.next().await {
+		let pv: PartialVote = bson::from_document(vote).unwrap();
+		if let Some(items) = pv.musics {
+			total_votes += 1;
+			let item_ids = items
+				.iter()
+				.filter(|f| {
+					item2rank_map.contains_key(&f.name)
+				})
+				.map(|f| {
+					*item2rank_map.get(&f.name).unwrap()
+				}).collect::<Vec<_>>();
+			for id in item_ids.iter() {
+				let rank_a = *id;
+				for rank_b in 0..rank_a {
+					let idx = (1 + rank_a) * rank_a / 2 + rank_b;
+					let contingency_table = &mut contingency_tables[idx as usize];
+					contingency_table[1][0] += 1;
+					contingency_table[1][1] -= 1;
+				}
+				let rank_b = *id;
+				for rank_a in (rank_b + 1)..(top_k as i32) {
+					let idx = (1 + rank_a) * rank_a / 2 + rank_b;
+					let contingency_table = &mut contingency_tables[idx as usize];
+					contingency_table[0][1] += 1;
+					contingency_table[1][1] -= 1;
+				}
+			}
+			for item_comb in item_ids.iter().combinations(2) {
+				let rank_a;
+				let rank_b;
+				if item_comb[0] >= item_comb[1] {
+					rank_a = item_comb[0];
+					rank_b = item_comb[1];
+				} else {
+					rank_a = item_comb[1];
+					rank_b = item_comb[0];
+				}
+				let idx = (1 + rank_a) * rank_a / 2 + rank_b;
+				let contingency_table = &mut contingency_tables[idx as usize];
+				contingency_table[0][0] += 1;
+				contingency_table[1][1] += 1;
+				contingency_table[0][1] -= 1;
+				contingency_table[1][0] -= 1;
+			}
+		}
+	}
+	for item in contingency_tables.iter_mut() {
+		item[1][1] += total_votes;
+	}
+	let mut result = Vec::with_capacity(contingency_tables.len());
+	for rank_a in 0..(top_k as i32) {
+		for rank_b in 0..rank_a {
+			let idx = (1 + rank_a) * rank_a / 2 + rank_b;
+			let contingency_table = &mut contingency_tables[idx as usize];
+			let m00 = contingency_table[0][0] as f64;
+			let m01 = contingency_table[0][1] as f64;
+			let m10 = contingency_table[1][0] as f64;
+			let m11 = contingency_table[1][1] as f64;
+			let total_votes = total_votes as f64;
+			result.push(
+				CovoteItem {
+					a: rank2item_map[rank_a as usize].clone(),
+					b: rank2item_map[rank_b as usize].clone(),
+					cs: {
+						(total_votes * (m00 * m11 - m01 * m10) * (m00 * m11 - m01 * m10)) /
+						((m00 + m10) * (m00 + m01) * (m11 + m10) * (m11 * m01))
+					},
+					cv: {
+						m00 / (m00 + m01 + m10)
+					},
+					mi: {
+						(m00 * total_votes) / ((m00 + m01) * (m00 + m10))
+					},
+					m00: m00 as i32,
+					m01: m01 as i32,
+					m10: m10 as i32,
+					m11: m11 as i32,
+				}
+			)
+		}
+	};
+	let cached = CachedCovote {
+		key: cache_key,
+		vote_year: vote_year,
+		first_k: top_k as i32,
+		items: result.clone()
+	};
+	ctx.covote_musics.insert_one(cached, None).await.map_err(|e| ServiceError::new(SERVICE_NAME, format!("{:?}", e)))?;
+	Ok(models::CovoteResponse { items: result })
 }

@@ -301,6 +301,39 @@ pub struct QueryQuestionnaireResponse {
 }
 
 
+#[derive(juniper::GraphQLObject, Debug, Clone, Serialize, Deserialize)]
+pub struct CovoteItem {
+	pub a: String,
+	pub b: String,
+	/// chi_square
+	pub cs: f64,
+	/// mutual_info
+	pub mi: f64,
+	/// co vote rate (V1∩V2 / V1∪V2)
+	pub cv: f64,
+	pub m00: i32,
+	pub m01: i32,
+	pub m10: i32,
+	pub m11: i32,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct CovoteRequest {
+	/// 投票开始时间，UTC
+	pub vote_start: DateTime<Utc>,
+	#[serde(skip_serializing_if = "Option::is_none")]
+	#[serde(default)]
+	pub query: Option<String>,
+	pub vote_year: i32,
+	pub first_k: i32
+}
+
+#[derive(juniper::GraphQLObject, Debug, Clone, Serialize, Deserialize)]
+pub struct CovoteResponse {
+	pub items: Vec<CovoteItem>
+}
+
+
 pub async fn queryCharacterRanking_impl(context: &Context, query: Option<String>, vote_start: DateTime<Utc>, vote_year: i32) -> FieldResult<CharacterOrMusicRanking> {
 	let query_json = RankingQueryRequest {
 		query,
@@ -434,5 +467,27 @@ pub async fn queryQuestionnaireTrend_impl(context: &Context, query: Option<Strin
 		name
 	};
 	let post_result: Trends = json_request_gateway(SERVICE_NAME, &format!("http://{}/v1/papers-trend/", RESULT_QUERY), query_json).await?;
+	Ok(post_result)
+}
+
+pub async fn queryCharsCovote_impl(context: &Context, query: Option<String>, vote_start: DateTime<Utc>, vote_year: i32, top_k: i32) -> FieldResult<CovoteResponse> {
+	let query_json = CovoteRequest {
+		query,
+		vote_start,
+		vote_year,
+		first_k: top_k
+	};
+	let post_result: CovoteResponse = json_request_gateway(SERVICE_NAME, &format!("http://{}/v1/chars-covote/", RESULT_QUERY), query_json).await?;
+	Ok(post_result)
+}
+
+pub async fn queryMusicsCovote_impl(context: &Context, query: Option<String>, vote_start: DateTime<Utc>, vote_year: i32, top_k: i32) -> FieldResult<CovoteResponse> {
+	let query_json = CovoteRequest {
+		query,
+		vote_start,
+		vote_year,
+		first_k: top_k
+	};
+	let post_result: CovoteResponse = json_request_gateway(SERVICE_NAME, &format!("http://{}/v1/musics-covote/", RESULT_QUERY), query_json).await?;
 	Ok(post_result)
 }
