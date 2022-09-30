@@ -63,7 +63,7 @@ async fn main() -> std::io::Result<()> {
             .route("/v1/chars-covote/", web::post().to(handlers::chars_covote))
             .route("/v1/musics-covote/", web::post().to(handlers::musics_covote))
     })
-    .bind("0.0.0.0:8080")?
+    .bind("0.0.0.0:80")?
     .run()
     .await
 }
