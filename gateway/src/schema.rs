@@ -180,7 +180,6 @@ impl Query {
 	}
 }
 
-
 pub struct Mutation;
 
 #[juniper::graphql_object(Context = Context)]
