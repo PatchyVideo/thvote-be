@@ -3,6 +3,8 @@
 extern crate pest;
 #[macro_use]
 extern crate pest_derive;
+#[macro_use]
+extern crate phf;
 
 use actix_web::{App, HttpRequest, HttpServer, Responder, web::{self, Data}};
 use mongodb::{options::ClientOptions, Client};
@@ -44,6 +46,8 @@ async fn main() -> std::io::Result<()> {
         paper_result: db.collection("paper_result"),
         covote_chars: db.collection("covote_chars"),
         covote_musics: db.collection("covote_musics"),
+        final_ranking_chars: db.collection("final_ranking_chars"),
+        final_ranking_musics: db.collection("final_ranking_musics"),
     };
     HttpServer::new(move || {
         App::new().app_data(Data::new(ctx.clone()))

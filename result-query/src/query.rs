@@ -10,6 +10,18 @@ use serde_derive::{Serialize, Deserialize};
 
 use crate::{parser, common::SERVICE_NAME, context::AppContext, models::{self, SubmitMetadata, RankingEntry, VotingTrendItem, RankingQueryResponse, RankingGlobal, CachedRankingEntry, CachedRankingGlobal, CPItem, CPRankingQueryResponse, CPRankingEntry, CachedCPRankingEntry, GlobalStats, CompletionRate, CompletionRateItem, SinglePaperItem, CachedQuestionItem, CachedQuestionAnswerItem, CachedQuestionEntry, QueryQuestionnaireResponse, CovoteItem, CachedCovote}, service_error::ServiceError};
 
+use phf::phf_map;
+
+static KIND_MAPPING: phf::Map<&'static str, &'static str> = phf_map! {
+    "old" => "旧作",
+    "new" => "新作",
+	"CD" => "专辑",
+	"book" => "出版物",
+	"others" => "其他",
+	"other" => "其他",
+	"game" => "游戏"
+};
+
 #[derive(Clone, Serialize, Deserialize)]
 struct PartialVoteCharEntry {
 	pub name: String,
@@ -268,6 +280,20 @@ pub async fn chars_ranking(ctx: &AppContext, query: Option<String>, vote_start: 
 	}
 	let mut display_rank = 1;
 	let mut last_votes = 0;
+	let all_chars = {
+		let mut cursor = ctx.all_chars.find(doc!{"vote_year": vote_year}, None).await.map_err(|e| ServiceError::new(SERVICE_NAME, format!("{:?}", e)))?;
+		let mut items = Vec::with_capacity(600);
+		while let Some(Ok(vote)) = cursor.next().await {
+			items.push(vote);
+		}
+		items
+	};
+	let all_chars_map: HashMap<_, _> = all_chars
+		.iter()
+		.map(|x| {
+			(x.name.clone(), x)
+		})
+		.collect();
 	for (ch, _) in per_char_vote_count_vec {
 		let trend = hrs_bins
 			.get(ch)
@@ -301,10 +327,10 @@ pub async fn chars_ranking(ctx: &AppContext, query: Option<String>, vote_start: 
 			first_vote_count: *per_char_vote_first_count.get(ch).unwrap_or(&0),
 			first_vote_percentage: *per_char_vote_first_count.get(ch).unwrap_or(&0) as f64 / *per_char_vote_count.get(ch).unwrap_or(&0) as f64,
 			first_vote_count_weighted: per_char_vote_count.get(ch).unwrap_or(&0) + per_char_vote_first_count.get(ch).unwrap_or(&0),
-			character_type: "todo".to_owned(),
-			character_origin: "todo".to_owned(),
-			first_appearance: "todo".to_owned(),
-			name_jpn: "todo".to_owned(),
+			character_type: if all_chars_map.contains_key(ch) { all_chars_map.get(ch).unwrap().kind.iter().map(|f| KIND_MAPPING.get(f).unwrap()).join(",").into() } else { "未知".into() },
+			character_origin: if all_chars_map.contains_key(ch) { all_chars_map.get(ch).unwrap().work.join(",").into() } else { "未知".into() },
+			first_appearance: if all_chars_map.contains_key(ch) { all_chars_map.get(ch).unwrap().date.to_string() } else { "未知".into() },
+			name_jpn: if all_chars_map.contains_key(ch) { all_chars_map.get(ch).unwrap().origname.clone() } else { "未知".into() },
 			vote_percentage: *per_char_vote_count.get(ch).unwrap_or(&0) as f64 / total_votes as f64,
 			first_percentage: *per_char_vote_first_count.get(ch).unwrap_or(&0) as f64 / total_first_votes as f64,
 			male_vote_count: *per_char_male_vote_count.get(ch).unwrap_or(&0),
@@ -337,14 +363,6 @@ pub async fn chars_ranking(ctx: &AppContext, query: Option<String>, vote_start: 
 		chars_result.push(entry);
 	};
 	if empty_query {
-		let all_chars = {
-			let mut cursor = ctx.all_chars.find(doc!{}, None).await.map_err(|e| ServiceError::new(SERVICE_NAME, format!("{:?}", e)))?;
-			let mut items = Vec::with_capacity(600);
-			while let Some(Ok(vote)) = cursor.next().await {
-				items.push(vote);
-			}
-			items
-		};
 		let all_chars: HashSet<String> = HashSet::from_iter(all_chars.iter().map(|x| x.name.clone()));
 		let voted_chars: HashSet<String> = HashSet::from_iter(chars_result.iter().map(|x| x.name.clone()));
 		display_rank = rank;
@@ -634,7 +652,21 @@ pub async fn musics_ranking(ctx: &AppContext, query: Option<String>, vote_start:
 		total_first_votes = 1;
 	}
 	let mut display_rank = 1;
-	let mut last_votes = (0);
+	let mut last_votes = 0;
+	let all_musics = {
+		let mut cursor = ctx.all_musics.find(doc!{"vote_year": vote_year}, None).await.map_err(|e| ServiceError::new(SERVICE_NAME, format!("{:?}", e)))?;
+		let mut items = Vec::with_capacity(600);
+		while let Some(Ok(vote)) = cursor.next().await {
+			items.push(vote);
+		}
+		items
+	};
+	let all_musics_map: HashMap<_, _> = all_musics
+		.iter()
+		.map(|x| {
+			(x.name.clone(), x)
+		})
+		.collect();
 	for (ch, _) in per_music_vote_count_vec {
 		let trend = hrs_bins
 			.get(ch)
@@ -668,10 +700,10 @@ pub async fn musics_ranking(ctx: &AppContext, query: Option<String>, vote_start:
 			first_vote_count: *per_music_vote_first_count.get(ch).unwrap_or(&0),
 			first_vote_percentage: *per_music_vote_first_count.get(ch).unwrap_or(&0) as f64 / *per_music_vote_count.get(ch).unwrap_or(&0) as f64,
 			first_vote_count_weighted: per_music_vote_count.get(ch).unwrap_or(&0) + per_music_vote_first_count.get(ch).unwrap_or(&0),
-			character_type: "todo".to_owned(),
-			character_origin: "todo".to_owned(),
-			first_appearance: "todo".to_owned(),
-			name_jpn: "todo".to_owned(),
+			character_type: if all_musics_map.contains_key(ch) { all_musics_map.get(ch).unwrap().kind.iter().map(|f| KIND_MAPPING.get(f).unwrap()).join(",").into() } else { "未知".into() },
+			character_origin: if all_musics_map.contains_key(ch) { all_musics_map.get(ch).unwrap().work.join(",").into() } else { "未知".into() },
+			first_appearance: if all_musics_map.contains_key(ch) { all_musics_map.get(ch).unwrap().date.to_string() } else { "未知".into() },
+			name_jpn: if all_musics_map.contains_key(ch) { all_musics_map.get(ch).unwrap().origname.clone() } else { "未知".into() },
 			vote_percentage: *per_music_vote_count.get(ch).unwrap_or(&0) as f64 / total_votes as f64,
 			first_percentage: *per_music_vote_first_count.get(ch).unwrap_or(&0) as f64 / total_first_votes as f64,
 			male_vote_count: *per_music_male_vote_count.get(ch).unwrap_or(&0),
@@ -704,14 +736,6 @@ pub async fn musics_ranking(ctx: &AppContext, query: Option<String>, vote_start:
 		musics_result.push(entry);
 	};
 	if empty_query {
-		let all_musics = {
-			let mut cursor = ctx.all_musics.find(doc!{}, None).await.map_err(|e| ServiceError::new(SERVICE_NAME, format!("{:?}", e)))?;
-			let mut items = Vec::with_capacity(600);
-			while let Some(Ok(vote)) = cursor.next().await {
-				items.push(vote);
-			}
-			items
-		};
 		let all_musics: HashSet<String> = HashSet::from_iter(all_musics.iter().map(|x| x.name.clone()));
 		let voted_musics: HashSet<String> = HashSet::from_iter(musics_result.iter().map(|x| x.name.clone()));
 		display_rank = rank;
@@ -978,7 +1002,7 @@ pub async fn cps_ranking(ctx: &AppContext, query: Option<String>, vote_start: bs
 		total_first_votes = 1;
 	}
 	let mut display_rank = 1;
-	let mut last_votes = (0);
+	let mut last_votes = 0;
 	for (ch, _) in per_cp_vote_count_vec {
 		let trend = hrs_bins
 			.get(ch)
@@ -1013,7 +1037,7 @@ pub async fn cps_ranking(ctx: &AppContext, query: Option<String>, vote_start: bs
 			trend,
 			reasons: reasons.get(ch).unwrap_or(&vec![]).clone()
 		};
-		let cur_votes = (entry.vote_count);
+		let cur_votes = entry.vote_count;
 		if last_votes != cur_votes {
 			display_rank = rank;
 			entry.display_rank = display_rank;

@@ -53,6 +53,19 @@ pub struct ValidQuestionnaireResponse {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct FinalRanking {
+	pub name: String,
+	pub vote_year: i32,
+	pub rank: i32,
+	/// 本命票数
+	pub first_vote_count: i32,
+	/// 本命率
+	pub first_vote_percentage: f64,
+	/// 票数占比
+	pub vote_percentage: f64,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct VotingTrendItem {
 	pub hrs: i32,
 	pub cnt: i32
@@ -263,7 +276,11 @@ pub struct RankingQueryRequest {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct PartialVoteItemEntry {
 	pub vote_year: i32,
-	pub name: String
+	pub name: String,
+	pub origname: String,
+	pub date: i32,
+	pub kind: Vec<String>,
+	pub work: Vec<String>
 }
 
 #[derive(Clone, Serialize, Deserialize)]
