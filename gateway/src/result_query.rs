@@ -89,6 +89,8 @@ pub struct RankingEntry {
 	pub trend: Vec<VotingTrendItem>,
 	/// 理由
 	pub reasons: Vec<String>,
+	/// 理由数量
+	pub num_reasons: i32,
 }
 
 #[derive(juniper::GraphQLObject, Debug, Clone, Serialize, Deserialize)]
@@ -143,6 +145,8 @@ pub struct CPRankingEntry {
 	pub trend: Vec<VotingTrendItem>,
 	/// 理由
 	pub reasons: Vec<String>,
+	/// 理由数量
+	pub num_reasons: i32,
 }
 
 
