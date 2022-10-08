@@ -159,6 +159,33 @@ pub async fn chars_trend(ctx: &AppContext, query: Option<String>, vote_start: bs
 	}
 }
 
+pub async fn chars_single(ctx: &AppContext, query: Option<String>, vote_start: bson::DateTime, vote_year: i32, rank: i32) ->  Result<models::RankingEntry, ServiceError> {
+	let (filter, cache_key) = process_query(query)?;
+	let filter = if let Some(filter) = filter {
+		doc! {
+			"$and": [filter, {"vote_year": vote_year}]
+		}
+	} else {
+		doc! {
+			"vote_year": vote_year
+		}
+	};
+	// find in cache
+	let cache_query = doc! {
+		"key": cache_key.clone(),
+		"vote_year": vote_year
+	};
+	let cached_global = ctx.chars_global_cache_coll.find_one(cache_query.clone(), None).await.map_err(|e| ServiceError::new(SERVICE_NAME, format!("{:?}", e)))?;
+	if let Some(cached_global) = cached_global {
+		let opt = FindOptions::builder().skip(Some((std::cmp::max(rank, 1) - 1) as u64)).limit(1).build();
+		let mut cached_entries = ctx.chars_entry_cache_coll.find(cache_query, Some(opt)).await.map_err(|e| ServiceError::new(SERVICE_NAME, format!("{:?}", e)))?;
+		if let Some(Ok(entry)) = cached_entries.next().await {
+			return Ok(entry.entry);
+		}
+	}
+	return Err(ServiceError::new_human_readable(SERVICE_NAME, "CACHE_MISS".into(), "未找到对应查询".into()));
+}
+
 pub async fn chars_ranking(ctx: &AppContext, query: Option<String>, vote_start: bson::DateTime, vote_year: i32) ->  Result<models::RankingQueryResponse, ServiceError> {
 	let empty_query = query.is_none();
 	let (filter, cache_key) = process_query(query)?;
@@ -351,8 +378,10 @@ pub async fn chars_ranking(ctx: &AppContext, query: Option<String>, vote_start: 
 			vote_percentage_last_2: 0.0,
 			trend,
 			trend_first,
-			reasons: reasons.get(ch).unwrap_or(&vec![]).clone()
+			reasons: reasons.get(ch).unwrap_or(&vec![]).clone(),
+			num_reasons: 0
 		};
+		entry.num_reasons = entry.reasons.len() as i32;
 		let cur_votes = entry.vote_count;
 		if last_votes != cur_votes {
 			display_rank = rank;
@@ -400,6 +429,7 @@ pub async fn chars_ranking(ctx: &AppContext, query: Option<String>, vote_start: 
 				first_vote_percentage_last_2: 0.0,
 				vote_percentage_last_1: 0.0,
 				vote_percentage_last_2: 0.0,
+				num_reasons: 0
 			};
 			rank += 1;
 			chars_result.push(entry);
@@ -725,7 +755,9 @@ pub async fn musics_ranking(ctx: &AppContext, query: Option<String>, vote_start:
 			first_vote_percentage_last_2: 0.0,
 			vote_percentage_last_1: 0.0,
 			vote_percentage_last_2: 0.0,
+			num_reasons: 0
 		};
+		entry.num_reasons = entry.reasons.len() as i32;
 		let cur_votes = (entry.vote_count);
 		if last_votes != cur_votes {
 			display_rank = rank;
@@ -773,6 +805,7 @@ pub async fn musics_ranking(ctx: &AppContext, query: Option<String>, vote_start:
 				first_vote_percentage_last_2: 0.0,
 				vote_percentage_last_1: 0.0,
 				vote_percentage_last_2: 0.0,
+				num_reasons: 0
 			};
 			rank += 1;
 			musics_result.push(entry);
@@ -826,6 +859,33 @@ pub async fn musics_ranking(ctx: &AppContext, query: Option<String>, vote_start:
 		global
 	};
 	Ok(resp)
+}
+
+pub async fn musics_single(ctx: &AppContext, query: Option<String>, vote_start: bson::DateTime, vote_year: i32, rank: i32) ->  Result<models::RankingEntry, ServiceError> {
+	let (filter, cache_key) = process_query(query)?;
+	let filter = if let Some(filter) = filter {
+		doc! {
+			"$and": [filter, {"vote_year": vote_year}]
+		}
+	} else {
+		doc! {
+			"vote_year": vote_year
+		}
+	};
+	// find in cache
+	let cache_query = doc! {
+		"key": cache_key.clone(),
+		"vote_year": vote_year
+	};
+	let cached_global = ctx.musics_global_cache_coll.find_one(cache_query.clone(), None).await.map_err(|e| ServiceError::new(SERVICE_NAME, format!("{:?}", e)))?;
+	if let Some(cached_global) = cached_global {
+		let opt = FindOptions::builder().skip(Some((std::cmp::max(rank, 1) - 1) as u64)).limit(1).build();
+		let mut cached_entries = ctx.musics_entry_cache_coll.find(cache_query, Some(opt)).await.map_err(|e| ServiceError::new(SERVICE_NAME, format!("{:?}", e)))?;
+		if let Some(Ok(entry)) = cached_entries.next().await {
+			return Ok(entry.entry);
+		}
+	}
+	return Err(ServiceError::new_human_readable(SERVICE_NAME, "CACHE_MISS".into(), "未找到对应查询".into()));
 }
 
 pub async fn cps_reasons(ctx: &AppContext, query: Option<String>, vote_start: bson::DateTime, vote_year: i32, rank: i32) ->  Result<models::ReasonsResponse, ServiceError> {
@@ -1035,8 +1095,10 @@ pub async fn cps_ranking(ctx: &AppContext, query: Option<String>, vote_start: bs
 			female_percentage_per_char: *per_cp_female_vote_count.get(ch).unwrap_or(&0) as f64 / *per_cp_vote_count.get(ch).unwrap_or(&0) as f64,
 			female_percentage_per_total: *per_cp_female_vote_count.get(ch).unwrap_or(&0) as f64 / total_female as f64,
 			trend,
-			reasons: reasons.get(ch).unwrap_or(&vec![]).clone()
+			reasons: reasons.get(ch).unwrap_or(&vec![]).clone(),
+			num_reasons: 0
 		};
+		entry.num_reasons = entry.reasons.len() as i32;
 		let cur_votes = entry.vote_count;
 		if last_votes != cur_votes {
 			display_rank = rank;
@@ -1094,6 +1156,33 @@ pub async fn cps_ranking(ctx: &AppContext, query: Option<String>, vote_start: bs
 		global
 	};
 	Ok(resp)
+}
+
+pub async fn cps_single(ctx: &AppContext, query: Option<String>, vote_start: bson::DateTime, vote_year: i32, rank: i32) ->  Result<models::CPRankingEntry, ServiceError> {
+	let (filter, cache_key) = process_query(query)?;
+	let filter = if let Some(filter) = filter {
+		doc! {
+			"$and": [filter, {"vote_year": vote_year}]
+		}
+	} else {
+		doc! {
+			"vote_year": vote_year
+		}
+	};
+	// find in cache
+	let cache_query = doc! {
+		"key": cache_key.clone(),
+		"vote_year": vote_year
+	};
+	let cached_global = ctx.cps_global_cache_coll.find_one(cache_query.clone(), None).await.map_err(|e| ServiceError::new(SERVICE_NAME, format!("{:?}", e)))?;
+	if let Some(cached_global) = cached_global {
+		let opt = FindOptions::builder().skip(Some((std::cmp::max(rank, 1) - 1) as u64)).limit(1).build();
+		let mut cached_entries = ctx.cps_entry_cache_coll.find(cache_query, Some(opt)).await.map_err(|e| ServiceError::new(SERVICE_NAME, format!("{:?}", e)))?;
+		if let Some(Ok(entry)) = cached_entries.next().await {
+			return Ok(entry.entry);
+		}
+	}
+	return Err(ServiceError::new_human_readable(SERVICE_NAME, "CACHE_MISS".into(), "未找到对应查询".into()));
 }
 
 pub async fn cps_trend(ctx: &AppContext, query: Option<String>, vote_start: bson::DateTime, vote_year: i32, name: String) ->  Result<models::TrendResponse, ServiceError> {

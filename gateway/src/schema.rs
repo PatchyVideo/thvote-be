@@ -5,11 +5,13 @@ use juniper::RootNode;
 use chrono::{DateTime, Utc};
 
 use crate::result_query::CPRanking;
+use crate::result_query::CPRankingEntry;
 use crate::result_query::CharacterOrMusicRanking;
 use crate::result_query::CompletionRate;
 use crate::result_query::CovoteResponse;
 use crate::result_query::GlobalStats;
 use crate::result_query::QueryQuestionnaireResponse;
+use crate::result_query::RankingEntry;
 use crate::result_query::Reasons;
 use crate::result_query::Trends;
 use crate::submit_handler::CPSubmitGQL;
@@ -123,6 +125,9 @@ impl Query {
 	async fn queryCharacterReasons(context: &Context, query: Option<String>, vote_start: DateTime<Utc>, vote_year: i32, rank: i32) -> FieldResult<Reasons> {
 		result_query::queryCharacterReasons_impl(context, query, vote_start, vote_year, rank).await
 	}
+	async fn queryCharacterSingle(context: &Context, query: Option<String>, vote_start: DateTime<Utc>, vote_year: i32, rank: i32) -> FieldResult<RankingEntry> {
+		result_query::queryCharacterSingle_impl(context, query, vote_start, vote_year, rank).await
+	}
 	async fn queryCharacterTrend(context: &Context, vote_start: DateTime<Utc>, vote_year: i32, names: Vec<String>) -> FieldResult<Vec<Trends>> {
 		let mut ret = vec![];
 		for name in names {
@@ -136,6 +141,9 @@ impl Query {
 	async fn queryMusicReasons(context: &Context, query: Option<String>, vote_start: DateTime<Utc>, vote_year: i32, rank: i32) -> FieldResult<Reasons> {
 		result_query::queryMusicReasons_impl(context, query, vote_start, vote_year, rank).await
 	}
+	async fn queryMusicSingle(context: &Context, query: Option<String>, vote_start: DateTime<Utc>, vote_year: i32, rank: i32) -> FieldResult<RankingEntry> {
+		result_query::queryMusicSingle_impl(context, query, vote_start, vote_year, rank).await
+	}
 	async fn queryMusicTrend(context: &Context, vote_start: DateTime<Utc>, vote_year: i32, names: Vec<String>) -> FieldResult<Vec<Trends>> {
 		let mut ret = vec![];
 		for name in names {
@@ -148,6 +156,9 @@ impl Query {
 	}
 	async fn queryCPReasons(context: &Context, query: Option<String>, vote_start: DateTime<Utc>, vote_year: i32, rank: i32) -> FieldResult<Reasons> {
 		result_query::queryCPReasons_impl(context, query, vote_start, vote_year, rank).await
+	}
+	async fn queryCPSingle(context: &Context, query: Option<String>, vote_start: DateTime<Utc>, vote_year: i32, rank: i32) -> FieldResult<CPRankingEntry> {
+		result_query::queryCPSingle_impl(context, query, vote_start, vote_year, rank).await
 	}
 	async fn queryCPTrend(context: &Context, vote_start: DateTime<Utc>, vote_year: i32, names: Vec<String>) -> FieldResult<Vec<Trends>> {
 		let mut ret = vec![];

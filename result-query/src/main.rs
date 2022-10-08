@@ -66,6 +66,9 @@ async fn main() -> std::io::Result<()> {
             .route("/v1/papers-trend/", web::post().to(handlers::paper_trend))
             .route("/v1/chars-covote/", web::post().to(handlers::chars_covote))
             .route("/v1/musics-covote/", web::post().to(handlers::musics_covote))
+            .route("/v1/chars-single/", web::post().to(handlers::chars_single))
+            .route("/v1/musics-single/", web::post().to(handlers::musics_single))
+            .route("/v1/cps-single/", web::post().to(handlers::cps_single))
     })
     .bind("0.0.0.0:80")?
     .run()

@@ -22,6 +22,9 @@ pub async fn chars_reasons(ctx: web::Data<AppContext>, request: HttpRequest, bod
 		// query too long
 		return Err(ServiceError::new_human_readable(SERVICE_NAME, "QUERY_TOO_LONG", "查询过长".into()));
 	};
+	if body.rank <= 0 {
+		return Err(ServiceError::new_human_readable(SERVICE_NAME, "INVALID_K", "无效的k参数".into()));
+	}
 	let resp = query::chars_reasons(&ctx, body.query.clone(), bson::DateTime::from_chrono(body.vote_start), body.vote_year, body.rank).await?;
 	Ok(web::Json(resp))
 }
@@ -49,6 +52,9 @@ pub async fn musics_reasons(ctx: web::Data<AppContext>, request: HttpRequest, bo
 		// query too long
 		return Err(ServiceError::new_human_readable(SERVICE_NAME, "QUERY_TOO_LONG", "查询过长".into()));
 	};
+	if body.rank <= 0 {
+		return Err(ServiceError::new_human_readable(SERVICE_NAME, "INVALID_K", "无效的k参数".into()));
+	}
 	let resp = query::musics_reasons(&ctx, body.query.clone(), bson::DateTime::from_chrono(body.vote_start), body.vote_year, body.rank).await?;
 	Ok(web::Json(resp))
 }
@@ -76,6 +82,9 @@ pub async fn cps_reasons(ctx: web::Data<AppContext>, request: HttpRequest, body:
 		// query too long
 		return Err(ServiceError::new_human_readable(SERVICE_NAME, "QUERY_TOO_LONG", "查询过长".into()));
 	};
+	if body.rank <= 0 {
+		return Err(ServiceError::new_human_readable(SERVICE_NAME, "INVALID_K", "无效的k参数".into()));
+	}
 	let resp = query::cps_reasons(&ctx, body.query.clone(), bson::DateTime::from_chrono(body.vote_start), body.vote_year, body.rank).await?;
 	Ok(web::Json(resp))
 }
@@ -142,5 +151,41 @@ pub async fn musics_covote(ctx: web::Data<AppContext>, request: HttpRequest, bod
 		return Err(ServiceError::new_human_readable(SERVICE_NAME, "INVALID_K", "无效的k参数".into()));
 	}
 	let resp = query::musics_covote(&ctx, body.query.clone(), bson::DateTime::from_chrono(body.vote_start), body.vote_year, body.first_k).await?;
+	Ok(web::Json(resp))
+}
+
+pub async fn chars_single(ctx: web::Data<AppContext>, request: HttpRequest, body: actix_web::web::Json<models::SingleRankQuery>) -> Result<web::Json<models::RankingEntry>, ServiceError> {
+	if body.query.as_ref().map(|f| f.len()).unwrap_or_default() > 1000 {
+		// query too long
+		return Err(ServiceError::new_human_readable(SERVICE_NAME, "QUERY_TOO_LONG", "查询过长".into()));
+	};
+	if body.rank <= 0 {
+		return Err(ServiceError::new_human_readable(SERVICE_NAME, "INVALID_K", "无效的k参数".into()));
+	}
+	let resp = query::chars_single(&ctx, body.query.clone(), bson::DateTime::from_chrono(body.vote_start), body.vote_year, body.rank).await?;
+	Ok(web::Json(resp))
+}
+
+pub async fn musics_single(ctx: web::Data<AppContext>, request: HttpRequest, body: actix_web::web::Json<models::SingleRankQuery>) -> Result<web::Json<models::RankingEntry>, ServiceError> {
+	if body.query.as_ref().map(|f| f.len()).unwrap_or_default() > 1000 {
+		// query too long
+		return Err(ServiceError::new_human_readable(SERVICE_NAME, "QUERY_TOO_LONG", "查询过长".into()));
+	};
+	if body.rank <= 0 {
+		return Err(ServiceError::new_human_readable(SERVICE_NAME, "INVALID_K", "无效的k参数".into()));
+	}
+	let resp = query::musics_single(&ctx, body.query.clone(), bson::DateTime::from_chrono(body.vote_start), body.vote_year, body.rank).await?;
+	Ok(web::Json(resp))
+}
+
+pub async fn cps_single(ctx: web::Data<AppContext>, request: HttpRequest, body: actix_web::web::Json<models::SingleRankQuery>) -> Result<web::Json<models::CPRankingEntry>, ServiceError> {
+	if body.query.as_ref().map(|f| f.len()).unwrap_or_default() > 1000 {
+		// query too long
+		return Err(ServiceError::new_human_readable(SERVICE_NAME, "QUERY_TOO_LONG", "查询过长".into()));
+	};
+	if body.rank <= 0 {
+		return Err(ServiceError::new_human_readable(SERVICE_NAME, "INVALID_K", "无效的k参数".into()));
+	}
+	let resp = query::cps_single(&ctx, body.query.clone(), bson::DateTime::from_chrono(body.vote_start), body.vote_year, body.rank).await?;
 	Ok(web::Json(resp))
 }

@@ -138,6 +138,8 @@ pub struct RankingEntry {
 	pub trend_first: Vec<VotingTrendItem>,
 	/// 理由
 	pub reasons: Vec<String>,
+	/// 理由数量
+	pub num_reasons: i32,
 }
 
 /// 用于CP
@@ -185,6 +187,8 @@ pub struct CPRankingEntry {
 	pub trend: Vec<VotingTrendItem>,
 	/// 理由
 	pub reasons: Vec<String>,
+	/// 理由数量
+	pub num_reasons: i32,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -403,4 +407,14 @@ pub struct CovoteRequest {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct CovoteResponse {
 	pub items: Vec<CovoteItem>
+}
+
+#[derive(Clone, Serialize, Deserialize)]
+pub struct SingleRankQuery {
+	#[serde(skip_serializing_if = "Option::is_none")]
+	#[serde(default)]
+	pub query: Option<String>,
+	pub vote_start: DateTime<Utc>,
+	pub vote_year: i32,
+	pub rank: i32
 }

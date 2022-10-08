@@ -333,6 +333,15 @@ pub struct CovoteResponse {
 	pub items: Vec<CovoteItem>
 }
 
+#[derive(Clone, Serialize, Deserialize)]
+pub struct SingleRankQuery {
+	#[serde(skip_serializing_if = "Option::is_none")]
+	#[serde(default)]
+	pub query: Option<String>,
+	pub vote_start: DateTime<Utc>,
+	pub vote_year: i32,
+	pub rank: i32
+}
 
 pub async fn queryCharacterRanking_impl(context: &Context, query: Option<String>, vote_start: DateTime<Utc>, vote_year: i32) -> FieldResult<CharacterOrMusicRanking> {
 	let query_json = RankingQueryRequest {
@@ -352,6 +361,17 @@ pub async fn queryCharacterReasons_impl(context: &Context, query: Option<String>
 		rank
 	};
 	let post_result: Reasons = json_request_gateway(SERVICE_NAME, &format!("http://{}/v1/chars-reasons/", RESULT_QUERY), query_json).await?;
+	Ok(post_result)
+}
+
+pub async fn queryCharacterSingle_impl(context: &Context, query: Option<String>, vote_start: DateTime<Utc>, vote_year: i32, rank: i32) -> FieldResult<RankingEntry> {
+	let query_json = SingleRankQuery {
+		query,
+		vote_start,
+		vote_year,
+		rank
+	};
+	let post_result: RankingEntry = json_request_gateway(SERVICE_NAME, &format!("http://{}/v1/chars-single/", RESULT_QUERY), query_json).await?;
 	Ok(post_result)
 }
 
@@ -387,6 +407,17 @@ pub async fn queryMusicReasons_impl(context: &Context, query: Option<String>, vo
 	Ok(post_result)
 }
 
+pub async fn queryMusicSingle_impl(context: &Context, query: Option<String>, vote_start: DateTime<Utc>, vote_year: i32, rank: i32) -> FieldResult<RankingEntry> {
+	let query_json = SingleRankQuery {
+		query,
+		vote_start,
+		vote_year,
+		rank
+	};
+	let post_result: RankingEntry = json_request_gateway(SERVICE_NAME, &format!("http://{}/v1/musics-single/", RESULT_QUERY), query_json).await?;
+	Ok(post_result)
+}
+
 pub async fn queryMusicTrend_impl(context: &Context, query: Option<String>, vote_start: DateTime<Utc>, vote_year: i32, name: String) -> FieldResult<Trends> {
 	let query_json = TrendRequest {
 		query,
@@ -416,6 +447,17 @@ pub async fn queryCPReasons_impl(context: &Context, query: Option<String>, vote_
 		rank
 	};
 	let post_result: Reasons = json_request_gateway(SERVICE_NAME, &format!("http://{}/v1/cps-reasons/", RESULT_QUERY), query_json).await?;
+	Ok(post_result)
+}
+
+pub async fn queryCPSingle_impl(context: &Context, query: Option<String>, vote_start: DateTime<Utc>, vote_year: i32, rank: i32) -> FieldResult<CPRankingEntry> {
+	let query_json = SingleRankQuery {
+		query,
+		vote_start,
+		vote_year,
+		rank
+	};
+	let post_result: CPRankingEntry = json_request_gateway(SERVICE_NAME, &format!("http://{}/v1/cps-single/", RESULT_QUERY), query_json).await?;
 	Ok(post_result)
 }
 
