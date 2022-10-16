@@ -214,6 +214,16 @@ pub struct TrendRequest {
 	pub name: String
 }
 
+#[derive(Clone, Serialize, Deserialize)]
+pub struct TrendRequestRank {
+	#[serde(skip_serializing_if = "Option::is_none")]
+	#[serde(default)]
+	pub query: Option<String>,
+	pub vote_start: DateTime<Utc>,
+	pub vote_year: i32,
+	pub rank: i32
+}
+
 
 #[derive(Clone, Serialize, Deserialize)]
 pub struct GlobalStatsRequest {
@@ -465,12 +475,12 @@ pub async fn queryCPSingle_impl(context: &Context, query: Option<String>, vote_s
 	Ok(post_result)
 }
 
-pub async fn queryCPTrend_impl(context: &Context, query: Option<String>, vote_start: DateTime<Utc>, vote_year: i32, name: String) -> FieldResult<Trends> {
-	let query_json = TrendRequest {
+pub async fn queryCPTrend_impl(context: &Context, query: Option<String>, vote_start: DateTime<Utc>, vote_year: i32, rank: i32) -> FieldResult<Trends> {
+	let query_json = TrendRequestRank {
 		query,
 		vote_start,
 		vote_year,
-		name
+		rank
 	};
 	let post_result: Trends = json_request_gateway(SERVICE_NAME, &format!("http://{}/v1/cps-trend/", RESULT_QUERY), query_json).await?;
 	Ok(post_result)

@@ -1185,7 +1185,7 @@ pub async fn cps_single(ctx: &AppContext, query: Option<String>, vote_start: bso
 	return Err(ServiceError::new_human_readable(SERVICE_NAME, "CACHE_MISS".into(), "未找到对应查询".into()));
 }
 
-pub async fn cps_trend(ctx: &AppContext, query: Option<String>, vote_start: bson::DateTime, vote_year: i32, name: String) ->  Result<models::TrendResponse, ServiceError> {
+pub async fn cps_trend(ctx: &AppContext, query: Option<String>, vote_start: bson::DateTime, vote_year: i32, rank: i32) ->  Result<models::TrendResponse, ServiceError> {
 	let (filter, cache_key) = process_query(query)?;
 	let filter = if let Some(filter) = filter {
 		doc! {
@@ -1200,7 +1200,7 @@ pub async fn cps_trend(ctx: &AppContext, query: Option<String>, vote_start: bson
 	let cache_query = doc! {
 		"key": cache_key.clone(),
 		"vote_year": vote_year,
-		"entry.name": name
+		"entry.rank": rank
 	};
 	let cached_entry = ctx.cps_entry_cache_coll.find_one(cache_query.clone(), None).await.map_err(|e| ServiceError::new(SERVICE_NAME, format!("{:?}", e)))?;
 	if let Some(cached_entry) = cached_entry {

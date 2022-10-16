@@ -89,12 +89,15 @@ pub async fn cps_reasons(ctx: web::Data<AppContext>, request: HttpRequest, body:
 	Ok(web::Json(resp))
 }
 
-pub async fn cps_trend(ctx: web::Data<AppContext>, request: HttpRequest, body: actix_web::web::Json<models::TrendRequest>) -> Result<web::Json<models::TrendResponse>, ServiceError> {
+pub async fn cps_trend(ctx: web::Data<AppContext>, request: HttpRequest, body: actix_web::web::Json<models::TrendRequestRank>) -> Result<web::Json<models::TrendResponse>, ServiceError> {
 	if body.query.as_ref().map(|f| f.len()).unwrap_or_default() > 1000 {
 		// query too long
 		return Err(ServiceError::new_human_readable(SERVICE_NAME, "QUERY_TOO_LONG", "查询过长".into()));
 	};
-	let resp = query::cps_trend(&ctx, body.query.clone(), bson::DateTime::from_chrono(body.vote_start), body.vote_year, body.name.clone()).await?;
+	if body.rank <= 0 {
+		return Err(ServiceError::new_human_readable(SERVICE_NAME, "INVALID_K", "无效的k参数".into()));
+	}
+	let resp = query::cps_trend(&ctx, body.query.clone(), bson::DateTime::from_chrono(body.vote_start), body.vote_year, body.rank).await?;
 	Ok(web::Json(resp))
 }
 

@@ -160,10 +160,10 @@ impl Query {
 	async fn queryCPSingle(context: &Context, query: Option<String>, vote_start: DateTime<Utc>, vote_year: i32, rank: i32) -> FieldResult<CPRankingEntry> {
 		result_query::queryCPSingle_impl(context, query, vote_start, vote_year, rank).await
 	}
-	async fn queryCPTrend(context: &Context, vote_start: DateTime<Utc>, vote_year: i32, names: Vec<String>) -> FieldResult<Vec<Trends>> {
+	async fn queryCPTrend(context: &Context, vote_start: DateTime<Utc>, vote_year: i32, ranks: Vec<i32>) -> FieldResult<Vec<Trends>> {
 		let mut ret = vec![];
-		for name in names {
-			ret.push(result_query::queryCPTrend_impl(context, None, vote_start, vote_year, name.clone()).await?);
+		for rank in ranks {
+			ret.push(result_query::queryCPTrend_impl(context, None, vote_start, vote_year, rank).await?);
 		}
 		Ok(ret)
 	}

@@ -226,6 +226,16 @@ pub struct TrendRequest {
 }
 
 #[derive(Clone, Serialize, Deserialize)]
+pub struct TrendRequestRank {
+	#[serde(skip_serializing_if = "Option::is_none")]
+	#[serde(default)]
+	pub query: Option<String>,
+	pub vote_start: DateTime<Utc>,
+	pub vote_year: i32,
+	pub rank: i32
+}
+
+#[derive(Clone, Serialize, Deserialize)]
 pub struct ReasonsResponse {
 	pub reasons: Vec<String>
 }
