@@ -14,12 +14,14 @@ fn rename_ident(ident: &str) -> String {
 		match ident {
 			"chars" => "chars.name",
 			"musics" => "musics.name",
+			"cp" => "cps_str",
 			a => a
 		}.into()
 	}
 }
 
 fn parse_value(mut root: Pairs<Rule>) -> Result<String, Box<dyn std::error::Error + Send + Sync>> {
+	
 	let q = root.next().unwrap();
 	match q.as_rule() {
 		Rule::int_inner => {
@@ -28,8 +30,20 @@ fn parse_value(mut root: Pairs<Rule>) -> Result<String, Box<dyn std::error::Erro
 		Rule::string => {
 			Ok(q.into_inner().next().unwrap().as_str().to_string())
 		}
-		_ => unreachable!()
+		Rule::cp_value => {
+			Ok(parse_cp_value(q.into_inner())?)
+		}
+		_ => { unreachable!() }
 	}
+}
+
+fn parse_cp_value(mut root: Pairs<Rule>) -> Result<String, Box<dyn std::error::Error + Send + Sync>> {
+	let mut cp_items = vec![];
+	while let Some(v) = root.next() {
+		cp_items.push(v.into_inner().next().unwrap().as_str().to_string())
+	}
+	cp_items.sort();
+	Ok(cp_items.join("x").to_string())
 }
 
 fn parse_value_list(mut root: Pairs<Rule>) -> Result<Vec<String>, Box<dyn std::error::Error + Send + Sync>> {
@@ -145,17 +159,20 @@ fn parse_root(mut root: Pairs<Rule>) -> Result<Document, Box<dyn std::error::Err
 
 pub fn generate_mongodb_query(query: &str) -> Result<Document, Box<dyn std::error::Error + Send + Sync>> {
 	let root = super::parser::QueryParser::parse(Rule::root, query)?;
-	let r = parse_root(root)?;
 	println!("--------------------------------");
 	println!("{}", query);
 	println!("--------------------------------");
+	let r = parse_root(root)?;
 	println!("{:#?}", r);
+	println!("--------------------------------");
 	Ok(r)
 }
 
 #[test]
 pub fn test_parser_1() {
-	let q = "(q11011=1101102 AND q11021=1102101) OR (chars:[\"博丽灵梦\",\"东风谷早苗\"] AND chars_first=\"东风谷早苗\")";
+	let q = "(q11011=1101102 AND q11021=1102101) OR (chars:[\"博丽灵梦\",\"东风谷早苗\"] AND chars_first=\"东风谷早苗\") AND cp:[(\"博丽灵梦\",\"东风谷早苗\"),\"xcxc\"]";
+	//let q = "cp=(\"博丽灵梦\",\"东风谷早苗\")";
+	println!("{:#?}",q);
 	let ret = generate_mongodb_query(q).unwrap();
 	println!("{:#?}",ret);
 	let ref_ret = doc! {

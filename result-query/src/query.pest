@@ -13,12 +13,16 @@ int_inner = { int }
 ident_inner = { ident }
 
 value = {
-    (int_inner | string)
+    (int_inner | string | cp_value)
 }
 
 value_list = {
     "[" ~ "]" |
     "[" ~ value ~ ("," ~ value)* ~ "]"
+}
+
+cp_value = {
+    "(" ~ string ~ "," ~ string ~ ("," ~ string)* ~ ")"
 }
 
 in_condition = {
