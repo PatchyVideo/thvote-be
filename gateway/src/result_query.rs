@@ -87,6 +87,8 @@ pub struct RankingEntry {
 	pub female_percentage_per_total: f64,
 	/// 趋势
 	pub trend: Vec<VotingTrendItem>,
+	/// 本命趋势
+	pub trend_first: Vec<VotingTrendItem>,
 	/// 理由
 	pub reasons: Vec<String>,
 	/// 理由数量
