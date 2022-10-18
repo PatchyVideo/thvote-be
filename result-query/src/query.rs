@@ -1337,26 +1337,32 @@ pub async fn paper_result(ctx: &AppContext, query: Option<String>, vote_start: b
 	let not_found_qids: HashSet<&String> = questions_of_interest_set.difference(&found_question_ids).collect::<_>();
 	// step 3: build result for those questions
 	if not_found_qids.len() != 0 {
-		let mut question2answer_count: HashMap<String, HashMap<String, i32>> = HashMap::new();
+		let mut question2answer_count: HashMap<String, HashMap<String, (i32, i32)>> = HashMap::new();
 		let mut question2answer_str: HashMap<String, Vec<String>> = HashMap::new();
 		let mut question2cnt: HashMap<String, i32> = HashMap::new();
 		let mut hrs_bins: HashMap<String, Vec<i32>> = HashMap::new();
 
 		let mut votes_cursor = ctx.votes_coll.find(filter, None).await.map_err(|e| ServiceError::new(SERVICE_NAME, format!("{:?}", e)))?;
 		while let Some(Ok(vote)) = votes_cursor.next().await {
+			let pv: PartialVote = bson::from_document(vote.clone()).unwrap();
+			let is_male = pv.q11011.opt[0] == "1101101";
 			for (key, value) in vote.iter() {
 				if not_found_qids.contains(key) {
 					if let Ok(vote_item) = bson::from_bson::<SinglePaperItem>(value.clone()) {
 						let answer_count_map = question2answer_count.entry(key.clone()).or_insert(HashMap::new());
 						*question2cnt.entry(key.clone()).or_insert(0) += 1;
 						for opt_item in vote_item.opt.iter() {
-							*answer_count_map.entry(opt_item.clone()).or_insert(0) += 1;
+							let count_tuple = answer_count_map.entry(opt_item.clone()).or_insert((0, 0));
+							if is_male {
+								count_tuple.0 += 1;
+							} else {
+								count_tuple.1 += 1;
+							}
 						}
 						if vote_item.ans.len() != 0 {
 							question2answer_str.entry(key.clone()).or_insert(Vec::new()).push(vote_item.ans.clone());
 						}
-						let pv: PartialVote = bson::from_document(vote.clone()).unwrap();
-						if let Some(paper_meta) = pv.paper_meta {
+						if let Some(paper_meta) = &pv.paper_meta {
 							if !hrs_bins.contains_key(key) {
 								hrs_bins.insert(key.clone(), vec![0i32; 24 * 30]);
 							}
@@ -1374,7 +1380,7 @@ pub async fn paper_result(ctx: &AppContext, query: Option<String>, vote_start: b
 			let mut item = CachedQuestionItem { question_id: qid.clone(), answers_cat: vec![], answers_str: vec![], total_answers: 0 };
 			if let Some(answer_count) = question2answer_count.get(qid) {
 				for (aid, cnt) in answer_count {
-					item.answers_cat.push(CachedQuestionAnswerItem { aid: aid.clone(), votes: *cnt });
+					item.answers_cat.push(CachedQuestionAnswerItem { aid: aid.clone(), total_votes: cnt.0 + cnt.1, male_votes: cnt.0, female_votes: cnt.1 });
 				}
 			};
 			if let Some(answer_str) = question2answer_str.get(qid) {

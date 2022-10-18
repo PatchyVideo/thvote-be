@@ -278,7 +278,9 @@ pub struct CompletionRate {
 #[derive(juniper::GraphQLObject, Debug, Clone, Serialize, Deserialize, Default)]
 pub struct CachedQuestionAnswerItem {
 	pub aid: String,
-	pub votes: i32
+	pub total_votes: i32,
+	pub male_votes: i32,
+	pub female_votes: i32
 }
 
 #[derive(juniper::GraphQLObject, Debug, Clone, Serialize, Deserialize, Default)]
