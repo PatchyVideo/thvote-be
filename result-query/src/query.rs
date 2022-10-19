@@ -1263,9 +1263,26 @@ pub async fn global_stats(ctx: &AppContext, vote_start: bson::DateTime, vote_yea
 	Ok(gs)
 }
 
-pub async fn completion_rates(ctx: &AppContext, vote_start: bson::DateTime, vote_year: i32) -> Result<models::CompletionRate, ServiceError> {
-	let filter = doc! {"vote_year": vote_year};
-	let cached_global = ctx.completion_rates.find_one(filter.clone(), None).await.map_err(|e| ServiceError::new(SERVICE_NAME, format!("{:?}", e)))?;
+pub async fn completion_rates(ctx: &AppContext, query: Option<String>, vote_start: bson::DateTime, vote_year: i32) -> Result<models::CompletionRate, ServiceError> {
+	let (filter, cache_key) = process_query(query)?;
+	let filter = if let Some(filter) = filter {
+		doc! {
+			"$and": [filter, {"vote_year": vote_year}]
+		}
+	} else {
+		doc! {
+			"vote_year": vote_year
+		}
+	};
+	// lock query
+	let lockid = format!("lock-completion_rates-{}", cache_key);
+	let guard = ctx.lock.acquire_async(lockid.as_bytes(), 60 * 1000).await;
+	// find in cache
+	let cache_query = doc! {
+		"key": cache_key.clone(),
+		"vote_year": vote_year
+	};
+	let cached_global = ctx.completion_rates.find_one(cache_query.clone(), None).await.map_err(|e| ServiceError::new(SERVICE_NAME, format!("{:?}", e)))?;
 	if let Some(cached_global) = cached_global {
 		return Ok(cached_global);
 	};

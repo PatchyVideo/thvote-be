@@ -170,8 +170,8 @@ impl Query {
 	async fn queryGlobalStats(context: &Context, vote_start: DateTime<Utc>, vote_year: i32) -> FieldResult<GlobalStats> {
 		result_query::queryGlobalStats_impl(context, vote_start, vote_year).await
 	}
-	async fn queryCompletionRates(context: &Context, vote_start: DateTime<Utc>, vote_year: i32) -> FieldResult<CompletionRate> {
-		result_query::queryCompletionRate_impl(context, vote_start, vote_year).await
+	async fn queryCompletionRates(context: &Context, query: Option<String>, vote_start: DateTime<Utc>, vote_year: i32) -> FieldResult<CompletionRate> {
+		result_query::queryCompletionRate_impl(context, query, vote_start, vote_year).await
 	}
 	async fn queryQuestionnaire(context: &Context, query: Option<String>, vote_start: DateTime<Utc>, vote_year: i32, questions_of_interest: Vec<String>) -> FieldResult<QueryQuestionnaireResponse> {
 		result_query::queryQuestionnaire_impl(context, query, vote_start, vote_year, questions_of_interest).await

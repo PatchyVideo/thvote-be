@@ -235,6 +235,17 @@ pub struct GlobalStatsRequest {
 	pub vote_year: i32,
 }
 
+#[derive(Clone, Serialize, Deserialize)]
+pub struct CompletionRateRequest {
+	#[serde(skip_serializing_if = "Option::is_none")]
+	#[serde(default)]
+	pub query: Option<String>,
+	/// 投票开始时间，UTC
+	pub vote_start: DateTime<Utc>,
+	/// 第几届
+	pub vote_year: i32,
+}
+
 #[derive(juniper::GraphQLObject, Clone, Serialize, Deserialize)]
 pub struct Reasons {
 	pub reasons: Vec<String>
@@ -499,10 +510,11 @@ pub async fn queryGlobalStats_impl(context: &Context, vote_start: DateTime<Utc>,
 	Ok(post_result)
 }
 
-pub async fn queryCompletionRate_impl(context: &Context, vote_start: DateTime<Utc>, vote_year: i32) -> FieldResult<CompletionRate> {
-	let query_json = GlobalStatsRequest {
+pub async fn queryCompletionRate_impl(context: &Context, query: Option<String>, vote_start: DateTime<Utc>, vote_year: i32) -> FieldResult<CompletionRate> {
+	let query_json = CompletionRateRequest {
 		vote_start,
-		vote_year
+		vote_year,
+		query
 	};
 	let post_result: CompletionRate = json_request_gateway(SERVICE_NAME, &format!("http://{}/v1/completion-rates/", RESULT_QUERY), query_json).await?;
 	Ok(post_result)

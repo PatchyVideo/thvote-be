@@ -303,6 +303,15 @@ pub struct GlobalStatsRequest {
 	pub vote_year: i32
 }
 
+#[derive(Clone, Serialize, Deserialize)]
+pub struct CompletionRateRequest {
+	#[serde(skip_serializing_if = "Option::is_none")]
+	#[serde(default)]
+	pub query: Option<String>,
+	pub vote_start: DateTime<Utc>,
+	pub vote_year: i32
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct GlobalStats {
 	pub vote_year: i32,
@@ -326,6 +335,7 @@ pub struct CompletionRateItem {
 
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct CompletionRate {
+	pub key: String,
 	pub vote_year: i32,
 	pub items: Vec<CompletionRateItem>
 }
