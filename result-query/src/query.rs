@@ -1288,8 +1288,11 @@ pub async fn completion_rates(ctx: &AppContext, query: Option<String>, vote_star
 	};
 	// else
 	let mut votes_cursor = ctx.votes_coll.find(filter, None).await.map_err(|e| ServiceError::new(SERVICE_NAME, format!("{:?}", e)))?;
-	let mut ret = CompletionRate::default();
-	ret.vote_year = vote_year;
+	let mut ret = CompletionRate {
+		key: cache_key,
+		vote_year,
+		items: vec![],
+	};
 	let mut total_votes = 0i32;
 	let mut question_count_map: HashMap<String, i32> = HashMap::new();
 	while let Some(Ok(vote)) = votes_cursor.next().await {
