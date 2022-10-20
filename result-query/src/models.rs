@@ -356,7 +356,9 @@ pub struct CachedQuestionItem {
 	pub answers_cat: Vec<CachedQuestionAnswerItem>,
 	/// open-ended answers
 	pub answers_str: Vec<String>,
-	pub total_answers: i32
+	pub total_answers: i32,
+	pub total_male: i32,
+	pub total_female: i32,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

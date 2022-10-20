@@ -1297,12 +1297,17 @@ pub async fn completion_rates(ctx: &AppContext, query: Option<String>, vote_star
 	let mut question_count_map: HashMap<String, i32> = HashMap::new();
 	while let Some(Ok(vote)) = votes_cursor.next().await {
 		total_votes += 1;
+		let mut visited = HashSet::new();
 		for (key, value) in vote.iter() {
 			if key.chars().next().unwrap() == 'q' {
-				if let Some(value_doc) = value.as_document() {
-					if let Ok(opt) = value_doc.get_array(&"opt") {
-						if opt.len() != 0 {
-							*question_count_map.entry(key.clone()).or_insert(0) += 1;
+				let key = (&key[..3]).to_string();
+				if !visited.contains(&key) {
+					if let Some(value_doc) = value.as_document() {
+						if let Ok(opt) = value_doc.get_array(&"opt") {
+							if opt.len() != 0 {
+								*question_count_map.entry(key.clone()).or_insert(0) += 1;
+								visited.insert(key);
+							}
 						}
 					}
 				}
@@ -1359,7 +1364,7 @@ pub async fn paper_result(ctx: &AppContext, query: Option<String>, vote_start: b
 	if not_found_qids.len() != 0 {
 		let mut question2answer_count: HashMap<String, HashMap<String, (i32, i32)>> = HashMap::new();
 		let mut question2answer_str: HashMap<String, Vec<String>> = HashMap::new();
-		let mut question2cnt: HashMap<String, i32> = HashMap::new();
+		let mut question2cnt: HashMap<String, (i32, i32)> = HashMap::new();
 		let mut hrs_bins: HashMap<String, Vec<i32>> = HashMap::new();
 
 		let mut votes_cursor = ctx.votes_coll.find(filter, None).await.map_err(|e| ServiceError::new(SERVICE_NAME, format!("{:?}", e)))?;
@@ -1370,7 +1375,12 @@ pub async fn paper_result(ctx: &AppContext, query: Option<String>, vote_start: b
 				if not_found_qids.contains(key) {
 					if let Ok(vote_item) = bson::from_bson::<SinglePaperItem>(value.clone()) {
 						let answer_count_map = question2answer_count.entry(key.clone()).or_insert(HashMap::new());
-						*question2cnt.entry(key.clone()).or_insert(0) += 1;
+						let question_counts = question2cnt.entry(key.clone()).or_insert((0, 0));
+						if is_male {
+							question_counts.0 += 1;
+						} else {
+							question_counts.1 += 1;
+						}
 						for opt_item in vote_item.opt.iter() {
 							let count_tuple = answer_count_map.entry(opt_item.clone()).or_insert((0, 0));
 							if is_male {
@@ -1397,7 +1407,7 @@ pub async fn paper_result(ctx: &AppContext, query: Option<String>, vote_start: b
 
 		let mut result_items: Vec<CachedQuestionItem> = Vec::with_capacity(not_found_qids.len());
 		for qid in not_found_qids {
-			let mut item = CachedQuestionItem { question_id: qid.clone(), answers_cat: vec![], answers_str: vec![], total_answers: 0 };
+			let mut item = CachedQuestionItem { question_id: qid.clone(), answers_cat: vec![], answers_str: vec![], total_answers: 0, total_male: 0, total_female: 0 };
 			if let Some(answer_count) = question2answer_count.get(qid) {
 				for (aid, cnt) in answer_count {
 					item.answers_cat.push(CachedQuestionAnswerItem { aid: aid.clone(), total_votes: cnt.0 + cnt.1, male_votes: cnt.0, female_votes: cnt.1 });
@@ -1407,7 +1417,9 @@ pub async fn paper_result(ctx: &AppContext, query: Option<String>, vote_start: b
 				item.answers_str = answer_str.clone();
 			}
 			if let Some(cnt) = question2cnt.get(qid) {
-				item.total_answers = *cnt;
+				item.total_answers = cnt.0 + cnt.1;
+				item.total_male = cnt.0;
+				item.total_female = cnt.1;
 			}
 			result_items.push(item);
 		}
