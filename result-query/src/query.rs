@@ -968,6 +968,7 @@ pub async fn cps_ranking(ctx: &AppContext, query: Option<String>, vote_start: bs
 	// else
 	let mut votes_cursor = ctx.votes_coll.find(filter, None).await.map_err(|e| ServiceError::new(SERVICE_NAME, format!("{:?}", e)))?;
 	let mut hrs_bins: HashMap<CPItem, Vec<i32>> = HashMap::with_capacity(300);
+	let mut hrs_bins_first: HashMap<CPItem, Vec<i32>> = HashMap::with_capacity(300);
 	let mut reasons: HashMap<CPItem, Vec<String>> = HashMap::with_capacity(1000);
 	let mut a_active: HashMap<CPItem, i32> = HashMap::with_capacity(1000);
 	let mut b_active: HashMap<CPItem, i32> = HashMap::with_capacity(1000);
@@ -986,10 +987,16 @@ pub async fn cps_ranking(ctx: &AppContext, query: Option<String>, vote_start: bs
 		if pv.cps.is_none() || pv.cps_meta.is_none() {
 			continue;
 		}
+		let hrs_diff = (pv.cps_meta.as_ref().unwrap().created_at.to_chrono() - vote_start.to_chrono()).num_hours() as usize;
 		if let Some(f) = &pv.cps_first {
 			if f.len() != 0 {
 				total_first_votes += 1;
 				*per_cp_vote_first_count.entry(f[0].clone()).or_default() += 1;
+				if !hrs_bins_first.contains_key(&f[0]) {
+					hrs_bins_first.insert(f[0].clone(), vec![0i32; 24 * 30]);
+				}
+				let trend_hrs_bins_first = hrs_bins_first.get_mut(&f[0]).unwrap();
+				trend_hrs_bins_first[hrs_diff] += 1;
 			}
 		}
 		let chs = pv.cps.as_ref().unwrap();
@@ -1004,7 +1011,6 @@ pub async fn cps_ranking(ctx: &AppContext, query: Option<String>, vote_start: bs
 			total_female += 1;
 			false
 		};
-		let hrs_diff = (pv.cps_meta.as_ref().unwrap().created_at.to_chrono() - vote_start.to_chrono()).num_hours() as usize;
 		for ch in chs {
 			*per_cp_vote_count.entry(ch.clone()).or_default() += 1;
 			if !hrs_bins.contains_key(&ch) {
@@ -1074,6 +1080,20 @@ pub async fn cps_ranking(ctx: &AppContext, query: Option<String>, vote_start: bs
 				VotingTrendItem { hrs: hrs as _, cnt: *cnt }
 			})
 			.collect::<Vec<_>>();
+		let trend_first = if hrs_bins_first.contains_key(ch) {
+			hrs_bins_first
+				.get(ch)
+				.unwrap()
+				.iter()
+				.enumerate()
+				.filter(|(_, cnt)| {**cnt != 0})
+				.map(|(hrs, cnt)| {
+					VotingTrendItem { hrs: hrs as _, cnt: *cnt }
+				})
+				.collect::<Vec<_>>()
+		} else {
+			vec![]
+		};
 		let mut entry = CPRankingEntry {
 			rank,
 			display_rank,
@@ -1095,6 +1115,7 @@ pub async fn cps_ranking(ctx: &AppContext, query: Option<String>, vote_start: bs
 			female_percentage_per_char: *per_cp_female_vote_count.get(ch).unwrap_or(&0) as f64 / *per_cp_vote_count.get(ch).unwrap_or(&0) as f64,
 			female_percentage_per_total: *per_cp_female_vote_count.get(ch).unwrap_or(&0) as f64 / total_female as f64,
 			trend,
+			trend_first,
 			reasons: reasons.get(ch).unwrap_or(&vec![]).clone(),
 			num_reasons: 0
 		};
@@ -1390,7 +1411,9 @@ pub async fn paper_result(ctx: &AppContext, query: Option<String>, vote_start: b
 							}
 						}
 						if vote_item.ans.len() != 0 {
-							question2answer_str.entry(key.clone()).or_insert(Vec::new()).push(vote_item.ans.clone());
+							if vote_item.ans != "无" {
+								question2answer_str.entry(key.clone()).or_insert(Vec::new()).push(vote_item.ans.clone());
+							}
 						}
 						if let Some(paper_meta) = &pv.paper_meta {
 							if !hrs_bins.contains_key(key) {
