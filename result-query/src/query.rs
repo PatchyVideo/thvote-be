@@ -321,6 +321,16 @@ pub async fn chars_ranking(ctx: &AppContext, query: Option<String>, vote_start: 
 			(x.name.clone(), x)
 		})
 		.collect();
+	let mut past_1_char_ranking = HashMap::new();
+	let mut past_2_char_ranking = HashMap::new();
+	let mut past_1_char_ranking_cursor = ctx.final_ranking_char.find(doc! { "vote_year": vote_year - 1 }, None).await.map_err(|e| ServiceError::new(SERVICE_NAME, format!("{:?}", e)))?;
+	while let Some(Ok(item)) = past_1_char_ranking_cursor.next().await {
+		past_1_char_ranking.insert(item.name.clone(), item);
+	}
+	let mut past_2_char_ranking_cursor = ctx.final_ranking_char.find(doc! { "vote_year": vote_year - 2 }, None).await.map_err(|e| ServiceError::new(SERVICE_NAME, format!("{:?}", e)))?;
+	while let Some(Ok(item)) = past_2_char_ranking_cursor.next().await {
+		past_2_char_ranking.insert(item.name.clone(), item);
+	}
 	for (ch, _) in per_char_vote_count_vec {
 		let trend = hrs_bins
 			.get(ch)
@@ -346,6 +356,8 @@ pub async fn chars_ranking(ctx: &AppContext, query: Option<String>, vote_start: 
 		} else {
 			vec![]
 		};
+		let past_1_rank = past_1_char_ranking.get(ch);
+		let past_2_rank = past_2_char_ranking.get(ch);
 		let mut entry = RankingEntry {
 			rank,
 			display_rank,
@@ -366,16 +378,16 @@ pub async fn chars_ranking(ctx: &AppContext, query: Option<String>, vote_start: 
 			female_vote_count: *per_char_female_vote_count.get(ch).unwrap_or(&0),
 			female_percentage_per_char: *per_char_female_vote_count.get(ch).unwrap_or(&0) as f64 / *per_char_vote_count.get(ch).unwrap_or(&0) as f64,
 			female_percentage_per_total: *per_char_female_vote_count.get(ch).unwrap_or(&0) as f64 / total_female as f64,
-			rank_last_1: 0,
-			rank_last_2: 0,
-			vote_count_last_1: 0,
-			vote_count_last_2: 0,
-			first_vote_count_last_1: 0,
-			first_vote_count_last_2: 0,
-			first_vote_percentage_last_1: 0.0,
-			first_vote_percentage_last_2: 0.0,
-			vote_percentage_last_1: 0.0,
-			vote_percentage_last_2: 0.0,
+			rank_last_1: past_1_rank.map(|f| f.rank).unwrap_or(-1),
+			rank_last_2: past_2_rank.map(|f| f.rank).unwrap_or(-1),
+			vote_count_last_1: past_1_rank.map(|f| f.vote_count).unwrap_or(-1),
+			vote_count_last_2: past_2_rank.map(|f| f.vote_count).unwrap_or(-1),
+			first_vote_count_last_1: past_1_rank.map(|f| f.first_vote_count).unwrap_or(-1),
+			first_vote_count_last_2: past_2_rank.map(|f| f.first_vote_count).unwrap_or(-1),
+			first_vote_percentage_last_1: past_1_rank.map(|f| f.first_vote_percentage).unwrap_or(-1.0),
+			first_vote_percentage_last_2: past_2_rank.map(|f| f.first_vote_percentage).unwrap_or(-1.0),
+			vote_percentage_last_1: past_1_rank.map(|f| f.vote_percentage).unwrap_or(-1.0),
+			vote_percentage_last_2: past_2_rank.map(|f| f.vote_percentage).unwrap_or(-1.0),
 			trend,
 			trend_first,
 			reasons: reasons.get(ch).unwrap_or(&vec![]).clone(),
@@ -697,6 +709,16 @@ pub async fn musics_ranking(ctx: &AppContext, query: Option<String>, vote_start:
 			(x.name.clone(), x)
 		})
 		.collect();
+	let mut past_1_music_ranking = HashMap::new();
+	let mut past_2_music_ranking = HashMap::new();
+	let mut past_1_music_ranking_cursor = ctx.final_ranking_music.find(doc! { "vote_year": vote_year - 1 }, None).await.map_err(|e| ServiceError::new(SERVICE_NAME, format!("{:?}", e)))?;
+	while let Some(Ok(item)) = past_1_music_ranking_cursor.next().await {
+		past_1_music_ranking.insert(item.name.clone(), item);
+	}
+	let mut past_2_music_ranking_cursor = ctx.final_ranking_music.find(doc! { "vote_year": vote_year - 2 }, None).await.map_err(|e| ServiceError::new(SERVICE_NAME, format!("{:?}", e)))?;
+	while let Some(Ok(item)) = past_2_music_ranking_cursor.next().await {
+		past_2_music_ranking.insert(item.name.clone(), item);
+	}
 	for (ch, _) in per_music_vote_count_vec {
 		let trend = hrs_bins
 			.get(ch)
@@ -722,6 +744,8 @@ pub async fn musics_ranking(ctx: &AppContext, query: Option<String>, vote_start:
 		} else {
 			vec![]
 		};
+		let past_1_rank = past_1_music_ranking.get(ch);
+		let past_2_rank = past_2_music_ranking.get(ch);
 		let mut entry = RankingEntry {
 			rank,
 			display_rank,
@@ -745,16 +769,16 @@ pub async fn musics_ranking(ctx: &AppContext, query: Option<String>, vote_start:
 			trend,
 			trend_first,
 			reasons: reasons.get(ch).unwrap_or(&vec![]).clone(),
-			rank_last_1: 0,
-			rank_last_2: 0,
-			vote_count_last_1: 0,
-			vote_count_last_2: 0,
-			first_vote_count_last_1: 0,
-			first_vote_count_last_2: 0,
-			first_vote_percentage_last_1: 0.0,
-			first_vote_percentage_last_2: 0.0,
-			vote_percentage_last_1: 0.0,
-			vote_percentage_last_2: 0.0,
+			rank_last_1: past_1_rank.map(|f| f.rank).unwrap_or(-1),
+			rank_last_2: past_2_rank.map(|f| f.rank).unwrap_or(-1),
+			vote_count_last_1: past_1_rank.map(|f| f.vote_count).unwrap_or(-1),
+			vote_count_last_2: past_2_rank.map(|f| f.vote_count).unwrap_or(-1),
+			first_vote_count_last_1: past_1_rank.map(|f| f.first_vote_count).unwrap_or(-1),
+			first_vote_count_last_2: past_2_rank.map(|f| f.first_vote_count).unwrap_or(-1),
+			first_vote_percentage_last_1: past_1_rank.map(|f| f.first_vote_percentage).unwrap_or(-1.0),
+			first_vote_percentage_last_2: past_2_rank.map(|f| f.first_vote_percentage).unwrap_or(-1.0),
+			vote_percentage_last_1: past_1_rank.map(|f| f.vote_percentage).unwrap_or(-1.0),
+			vote_percentage_last_2: past_2_rank.map(|f| f.vote_percentage).unwrap_or(-1.0),
 			num_reasons: 0
 		};
 		entry.num_reasons = entry.reasons.len() as i32;
@@ -1411,7 +1435,7 @@ pub async fn paper_result(ctx: &AppContext, query: Option<String>, vote_start: b
 							}
 						}
 						if vote_item.ans.len() != 0 {
-							if vote_item.ans != "无" {
+							if vote_item.ans.trim() != "无" {
 								question2answer_str.entry(key.clone()).or_insert(Vec::new()).push(vote_item.ans.clone());
 							}
 						}

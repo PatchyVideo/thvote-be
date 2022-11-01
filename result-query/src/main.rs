@@ -46,8 +46,8 @@ async fn main() -> std::io::Result<()> {
         paper_result: db.collection("paper_result"),
         covote_chars: db.collection("covote_chars"),
         covote_musics: db.collection("covote_musics"),
-        final_ranking_chars: db.collection("final_ranking_chars"),
-        final_ranking_musics: db.collection("final_ranking_musics"),
+        final_ranking_char: db.collection("final_ranking_char"),
+        final_ranking_music: db.collection("final_ranking_music"),
     };
     HttpServer::new(move || {
         App::new().app_data(Data::new(ctx.clone()))
@@ -70,7 +70,7 @@ async fn main() -> std::io::Result<()> {
             .route("/v1/musics-single/", web::post().to(handlers::musics_single))
             .route("/v1/cps-single/", web::post().to(handlers::cps_single))
     })
-    .bind("0.0.0.0:80")?
+    .bind("0.0.0.0:8080")?
     .run()
     .await
 }

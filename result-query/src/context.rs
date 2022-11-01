@@ -25,6 +25,6 @@ pub struct AppContext {
     pub paper_result: Collection<CachedQuestionEntry>,
     pub covote_musics: Collection<CachedCovote>,
     pub covote_chars: Collection<CachedCovote>,
-    pub final_ranking_musics: Collection<FinalRanking>,
-    pub final_ranking_chars: Collection<FinalRanking>,
+    pub final_ranking_music: Collection<FinalRanking>,
+    pub final_ranking_char: Collection<FinalRanking>,
 }

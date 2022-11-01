@@ -57,6 +57,8 @@ pub struct FinalRanking {
 	pub name: String,
 	pub vote_year: i32,
 	pub rank: i32,
+	/// 票数
+	pub vote_count: i32,
 	/// 本命票数
 	pub first_vote_count: i32,
 	/// 本命率
