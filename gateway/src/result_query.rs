@@ -63,6 +63,8 @@ pub struct RankingEntry {
 	pub character_origin: String,
 	/// 初登场时间
 	pub first_appearance: String,
+	/// 专辑
+	pub album: Option<String>,
 	/// 日文名
 	pub name_jpn: String,
 	/// 票数占比

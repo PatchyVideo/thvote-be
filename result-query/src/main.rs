@@ -70,7 +70,7 @@ async fn main() -> std::io::Result<()> {
             .route("/v1/musics-single/", web::post().to(handlers::musics_single))
             .route("/v1/cps-single/", web::post().to(handlers::cps_single))
     })
-    .bind("0.0.0.0:8080")?
+    .bind("0.0.0.0:80")?
     .run()
     .await
 }
