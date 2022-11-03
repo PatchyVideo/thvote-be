@@ -300,7 +300,7 @@ pub struct PartialVoteItemEntry {
 	pub origname: String,
 	pub date: i32,
 	pub kind: Vec<String>,
-	pub work: Vec<String>,
+	pub work: Option<Vec<String>>,
 	pub album: Option<String>
 }
 
