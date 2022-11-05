@@ -167,8 +167,8 @@ impl Query {
 		}
 		Ok(ret)
 	}
-	async fn queryGlobalStats(context: &Context, vote_start: DateTime<Utc>, vote_year: i32) -> FieldResult<GlobalStats> {
-		result_query::queryGlobalStats_impl(context, vote_start, vote_year).await
+	async fn queryGlobalStats(context: &Context, query: Option<String>, vote_start: DateTime<Utc>, vote_year: i32) -> FieldResult<GlobalStats> {
+		result_query::queryGlobalStats_impl(context, query, vote_start, vote_year).await
 	}
 	async fn queryCompletionRates(context: &Context, query: Option<String>, vote_start: DateTime<Utc>, vote_year: i32) -> FieldResult<CompletionRate> {
 		result_query::queryCompletionRate_impl(context, query, vote_start, vote_year).await
@@ -176,10 +176,10 @@ impl Query {
 	async fn queryQuestionnaire(context: &Context, query: Option<String>, vote_start: DateTime<Utc>, vote_year: i32, questions_of_interest: Vec<String>) -> FieldResult<QueryQuestionnaireResponse> {
 		result_query::queryQuestionnaire_impl(context, query, vote_start, vote_year, questions_of_interest).await
 	}
-	async fn queryQuestionnaireTrend(context: &Context, vote_start: DateTime<Utc>, vote_year: i32, question_ids: Vec<String>) -> FieldResult<Vec<Trends>> {
+	async fn queryQuestionnaireTrend(context: &Context, query: Option<String>, vote_start: DateTime<Utc>, vote_year: i32, question_ids: Vec<String>) -> FieldResult<Vec<Trends>> {
 		let mut ret = vec![];
 		for name in question_ids {
-			ret.push(result_query::queryQuestionnaireTrend_impl(context, None, vote_start, vote_year, name.clone()).await?);
+			ret.push(result_query::queryQuestionnaireTrend_impl(context, query.clone(), vote_start, vote_year, name.clone()).await?);
 		}
 		Ok(ret)
 	}

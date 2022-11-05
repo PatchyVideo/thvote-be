@@ -233,6 +233,9 @@ pub struct TrendRequestRank {
 
 #[derive(Clone, Serialize, Deserialize)]
 pub struct GlobalStatsRequest {
+	#[serde(skip_serializing_if = "Option::is_none")]
+	#[serde(default)]
+	pub query: Option<String>,
 	/// 投票开始时间，UTC
 	pub vote_start: DateTime<Utc>,
 	/// 第几届
@@ -507,10 +510,11 @@ pub async fn queryCPTrend_impl(context: &Context, query: Option<String>, vote_st
 	Ok(post_result)
 }
 
-pub async fn queryGlobalStats_impl(context: &Context, vote_start: DateTime<Utc>, vote_year: i32) -> FieldResult<GlobalStats> {
+pub async fn queryGlobalStats_impl(context: &Context, query: Option<String>, vote_start: DateTime<Utc>, vote_year: i32) -> FieldResult<GlobalStats> {
 	let query_json = GlobalStatsRequest {
 		vote_start,
-		vote_year
+		vote_year,
+		query
 	};
 	let post_result: GlobalStats = json_request_gateway(SERVICE_NAME, &format!("http://{}/v1/global-stats/", RESULT_QUERY), query_json).await?;
 	Ok(post_result)

@@ -1267,15 +1267,29 @@ pub async fn cps_trend(ctx: &AppContext, query: Option<String>, vote_start: bson
 	}
 }
 
-pub async fn global_stats(ctx: &AppContext, vote_start: bson::DateTime, vote_year: i32) -> Result<models::GlobalStats, ServiceError> {
-	let filter = doc! {"vote_year": vote_year};
-	let cached_global = ctx.global_stats.find_one(filter.clone(), None).await.map_err(|e| ServiceError::new(SERVICE_NAME, format!("{:?}", e)))?;
+pub async fn global_stats(ctx: &AppContext, vote_start: bson::DateTime, vote_year: i32, query: Option<String>) -> Result<models::GlobalStats, ServiceError> {
+	let (filter, cache_key) = process_query(query)?;
+	let filter = if let Some(filter) = filter {
+		doc! {
+			"$and": [filter, {"vote_year": vote_year}]
+		}
+	} else {
+		doc! {
+			"vote_year": vote_year
+		}
+	};
+	let cache_query = doc! {
+		"key": cache_key.clone(),
+		"vote_year": vote_year
+	};
+	let cached_global = ctx.global_stats.find_one(cache_query, None).await.map_err(|e| ServiceError::new(SERVICE_NAME, format!("{:?}", e)))?;
 	if let Some(cached_global) = cached_global {
 		return Ok(cached_global);
 	};
 	// else
 	let mut votes_cursor = ctx.votes_coll.find(filter, None).await.map_err(|e| ServiceError::new(SERVICE_NAME, format!("{:?}", e)))?;
 	let mut gs = GlobalStats::default();
+	gs.key = cache_key;
 	gs.vote_year = vote_year;
 	while let Some(Ok(vote)) = votes_cursor.next().await {
 		let pv: PartialVote = bson::from_document(vote).unwrap();

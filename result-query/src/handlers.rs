@@ -102,7 +102,11 @@ pub async fn cps_trend(ctx: web::Data<AppContext>, request: HttpRequest, body: a
 }
 
 pub async fn global_stats(ctx: web::Data<AppContext>, request: HttpRequest, body: actix_web::web::Json<models::GlobalStatsRequest>) -> Result<web::Json<models::GlobalStats>, ServiceError> {
-	let resp = query::global_stats(&ctx, bson::DateTime::from_chrono(body.vote_start), body.vote_year).await?;
+	if body.query.as_ref().map(|f| f.len()).unwrap_or_default() > 1000 {
+		// query too long
+		return Err(ServiceError::new_human_readable(SERVICE_NAME, "QUERY_TOO_LONG", "查询过长".into()));
+	};
+	let resp = query::global_stats(&ctx, bson::DateTime::from_chrono(body.vote_start), body.vote_year, body.query.clone()).await?;
 	Ok(web::Json(resp))
 }
 
