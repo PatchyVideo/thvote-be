@@ -286,6 +286,7 @@ pub async fn chars_ranking(ctx: &AppContext, query: Option<String>, vote_start: 
 	let mut per_char_vote_count_vec: Vec<(&String, &i32)> = per_char_vote_count.iter().collect();
 	let mut per_char_vote_count_count_only_vec: Vec<i32> = per_char_vote_count.iter().map(|(a, b)| *b).collect();
 	per_char_vote_count_count_only_vec.sort();
+	per_char_vote_count_count_only_vec.reverse();
 	per_char_vote_count_vec.sort_by(
 		|a, b| {
 			if b.1 == a.1 {
@@ -408,19 +409,19 @@ pub async fn chars_ranking(ctx: &AppContext, query: Option<String>, vote_start: 
 		let all_chars: HashSet<String> = HashSet::from_iter(all_chars.iter().map(|x| x.name.clone()));
 		let voted_chars: HashSet<String> = HashSet::from_iter(chars_result.iter().map(|x| x.name.clone()));
 		display_rank = rank;
-		for x in all_chars.difference(&voted_chars) {
+		for ch in all_chars.difference(&voted_chars) {
 			let entry = RankingEntry {
 				rank,
 				display_rank,
-				name: x.clone(),
+				name: ch.clone(),
 				vote_count: 0,
 				first_vote_count: 0,
 				first_vote_percentage: 0f64,
 				first_vote_count_weighted: 0,
-				character_type: "todo".to_owned(),
-				character_origin: "todo".to_owned(),
-				first_appearance: "todo".to_owned(),
-				name_jpn: "todo".to_owned(),
+				character_type: if all_chars_map.contains_key(ch) { all_chars_map.get(ch).unwrap().kind.iter().map(|f| KIND_MAPPING.get(f).unwrap()).join(",").into() } else { "未知".into() },
+				character_origin: if all_chars_map.contains_key(ch) { all_chars_map.get(ch).unwrap().work.as_ref().unwrap().join(",").into() } else { "未知".into() },
+				first_appearance: if all_chars_map.contains_key(ch) { all_chars_map.get(ch).unwrap().date.to_string() } else { "未知".into() },
+				name_jpn: if all_chars_map.contains_key(ch) { all_chars_map.get(ch).unwrap().origname.clone() } else { "未知".into() },
 				album: None,
 				vote_percentage: 0f64,
 				first_percentage: 0f64,
@@ -447,6 +448,7 @@ pub async fn chars_ranking(ctx: &AppContext, query: Option<String>, vote_start: 
 			};
 			rank += 1;
 			chars_result.push(entry);
+			per_char_vote_count_count_only_vec.push(0);
 		}
 	};
 	let num_char = per_char_vote_count_count_only_vec.len();
@@ -676,6 +678,7 @@ pub async fn musics_ranking(ctx: &AppContext, query: Option<String>, vote_start:
 	let mut per_music_vote_count_vec: Vec<(&String, &i32)> = per_music_vote_count.iter().collect();
 	let mut per_music_vote_count_count_only_vec: Vec<i32> = per_music_vote_count.iter().map(|(a, b)| *b).collect();
 	per_music_vote_count_count_only_vec.sort();
+	per_music_vote_count_count_only_vec.reverse();
 	per_music_vote_count_vec.sort_by(
 		|a, b| {
 			if b.1 == a.1 {
@@ -798,20 +801,20 @@ pub async fn musics_ranking(ctx: &AppContext, query: Option<String>, vote_start:
 		let all_musics: HashSet<String> = HashSet::from_iter(all_musics.iter().map(|x| x.name.clone()));
 		let voted_musics: HashSet<String> = HashSet::from_iter(musics_result.iter().map(|x| x.name.clone()));
 		display_rank = rank;
-		for x in all_musics.difference(&voted_musics) {
+		for ch in all_musics.difference(&voted_musics) {
 			let entry = RankingEntry {
 				rank,
 				display_rank,
-				name: x.clone(),
+				name: ch.clone(),
 				vote_count: 0,
 				first_vote_count: 0,
 				first_vote_percentage: 0f64,
 				first_vote_count_weighted: 0,
-				character_type: "todo".to_owned(),
-				character_origin: "todo".to_owned(),
-				first_appearance: "todo".to_owned(),
-				name_jpn: "todo".to_owned(),
-				album: None,
+				character_type: if all_musics_map.contains_key(ch) { all_musics_map.get(ch).unwrap().kind.iter().map(|f| KIND_MAPPING.get(f).unwrap()).join(",").into() } else { "未知".into() },
+				character_origin: "未知".into(),
+				first_appearance: if all_musics_map.contains_key(ch) { all_musics_map.get(ch).unwrap().date.to_string() } else { "未知".into() },
+				name_jpn: if all_musics_map.contains_key(ch) { all_musics_map.get(ch).unwrap().origname.clone() } else { "未知".into() },
+				album: if all_musics_map.contains_key(ch) { all_musics_map.get(ch).unwrap().album.clone() } else { None },
 				vote_percentage: 0f64,
 				first_percentage: 0f64,
 				male_vote_count: 0,
@@ -837,6 +840,7 @@ pub async fn musics_ranking(ctx: &AppContext, query: Option<String>, vote_start:
 			};
 			rank += 1;
 			musics_result.push(entry);
+			per_music_vote_count_count_only_vec.push(0);
 		}
 	};
 	let num_music = per_music_vote_count_count_only_vec.len();
@@ -1006,6 +1010,8 @@ pub async fn cps_ranking(ctx: &AppContext, query: Option<String>, vote_start: bs
 	let mut per_cp_vote_first_count: HashMap<CPItem, i32> = HashMap::with_capacity(1000);
 	let mut per_cp_male_vote_count: HashMap<CPItem, i32> = HashMap::with_capacity(1000);
 	let mut per_cp_female_vote_count: HashMap<CPItem, i32> = HashMap::with_capacity(1000);
+	// let mut single_vote_user_male_votes: HashSet<CPItem> = HashSet::with_capacity(1000);
+	// let mut single_vote_user_female_votes: HashSet<CPItem> = HashSet::with_capacity(1000);
 	let mut total_votes = 0i32;
 	let mut total_first_votes = 0i32;
 	let mut total_male = 0i32;
@@ -1039,6 +1045,13 @@ pub async fn cps_ranking(ctx: &AppContext, query: Option<String>, vote_start: bs
 			total_female += 1;
 			false
 		};
+		// if chs.len() == 1 {
+		// 	if is_male {
+		// 		*single_vote_user_male_votes.insert(chs[0].clone());
+		// 	} else {
+		// 		*single_vote_user_female_votes.insert(chs[0].clone());
+		// 	}
+		// }
 		for ch in chs {
 			*per_cp_vote_count.entry(ch.clone()).or_default() += 1;
 			if !hrs_bins.contains_key(&ch) {
@@ -1073,9 +1086,27 @@ pub async fn cps_ranking(ctx: &AppContext, query: Option<String>, vote_start: bs
 		}
 	}
 	let mut cps_result = Vec::with_capacity(300);
-	let mut per_cp_vote_count_vec: Vec<(&CPItem, &i32)> = per_cp_vote_count.iter().filter(|(a, b)| **b > 1).collect();
-	let mut per_cp_vote_count_count_only_vec: Vec<i32> = per_cp_vote_count.iter().filter(|(a, b)| **b > 1).map(|(a, b)| *b).collect();
+	let filtered_cps: HashSet<CPItem> = per_cp_vote_count.iter().filter(|(a, b)| **b > 1).map(|(a, b)| a.clone()).collect();
+	let per_cp_vote_count: HashMap<CPItem, i32> = per_cp_vote_count
+		.into_iter()
+		.filter(|(k, v)| filtered_cps.contains(k))
+		.collect();
+	let per_cp_vote_first_count: HashMap<CPItem, i32> = per_cp_vote_first_count
+		.into_iter()
+		.filter(|(k, v)| filtered_cps.contains(k))
+		.collect();
+	let per_cp_male_vote_count: HashMap<CPItem, i32> = per_cp_male_vote_count
+		.into_iter()
+		.filter(|(k, v)| filtered_cps.contains(k))
+		.collect();
+	let per_cp_female_vote_count: HashMap<CPItem, i32> = per_cp_female_vote_count
+		.into_iter()
+		.filter(|(k, v)| filtered_cps.contains(k))
+		.collect();
+	let mut per_cp_vote_count_vec: Vec<(&CPItem, &i32)> = per_cp_vote_count.iter().collect();
+	let mut per_cp_vote_count_count_only_vec: Vec<i32> = per_cp_vote_count.iter().map(|(a, b)| *b).collect();
 	per_cp_vote_count_count_only_vec.sort();
+	per_cp_vote_count_count_only_vec.reverse();
 	per_cp_vote_count_vec.sort_by(
 		|a, b| {
 			if b.1 == a.1 {
@@ -1085,11 +1116,16 @@ pub async fn cps_ranking(ctx: &AppContext, query: Option<String>, vote_start: bs
 			}
 		}
 	);
+	// let male_diff = -(single_vote_user_male_votes.difference(&filtered_cps).count() as i32);
+	// let female_diff = -(single_vote_user_female_votes.difference(&filtered_cps).count() as i32);
+	// total_male += male_diff;
+	// total_female += female_diff;
+	// total_votes += male_diff + female_diff;
 	let mut rank = 1;
-	if total_male == 0 {
+	if total_male <= 0 {
 		total_male = 1;
 	}
-	if total_female == 0 {
+	if total_female <= 0 {
 		total_female = 1;
 	}
 	if total_first_votes == 0 {

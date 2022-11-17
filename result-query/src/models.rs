@@ -99,6 +99,7 @@ pub struct RankingEntry {
 	/// 本命票数上上届
 	pub first_vote_count_last_2: i32,
 	/// 本命率
+	/// =P(本命为该人物|投票给了该人物)
 	pub first_vote_percentage: f64,
 	/// 本命率上一届
 	pub first_vote_percentage_last_1: f64,
@@ -117,6 +118,7 @@ pub struct RankingEntry {
 	/// 日文名
 	pub name_jpn: String,
 	/// 票数占比
+	/// =投了该人物的人数/总投票人数
 	pub vote_percentage: f64,
 	/// 票数占比上一届
 	pub vote_percentage_last_1: f64,
