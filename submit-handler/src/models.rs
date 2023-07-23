@@ -80,16 +80,16 @@ pub struct DojinSubmit {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct CharacterSubmit {
-	pub name: String,
+	pub id: String,
 	pub reason: Option<String>,
 	pub first: Option<bool>
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct CPSubmit {
-	pub name_a: String,
-	pub name_b: String,
-	pub name_c: Option<String>,
+	pub id_a: String,
+	pub id_b: String,
+	pub id_c: Option<String>,
 	pub active: Option<String>,
 	pub first: Option<bool>,
 	#[serde(skip_serializing_if = "Option::is_none")]
@@ -99,7 +99,7 @@ pub struct CPSubmit {
 
 impl PartialEq for CPSubmit {
     fn eq(&self, other: &Self) -> bool {
-        if self.name_c.is_some() ^ other.name_c.is_some() {
+        if self.id_c.is_some() ^ other.id_c.is_some() {
 			return false;
 		}
         if self.active.is_some() ^ other.active.is_some() {
@@ -110,28 +110,28 @@ impl PartialEq for CPSubmit {
 				return false;
 			}
 		}
-		if let (Some(c1), Some(c2)) = (&self.name_c, &other.name_c) {
-			((self.name_a == other.name_a) && (self.name_b == other.name_b) && (*c1 == *c2)) ||
-			((self.name_a == other.name_b) && (self.name_b == other.name_a) && (*c1 == *c2)) ||
-			((self.name_a == *c2) && (self.name_b == other.name_b) && (*c1 == other.name_a)) ||
-			((self.name_a == other.name_a) && (self.name_b == *c2) && (*c1 == other.name_b))
+		if let (Some(c1), Some(c2)) = (&self.id_c, &other.id_c) {
+			((self.id_a == other.id_a) && (self.id_b == other.id_b) && (*c1 == *c2)) ||
+			((self.id_a == other.id_b) && (self.id_b == other.id_a) && (*c1 == *c2)) ||
+			((self.id_a == *c2) && (self.id_b == other.id_b) && (*c1 == other.id_a)) ||
+			((self.id_a == other.id_a) && (self.id_b == *c2) && (*c1 == other.id_b))
 		} else {
-			((self.name_a == other.name_a) && (self.name_b == other.name_b)) ||
-			((self.name_a == other.name_b) && (self.name_b == other.name_a))
+			((self.id_a == other.id_a) && (self.id_b == other.id_b)) ||
+			((self.id_a == other.id_b) && (self.id_b == other.id_a))
 		}
     }
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct MusicSubmit {
-	pub name: String,
+	pub id: String,
 	pub reason: Option<String>,
 	pub first: Option<bool>
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct WorkSubmit {
-	pub name: String,
+	pub id: String,
 	pub reason: Option<String>
 }
 

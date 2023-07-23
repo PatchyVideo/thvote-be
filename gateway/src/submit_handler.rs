@@ -135,7 +135,7 @@ pub struct PaperSubmitRestQuery {
 #[graphql(description="Single character submit")]
 pub struct CharacterSubmit {
 	/// 人物名
-	pub name: String,
+	pub id: String,
 	/// 理由
 	pub reason: Option<String>,
 	/// 本命
@@ -146,7 +146,7 @@ pub struct CharacterSubmit {
 #[graphql(description="Single character submit")]
 pub struct CharacterSubmitQuery {
 	/// 人物名
-	pub name: String,
+	pub id: String,
 	/// 理由
 	pub reason: Option<String>,
 	/// 本命
@@ -164,11 +164,11 @@ pub struct CharacterSubmitGQL {
 #[graphql(description="Single cp submit")]
 pub struct CPSubmit {
 	/// 人物A
-	pub name_a: String,
+	pub id_a: String,
 	/// 人物B
-	pub name_b: String,
+	pub id_b: String,
 	/// 人物C（可选）
-	pub name_c: Option<String>,
+	pub id_c: Option<String>,
 	/// 主动方（可选）
 	pub active: Option<String>,
 	/// 本命
@@ -183,11 +183,11 @@ pub struct CPSubmit {
 #[graphql(description="Single cp submit")]
 pub struct CPSubmitQuery {
 	/// 人物A
-	pub name_a: String,
+	pub id_a: String,
 	/// 人物B
-	pub name_b: String,
+	pub id_b: String,
 	/// 人物C（可选）
-	pub name_c: Option<String>,
+	pub id_c: Option<String>,
 	/// 主动方（可选）
 	pub active: Option<String>,
 	/// 本命
@@ -209,7 +209,7 @@ pub struct CPSubmitGQL {
 #[graphql(description="Single music submit")]
 pub struct MusicSubmit {
 	/// 音乐名
-	pub name: String,
+	pub id: String,
 	/// 理由
 	pub reason: Option<String>,
 	/// 本命
@@ -220,7 +220,7 @@ pub struct MusicSubmit {
 #[graphql(description="Single music submit")]
 pub struct MusicSubmitQuery {
 	/// 音乐名
-	pub name: String,
+	pub id: String,
 	/// 理由
 	pub reason: Option<String>,
 	/// 本命
@@ -237,7 +237,7 @@ pub struct MusicSubmitGQL {
 #[graphql(description="Single work submit")]
 pub struct WorkSubmit {
 	/// 作品名
-	pub name: String,
+	pub id: String,
 	/// 理由
 	pub reason: Option<String>
 }

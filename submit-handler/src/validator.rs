@@ -49,10 +49,10 @@ impl SubmitValidatorV1 {
 				}
 				first_set = true;
 			}
-			if chset.contains(&c.name) {
-				return Err(ServiceError::new_human_readable(SERVICE_NAME, "INVALID_CONTENT", format!("{}已存在", c.name)));
+			if chset.contains(&c.id) {
+				return Err(ServiceError::new_human_readable(SERVICE_NAME, "INVALID_CONTENT", format!("{}已存在", c.id)));
 			}
-			chset.insert(c.name.clone());
+			chset.insert(c.id.clone());
 		}
 		// step 4: check all names are correct
 		// step 5: return
@@ -78,10 +78,10 @@ impl SubmitValidatorV1 {
 				}
 				first_set = true;
 			}
-			if chset.contains(&c.name) {
-				return Err(ServiceError::new_human_readable(SERVICE_NAME, "INVALID_CONTENT", format!("{}已存在", c.name)));
+			if chset.contains(&c.id) {
+				return Err(ServiceError::new_human_readable(SERVICE_NAME, "INVALID_CONTENT", format!("{}已存在", c.id)));
 			}
-			chset.insert(c.name.clone());
+			chset.insert(c.id.clone());
 		}
 		// step 4: check all names are correct
 		// step 5: return
@@ -107,9 +107,9 @@ impl SubmitValidatorV1 {
 				first_set = true;
 			}
 			if let Some(active) = &c.active {
-				if *active != c.name_a && *active != c.name_b && {
-					if let Some(name_c) = &c.name_c {
-						*name_c != *active
+				if *active != c.id_a && *active != c.id_b && {
+					if let Some(id_c) = &c.id_c {
+						*id_c != *active
 					} else {
 						true
 					}
