@@ -56,15 +56,15 @@ async def thbdata(entry: str, udid: str) -> RespBody:
     author_name = [f'thbwiki-author:{x}' for x in author]
 
     tname = 'OTHER'
-    if d['专辑名称']:
+    if d.get('专辑名称'):
         tname = 'MUSIC'
-    elif d['同人志名称']:
+    elif d.get('同人志名称'):
         tname = 'DRAWING'
-    elif d['视频名称']:
+    elif d.get('视频名称'):
         tname = 'VIDEO'
-    elif d['软件名称']:
+    elif d.get('软件名称'):
         tname = 'SOFTWARE'
-    elif d['模型名称']:
+    elif d.get('模型名称'):
         tname = 'CRAFT'
 
     fulltext = data['fulltext']
