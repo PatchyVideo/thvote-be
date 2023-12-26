@@ -17,6 +17,7 @@ from sites.thbwiki import thbdata
 from sites.twitter import twidata
 from sites.weibo import wbdata
 from sites.youtube import ytbdata
+from sites.tieba import tiebadata
 from utils.match import *
 
 matcher_list = [
@@ -36,6 +37,7 @@ matcher_list = [
     (match_steam, steamdata),
     (match_dlsite, dlsitedata),
     (match_melon, melondata),
+    (match_tieba, tiebadata),
 ]
 
 

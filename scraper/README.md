@@ -22,6 +22,7 @@ blank: WIP
 - [x] Steam
 - [x] Dlsite
 - [x] Melonbooks
+- [ ] Tieba (PC)
 
 not support: weibo (PC)
 
@@ -69,8 +70,8 @@ meaning of the `status`:
 |`media`|`Array[String]`|`["https://pbs.twimg.com/media/FLNEMPTVUAEAu7K.jpg"]`|list of content url(s). |
 |`desc`|`String`|`sina 测试一下黑屏压制。已修复。`|description of the content. |
 |`ptime`|`String`|`2010-09-07 21:30:02 +0800`|unified as `CST` (`Asia/Shanghai`). |
-|`author`|`Array[String]`|`bilibili-author:45086`|list of unique identifier of author. format: `site-author:user_id`. |
-|`author_name`|`Array[String]`|`僕の可愛い殿下`|list of display name of author. |
+|`author`|`Array[String]`|`[bilibili-author:45086]`|list of unique identifier of author. format: `site-author:user_id`. |
+|`author_name`|`Array[String]`|`[僕の可愛い殿下]`|list of display name of author. |
 |`tname`|`String`|`VIDEO`|type of the content. possible values: `MUSIC`, `VIDEO`, `DRAWING`, `SOFTWARE`, `ARTICLE`, `CRAFT`, `OTHER`. |
 |`repost`|`Boolean`|`true`|if the content is repost or not. (only bilibili(video), acfun(video) and patchyvideo)|
 

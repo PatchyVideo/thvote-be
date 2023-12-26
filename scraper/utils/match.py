@@ -94,3 +94,8 @@ async def match_dlsite(text: str) -> str:
 async def match_melon(text: str) -> str:
     if match_normal := re.match(r'.*melonbooks.co.jp.+?\?product_id=(\d+)', text):
         return match_normal.group(1)
+
+
+async def match_tieba(text: str) -> str:
+    if match := re.match(r'.*tieba.baidu.com/p/(\d+)', text):
+        return match.group(1)
