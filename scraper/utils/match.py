@@ -72,7 +72,7 @@ async def match_patchyvideo(text: str) -> str:
 
 
 async def match_mweibo(text: str) -> str:
-    if match_mobile := re.match(r'.*m.weibo.cn/detail/(\d+)', text):
+    if match_mobile := re.match(r'.*m.weibo.cn/(?:status|detail)/(\d+)', text):
         return match_mobile.group(1)
 
 

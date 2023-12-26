@@ -2,7 +2,6 @@ import datetime as dt
 
 import ujson
 from loguru import logger
-from lxml import etree
 from model import RespBody
 from pytz import timezone
 from utils.cache import with_cache
@@ -18,9 +17,7 @@ async def wbdata(wid: str, udid: str) -> RespBody:
     r = await request_website(wburl, headers=header)
     html = r.content.decode('utf-8')
     try:
-        page = etree.HTML(html)
-        test = page.xpath('/html/body/script[1]')[0].text
-        test = test[test.find('$render_data'):]
+        test = html[html.find('$render_data'):]
         test = test[test.find('[{')+1:test.find('}]')+1]
         json = ujson.loads(test)
         data = json['status']
