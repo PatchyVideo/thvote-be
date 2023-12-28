@@ -25,6 +25,9 @@ async def match_biliarticle(text: str) -> str:
     if match_cv := re.match(r'.*(?<![A-Za-z0-9])(?:CV|cv)(\d+)', text, re.DOTALL):
         # cv号
         return match_cv.group(1)
+    if match_cvm := re.match(r'.*bilibili.com/read/mobile/(\d+)', text, re.DOTALL):
+        # cv号 (移动端)
+        return match_cvm.group(1)
 
 
 async def match_twitter(text: str) -> str:

@@ -7,7 +7,7 @@ check: done
 blank: WIP
 
 - [x] Bilibili (video)
-- [ ] Bilibili (article)
+- [x] Bilibili (article)
 - [x] Acfun (video)
 - [x] Acfun (article)
 - [x] YouTube (video)
