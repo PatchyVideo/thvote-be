@@ -45,7 +45,14 @@ def get_header() -> dict:
 
 
 def get_cookies() -> dict:
+    SESSDATA = get_cache('bilibili_config')['SESSDATA']
+    buvid3 = get_cache('bilibili_config')['buvid3']
+    b_nut = get_cache('bilibili_config')['b_nut']
+    if buvid3 and b_nut:
+        return {
+            'buvid3': buvid3,
+            'b_nut': b_nut,
+        }
     return {
-        'buvid3': get_cache('bilibili_config')['bili_jct'],
-        'b_nut': get_cache('bilibili_config')['DedeUserID'],
+        'SESSDATA': SESSDATA,
     }
