@@ -118,8 +118,8 @@ clear_key = 'clear_key'
 [bilibili_config]
     SESSDATA = 'SESSDATA'
     # (necessary) COOKIES[SESSDATA]
-    buvid3 = ''
-    b_nut = 10000
+    buvid3 = 'buvid3'
+    b_nut = 'b_nut'
     # (improve stability) COOKIES[buvid3], COOKIES[b_nut]
 
 [redis_config]
