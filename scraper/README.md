@@ -117,7 +117,10 @@ clear_key = 'clear_key'
 
 [bilibili_config]
     SESSDATA = 'SESSDATA'
-    # COOKIES[SESSDATA]
+    # (necessary) COOKIES[SESSDATA]
+    buvid3 = ''
+    b_nut = 10000
+    # (improve stability) COOKIES[buvid3], COOKIES[b_nut]
 
 [redis_config]
     host = 'localhost'

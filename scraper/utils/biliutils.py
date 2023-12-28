@@ -1,3 +1,6 @@
+from utils.cache import get_cache
+
+
 async def bvid_converter(bvid=None, aid=None) -> str:
     '''aid和bvid互转'''
     if bvid is None and aid is None:
@@ -30,3 +33,19 @@ async def bvid_converter(bvid=None, aid=None) -> str:
         for i in range(6):
             r[s[i]] = table[aid//58**i % 58]
         return ''.join(r)
+
+
+def get_header() -> dict:
+    return {
+        'origin': 'https://space.bilibili.com',
+        'referer': 'https://www.bilibili.com/read/cv2/',
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/97.0.4692.99 Safari/537.36',
+        'accept-language': 'en,zh-CN;q=0.9,zh;q=0.8',
+    }
+
+
+def get_cookies() -> dict:
+    return {
+        'buvid3': get_cache('bilibili_config')['bili_jct'],
+        'b_nut': get_cache('bilibili_config')['DedeUserID'],
+    }
