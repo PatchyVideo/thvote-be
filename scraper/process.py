@@ -4,6 +4,7 @@ from model import RespBody
 from sites.acarticle import acadata
 from sites.acfun import acdata
 from sites.bilibili import bilidata
+from sites.biliarticle import biliarticledata
 from sites.dizzylab import dizzydata
 from sites.dlsite import dlsitedata
 from sites.melon import melondata
@@ -22,6 +23,7 @@ from utils.match import *
 
 matcher_list = [
     (match_bilibili, bilidata),
+    (match_biliarticle, biliarticledata),
     (match_pixiv, pixdata),
     (match_pixnovel, pixndata),
     (match_twitter, twidata),

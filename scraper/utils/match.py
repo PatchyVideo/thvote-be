@@ -17,6 +17,16 @@ async def match_bilibili(text: str) -> str:
         return await bvid_converter(bvid=match_bvid.group(1))
 
 
+async def match_biliarticle(text: str) -> str:
+    if match_b23url := re.match(r'.*((?:http|https)://(?:(?:bili(?:22|23|33|2233).cn)|(?:b23.tv))/[A-Za-z0-9]+)', text, re.DOTALL):
+        # 短链接
+        b23url = match_b23url.group(1)
+        text = await get_redirect_url(b23url)
+    if match_cv := re.match(r'.*(?<![A-Za-z0-9])(?:CV|cv)(\d+)', text, re.DOTALL):
+        # cv号
+        return match_cv.group(1)
+
+
 async def match_twitter(text: str) -> str:
     if match_normal := re.match(r'.*twitter\.com/[^/]+/status/(\d+)', text):
         return match_normal.group(1)
