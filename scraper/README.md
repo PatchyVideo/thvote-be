@@ -7,6 +7,7 @@ check: done
 blank: WIP
 
 - [x] Bilibili (video)
+- [ ] Bilibili (article)
 - [x] Acfun (video)
 - [x] Acfun (article)
 - [x] YouTube (video)
@@ -112,6 +113,11 @@ ytbapi_key = 'ytbapi_key'
 clear_key = 'clear_key'
 # any string
 # submit url `https://thwiki.cc/<clear_key>` will tell server to clear cache
+
+
+[bilibili_config]
+    SESSDATA = 'SESSDATA'
+    # COOKIES[SESSDATA]
 
 [redis_config]
     host = 'localhost'

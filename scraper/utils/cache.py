@@ -68,6 +68,7 @@ def init_cache():
         'ytbapi_key',
         'clear_key',
         'melon_proxy',
+        'bilibili_config',
     ]
     for conf in cache_config:
         set_cache(conf, config.get(conf))

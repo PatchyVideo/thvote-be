@@ -1,14 +1,18 @@
 from model import RespBody
-from utils.cache import with_cache
+from utils.cache import with_cache, get_cache
 from utils.network import request_api
 import time
+
+biliconfig = get_cache('bilibili_config')
+header = {
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/97.0.4692.99 Safari/537.36'}
 
 
 @with_cache(site='bilibili', limit=0.2)
 async def bilidata(aid: str, udid: str) -> RespBody:
     '''根据aid(av号)获取视频相关数据'''
     api = f'https://api.bilibili.com/x/web-interface/view?aid={aid}'
-    r = await request_api(api)
+    r = await request_api(api, headers=header, cookies={'SESSDATA': biliconfig['SESSDATA']})
     data = r.get('data')
     if data is None:
         return RespBody(status='apierr', msg=f'biliapimsg: {r["message"]}')
